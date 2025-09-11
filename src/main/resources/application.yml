@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ufcdb
+    username: ufc_user
+    password: ufc_pass
+  jpa:
+    hibernate:
+      ddl-auto: update   # creates tables automatically (dev only!)
+    show-sql: true
+
