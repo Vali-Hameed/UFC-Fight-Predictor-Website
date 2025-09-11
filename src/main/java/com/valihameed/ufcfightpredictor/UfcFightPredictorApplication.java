@@ -8,6 +8,7 @@ public class UfcFightPredictorApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(UfcFightPredictorApplication.class, args);
+        System.out.println("UfcFightPredictorApplication started");
     }
 
 }

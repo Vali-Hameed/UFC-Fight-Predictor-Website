@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ufcdb
+    url: jdbc:postgresql://localhost:5332/postgres
     username: ufc_user
     password: ufc_pass
   jpa:
