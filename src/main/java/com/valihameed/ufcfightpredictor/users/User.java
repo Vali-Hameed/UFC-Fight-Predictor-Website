@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "users") // avoid conflict with SQL reserved word
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class user {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,5 +24,5 @@ public class user {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
-    private role role;
+    private Role role;
 }

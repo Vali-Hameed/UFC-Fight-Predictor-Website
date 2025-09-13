@@ -13,13 +13,22 @@ public class userService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
-    public user createNewUser(String username, String email, String password, role role) {
-        user newUser = new user();
-        newUser.setUsername(username);
-        newUser.setEmail(email);
-        newUser.setPassword(passwordEncoder.encode(password));
-        newUser.setRole(role);
-        return userRepository.save(newUser);
+    public User createNewUser(String username, String email, String password, Role role) {
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new RuntimeException("Username already taken");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        User user = com.valihameed.ufcfightpredictor.users.User.builder()
+                .username(username)
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .role(role != null ? role : role) // default to USER
+                .build();
+
+        return userRepository.save(user);
 
     }
 }
