@@ -1,3 +1,7 @@
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5332/postgres
@@ -5,6 +9,11 @@ spring:
     password: ufc_pass
   jpa:
     hibernate:
-      ddl-auto: update   # creates tables automatically (dev only!)
+      ddl-auto: update
+    properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    properties:
+      hibernate:
+        format_sql: true
     show-sql: true
 
