@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "users") // avoid conflict with SQL reserved word
+// avoid conflict with SQL reserved word
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder@EqualsAndHashCode
 public class user implements UserDetails {
     @Id
