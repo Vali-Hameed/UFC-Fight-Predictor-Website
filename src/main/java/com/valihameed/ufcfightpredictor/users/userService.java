@@ -1,19 +1,20 @@
 package com.valihameed.ufcfightpredictor.users;
 
 import com.valihameed.ufcfightpredictor.repository.userRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class userService {
+@AllArgsConstructor
+public class userService implements UserDetailsService {
     private  final userRepository userRepository;
     private  final PasswordEncoder passwordEncoder;
 
-    public userService(userRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-    public User createNewUser(String username, String email, String password, Role role) {
+    public user createNewUser(String username, String email, String password, role role) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("Username already taken");
         }
@@ -21,7 +22,7 @@ public class userService {
             throw new RuntimeException("Email already registered");
         }
 
-        User user = com.valihameed.ufcfightpredictor.users.User.builder()
+        user user = com.valihameed.ufcfightpredictor.users.user.builder()
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
@@ -30,5 +31,13 @@ public class userService {
 
         return userRepository.save(user);
 
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
     }
 }
