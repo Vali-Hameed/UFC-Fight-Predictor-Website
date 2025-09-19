@@ -49,6 +49,7 @@ public class userService implements UserDetailsService {
         }
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+        userRepository.save(user);
         // TODO: Send confirmation token
         return "it works";
     }
