@@ -10,9 +10,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @AllArgsConstructor
@@ -24,26 +27,21 @@ public class securityConfig{
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Configure authorization rules
-                .authorizeRequests()
-                // Allow access to any URL under /public/ without authentication
-                .requestMatchers("/public/v*/registration/**").permitAll()
-                // Require authentication for any other request
-                .anyRequest().authenticated()
-                .and()
-                // Configure form-based login
-                .formLogin()
-                // Specify the custom login page URL
-                .loginPage("/login")
-                // Allow everyone to access the login page
-                .permitAll()
-                .and()
-                // Configure logout functionality
-                .logout()
-                // Allow everyone to access the logout functionality
-                .permitAll();
+                // 1. Disable CSRF protection for stateless APIs
+                .csrf(AbstractHttpConfigurer::disable)
+                // 2. Start configuring authorization rules
+                .authorizeHttpRequests(auth -> auth
+                        // 3. Allow public access to the registration endpoint(s)
+                        .requestMatchers("/api/v*/registration/**").permitAll()
+                        // 4. Any other request needs to be authenticated
+                        .anyRequest().authenticated()
+                )
+                // 5. Configure form login with default settings
+                .formLogin(withDefaults())
+                // 6. Configure logout with default settings
+                .logout(withDefaults());
 
-        // Return the configured SecurityFilterChain
+        // Build and return the configuration
         return http.build();
     }
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
