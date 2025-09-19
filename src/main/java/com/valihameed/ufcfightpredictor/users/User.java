@@ -17,6 +17,11 @@ public class user implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
+    private String firstName;
+    @Column(unique = true)
+    private String lastName;
+
 
     @Column(unique = true, nullable = false)
     private String username;
@@ -38,7 +43,17 @@ public class user implements UserDetails {
     @Column(unique = true, nullable = false)
     private boolean enabled;
 
-    public user(String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
+    public user(String firstName, String lastName, String username, String email, String password,role role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.username = username;
         this.email = email;
         this.password = password;
