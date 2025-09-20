@@ -13,6 +13,7 @@ import java.util.List;
 @Entity
 // avoid conflict with SQL reserved word
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder@EqualsAndHashCode
+@Table(name = "users")
 public class user implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,6 +50,9 @@ public class user implements UserDetails {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.role = role;
+        this.locked = false;
+        this.enabled = true;
     }
 
     public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
