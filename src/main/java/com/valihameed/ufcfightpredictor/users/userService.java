@@ -15,6 +15,7 @@ public class userService implements UserDetailsService {
     private  final userRepository userRepository;
     private  final PasswordEncoder passwordEncoder;
     private  final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final static String USER_NOT_FOUND_MSG = "user with %s not found";
 
     public user createNewUser(String username, String email, String password, role role) {
         if (userRepository.findByUsername(username).isPresent()) {
@@ -35,9 +36,16 @@ public class userService implements UserDetailsService {
 
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    @Override    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        // FIX: Check if the input contains an "@" symbol.
+        // If it does, search by email. Otherwise, search by username.
+        if (usernameOrEmail.contains("@")) {
+            return userRepository.findByEmail(usernameOrEmail)
+                    .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, usernameOrEmail)));
+        } else {
+            return userRepository.findByUsername(usernameOrEmail)
+                    .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, usernameOrEmail)));
+        }
     }
     public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));

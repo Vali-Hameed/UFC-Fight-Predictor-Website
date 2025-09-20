@@ -52,7 +52,7 @@ public class user implements UserDetails {
         this.password = password;
         this.role = role;
         this.locked = false;
-        this.enabled = true;
+        this.enabled = false;
     }
 
     public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
