@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-@Getter@Setter@NoArgsConstructor
+@Getter@Setter@NoArgsConstructor@Entity
 public class ConformationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +24,10 @@ public class ConformationToken {
     name = "user_id")
     private user user;
 
-    public ConformationToken(String token, LocalDateTime createdAt, LocalDateTime expiresAt, LocalDateTime confirmedAt,user user) {
+    public ConformationToken(String token, LocalDateTime createdAt, LocalDateTime expiresAt,user user) {
         this.token = token;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
-        this.confirmedAt = confirmedAt;
         this.user = user;
     }
 }

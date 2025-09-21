@@ -1,5 +1,7 @@
 package com.valihameed.ufcfightpredictor.users;
 
+import com.valihameed.ufcfightpredictor.registration.token.ConformationToken;
+import com.valihameed.ufcfightpredictor.registration.token.ConformationTokenService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -21,6 +25,7 @@ public class userService implements UserDetailsService {
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$"
     );
+    private final ConformationTokenService conformationTokenService;
 
     public user createNewUser(String username, String email, String password, role role) {
         if (userRepository.findByUsername(username).isPresent()) {
@@ -66,7 +71,10 @@ public class userService implements UserDetailsService {
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         userRepository.save(user);
-        // TODO: Send confirmation token
-        return "it works";
+        String token=UUID.randomUUID().toString();
+        ConformationToken conformationToken = new ConformationToken(token, LocalDateTime.now(),LocalDateTime.now().plusMinutes(15),user);
+        conformationTokenService.saveConformationToken(conformationToken);
+        return token;
+        // TODO: SEND EMAIL
     }
 }
