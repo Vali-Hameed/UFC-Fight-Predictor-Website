@@ -9,6 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.regex.Pattern;
+
 @Service
 @AllArgsConstructor
 public class userService implements UserDetailsService {
@@ -16,6 +18,9 @@ public class userService implements UserDetailsService {
     private  final PasswordEncoder passwordEncoder;
     private  final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final static String USER_NOT_FOUND_MSG = "user with %s not found";
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$"
+    );
 
     public user createNewUser(String username, String email, String password, role role) {
         if (userRepository.findByUsername(username).isPresent()) {
@@ -36,10 +41,12 @@ public class userService implements UserDetailsService {
 
     }
 
-    @Override    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        // FIX: Check if the input contains an "@" symbol.
-        // If it does, search by email. Otherwise, search by username.
-        if (usernameOrEmail.contains("@")) {
+
+
+    @Override
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        // FIX: Use regex to reliably check if the input is an email.
+        if (EMAIL_PATTERN.matcher(usernameOrEmail).matches()) {
             return userRepository.findByEmail(usernameOrEmail)
                     .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, usernameOrEmail)));
         } else {
@@ -47,6 +54,7 @@ public class userService implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, usernameOrEmail)));
         }
     }
+
     public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
     }
