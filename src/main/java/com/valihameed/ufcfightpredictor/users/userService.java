@@ -1,7 +1,7 @@
 package com.valihameed.ufcfightpredictor.users;
 
-import com.valihameed.ufcfightpredictor.registration.token.ConformationToken;
-import com.valihameed.ufcfightpredictor.registration.token.ConformationTokenService;
+import com.valihameed.ufcfightpredictor.registration.token.ConfirmationToken;
+import com.valihameed.ufcfightpredictor.registration.token.ConfirmationTokenService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +25,7 @@ public class userService implements UserDetailsService {
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$"
     );
-    private final ConformationTokenService conformationTokenService;
+    private final ConfirmationTokenService confirmationTokenService;
 
     public user createNewUser(String username, String email, String password, role role) {
         if (userRepository.findByUsername(username).isPresent()) {
@@ -72,9 +72,12 @@ public class userService implements UserDetailsService {
         user.setPassword(encodedPassword);
         userRepository.save(user);
         String token=UUID.randomUUID().toString();
-        ConformationToken conformationToken = new ConformationToken(token, LocalDateTime.now(),LocalDateTime.now().plusMinutes(15),user);
-        conformationTokenService.saveConformationToken(conformationToken);
+        ConfirmationToken confirmationToken = new ConfirmationToken(token, LocalDateTime.now(),LocalDateTime.now().plusMinutes(15),user);
+        confirmationTokenService.saveConformationToken(confirmationToken);
         return token;
         // TODO: SEND EMAIL
+    }
+    public int enableUser(String email) {
+        return userRepository.enableAppUser(email);
     }
 }

@@ -3,7 +3,10 @@ package com.valihameed.ufcfightpredictor.repository;
 
 import com.valihameed.ufcfightpredictor.users.user;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -11,4 +14,9 @@ import java.util.Optional;
 public interface userRepository extends JpaRepository<user, Long> {
     Optional<user> findByUsername(String username);
     Optional<user> findByEmail(String email);
+    @Transactional
+    @Modifying
+    @Query("UPDATE user a " +
+            "SET a.enabled = TRUE WHERE a.email = ?1")
+    int enableAppUser(String email);
 }
