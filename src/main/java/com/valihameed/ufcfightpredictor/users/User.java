@@ -18,9 +18,9 @@ public class user implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true)
+    @Column
     private String firstName;
-    @Column(unique = true)
+    @Column
     private String lastName;
 
 
@@ -39,9 +39,9 @@ public class user implements UserDetails {
     @JoinColumn(name = "role_id")
     private role role;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private boolean locked;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private boolean enabled;
 
     public user(String firstName, String lastName, String username, String email, String password,role role) {
