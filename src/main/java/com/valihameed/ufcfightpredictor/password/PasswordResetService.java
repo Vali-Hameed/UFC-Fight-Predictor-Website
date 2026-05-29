@@ -2,9 +2,9 @@ package com.valihameed.ufcfightpredictor.password;
 
 import com.valihameed.ufcfightpredictor.email.EmailSender;
 import com.valihameed.ufcfightpredictor.models.PasswordResetToken;
-import com.valihameed.ufcfightpredictor.models.user;
 import com.valihameed.ufcfightpredictor.repository.PasswordResetTokenRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
+import com.valihameed.ufcfightpredictor.users.user;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

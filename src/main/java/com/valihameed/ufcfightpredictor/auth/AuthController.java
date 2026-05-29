@@ -40,7 +40,6 @@ public class AuthController {
         user u = (user) auth.getPrincipal();
         String accessToken = jwtService.generateToken(u.getUsername());
         String refreshRaw = refreshTokenService.createRefreshToken(u.getId());
-        // TODO: link refresh token to actual user id when user model available; placeholder
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshRaw)
             .httpOnly(true)
             .secure(cookieSecure)
@@ -65,27 +64,29 @@ public class AuthController {
         if (refreshToken == null) {
             return ResponseEntity.status(401).build();
         }
-        return refreshTokenService.findByRaw(refreshToken).map(rt -> {
-            if (rt.getRevoked() || rt.getExpiresAt().isBefore(OffsetDateTime.now())) {
-                return ResponseEntity.status(401).build();
-            }
-            Long userId = rt.getUserId();
-            return userRepository.findById(userId).map(u -> {
-                String username = u.getUsername();
-                String accessToken = jwtService.generateToken(username);
-                // rotate refresh token: revoke old, create new
-                refreshTokenService.revoke(rt);
-                String newRaw = refreshTokenService.createRefreshToken(userId);
-                long maxAgeSecs = java.time.Duration.between(OffsetDateTime.now(), OffsetDateTime.now().plusDays(7)).getSeconds();
-                    ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw)
-                        .httpOnly(true)
-                        .secure(cookieSecure)
-                        .path("/")
-                        .maxAge(maxAgeSecs)
-                        .sameSite("Lax")
-                        .build();
-                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new AuthResponse(accessToken, 15 * 60));
-            }).orElse(ResponseEntity.status(401).build());
-        }).orElse(ResponseEntity.status(401).build());
+        var refreshTokenEntity = refreshTokenService.findByRaw(refreshToken).orElse(null);
+        if (refreshTokenEntity == null || refreshTokenEntity.getRevoked() || refreshTokenEntity.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Long userId = refreshTokenEntity.getUserId();
+        user u = userRepository.findById(userId).orElse(null);
+        if (u == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String accessToken = jwtService.generateToken(u.getUsername());
+        refreshTokenService.revoke(refreshTokenEntity);
+        String newRaw = refreshTokenService.createRefreshToken(userId);
+        long maxAgeSecs = Duration.ofDays(7).getSeconds();
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw)
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .path("/")
+            .maxAge(maxAgeSecs)
+            .sameSite("Lax")
+            .build();
+        AuthResponse response = new AuthResponse(accessToken, 15 * 60);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
     }
 }

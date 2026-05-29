@@ -34,12 +34,14 @@ public class userService implements UserDetailsService {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
-// TODO: if email not confirmed send confirmation email check if attributes are the same
+        if (role == null) {
+            throw new IllegalArgumentException("Role is required");
+        }
         user user = com.valihameed.ufcfightpredictor.users.user.builder()
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .role(role != null ? role : role) // default to USER
+                .role(role)
                 .build();
 
         return userRepository.save(user);

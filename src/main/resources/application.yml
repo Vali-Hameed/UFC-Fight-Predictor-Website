@@ -32,12 +32,16 @@ spring:
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000
+    mvc:
+      problemdetails:
+        enabled: true
 
 jwt:
   secret: ${JWT_SECRET:change-me-in-prod-and-set-env}
   refresh-secret: ${JWT_REFRESH_SECRET:change-refresh-in-prod}
   access-token-expiry-minutes: 15
   refresh-token-expiry-days: 7
+    cookie-secure: ${JWT_COOKIE_SECURE:false}
 
 fastapi:
   base-url: ${FASTAPI_BASE_URL:http://localhost:8000}
@@ -52,6 +56,9 @@ prewarm:
 
 scraper:
   api-key: ${SCRAPER_API_KEY:change-me}
+
+frontend:
+  url: ${FRONTEND_URL:http://localhost:3000}
 
 rate-limiting:
   global:
@@ -74,7 +81,4 @@ rate-limiting:
     capacity: 10
     refill: 10
     refill-period-seconds: 60
-
-jwt:
-  cookie-secure: ${JWT_COOKIE_SECURE:false}
 
