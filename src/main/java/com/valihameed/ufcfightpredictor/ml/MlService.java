@@ -25,6 +25,10 @@ public class MlService {
     @Value("${ml.cache-ttl-minutes:60}")
     private long cacheTtlMinutes;
 
+    public long getCacheTtlMinutes() {
+        return cacheTtlMinutes;
+    }
+
     public MlPrediction getPrediction(String fighter1, String fighter2, Long fightId) {
         // validate existing cache
         var existing = mlPredictionRepository.findByFightId(fightId);

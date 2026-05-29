@@ -29,7 +29,7 @@ public class MlController {
         if (p == null) {
             return ResponseEntity.ok(Map.of("message", "Our prediction model is currently unavailable. Please try again later."));
         }
-        CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.cacheTtlMinutes)).cachePublic();
+        CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.getCacheTtlMinutes())).cachePublic();
         return ResponseEntity.ok().cacheControl(cc).body(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
     }
 
