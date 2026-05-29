@@ -143,7 +143,7 @@ docker-compose -f docker/docker-compose.dev.yml logs -f
 Contributions, issues, and feature requests are welcome! 
 Feel free to check the [issues page](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website/issues) to see what we're currently working on.
 
-If you are looking to run the full end-to-end environment locally, you will also need to clone and run the `ufc-ml` and `ufc-scraper` repositories alongside this one.
+If you are looking to run the full end-to-end environment locally, you will also need to clone and run the [UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor) and `ufc-scraper` repositories alongside this one.
 
 ---
 
