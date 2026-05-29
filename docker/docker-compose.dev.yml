@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ufc
+      POSTGRES_USER: ufc_user
+      POSTGRES_PASSWORD: ufc_pass
+    ports:
+      - "5332:5432"
+    volumes:
+      - ufc-db-data-dev:/var/lib/postgresql/data
+
+  backend:
+    image: maven:3.9.9-eclipse-temurin-17
+    working_dir: /workspace
+    command: ./mvnw spring-boot:run
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/ufc
+      DATABASE_USERNAME: ufc_user
+      DATABASE_PASSWORD: ufc_pass
+      JWT_SECRET: change-me-in-prod-and-set-env
+      JWT_REFRESH_SECRET: change-refresh-in-prod
+      FRONTEND_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      FASTAPI_BASE_URL: http://ufc-ml:8000
+      SCRAPER_API_KEY: change-me
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    volumes:
+      - ..:/workspace
+      - m2-cache:/root/.m2
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /workspace/frontend
+    command: npm run dev
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ..:/workspace
+      - frontend-node-modules:/workspace/frontend/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  ufc-db-data-dev:
+  m2-cache:
+  frontend-node-modules:

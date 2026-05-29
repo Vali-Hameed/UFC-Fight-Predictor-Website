@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ufc
+      POSTGRES_USER: ufc_user
+      POSTGRES_PASSWORD: ufc_pass
+    ports:
+      - "5332:5432"
+    volumes:
+      - ufc-db-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/ufc
+      DATABASE_USERNAME: ufc_user
+      DATABASE_PASSWORD: ufc_pass
+      JWT_SECRET: change-me-in-prod-and-set-env
+      JWT_REFRESH_SECRET: change-refresh-in-prod
+      FRONTEND_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      FASTAPI_BASE_URL: http://ufc-ml:8000
+      SCRAPER_API_KEY: change-me
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  ufc-db-data:
