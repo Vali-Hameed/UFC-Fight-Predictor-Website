@@ -4,9 +4,9 @@ server:
     include-binding-errors: always
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5332/postgres
-    username: ufc_user
-    password: ufc_pass
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5332/ufc}
+    username: ${DATABASE_USERNAME:ufc_user}
+    password: ${DATABASE_PASSWORD:ufc_pass}
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -32,16 +32,16 @@ spring:
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000
-    mvc:
-      problemdetails:
-        enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
 
 jwt:
   secret: ${JWT_SECRET:change-me-in-prod-and-set-env}
   refresh-secret: ${JWT_REFRESH_SECRET:change-refresh-in-prod}
   access-token-expiry-minutes: 15
   refresh-token-expiry-days: 7
-    cookie-secure: ${JWT_COOKIE_SECURE:false}
+  cookie-secure: ${JWT_COOKIE_SECURE:false}
 
 fastapi:
   base-url: ${FASTAPI_BASE_URL:http://localhost:8000}

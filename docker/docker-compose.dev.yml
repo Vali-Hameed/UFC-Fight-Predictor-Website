@@ -18,8 +18,8 @@ services:
       DATABASE_URL: jdbc:postgresql://db:5432/ufc
       DATABASE_USERNAME: ufc_user
       DATABASE_PASSWORD: ufc_pass
-      JWT_SECRET: change-me-in-prod-and-set-env
-      JWT_REFRESH_SECRET: change-refresh-in-prod
+      JWT_SECRET: change-me-in-prod-and-set-env-now-it-is-longer
+      JWT_REFRESH_SECRET: change-refresh-in-prod-and-make-it-longer
       FRONTEND_URL: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:8080
       FASTAPI_BASE_URL: http://ufc-ml:8000

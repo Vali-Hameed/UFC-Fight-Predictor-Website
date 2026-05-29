@@ -2,7 +2,7 @@ package com.valihameed.ufcfightpredictor.ml;
 
 import com.valihameed.ufcfightpredictor.models.MlPrediction;
 import com.valihameed.ufcfightpredictor.repository.MlPredictionRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MlService {
     private final RestTemplate restTemplate;
     private final MlPredictionRepository mlPredictionRepository;
