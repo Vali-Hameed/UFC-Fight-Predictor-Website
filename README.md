@@ -65,11 +65,12 @@ flowchart LR
 
 ```text
 UFC-Fight-Predictor-Website/
-├── backend/                  # (src/) Spring Boot Java Application
-│   ├── auth/                 # JWT Authentication & Registration
-│   ├── config/               # Spring Security & Rate Limiting Configurations
-│   ├── ml/                   # ML Service Integration & Pre-warming Logic
-│   └── models/               # JPA Entities
+├── backend/                  # Spring Boot Java Application
+│   └── src/main/java/.../ufcfightpredictor/
+│       ├── auth/             # JWT Authentication & Registration
+│       ├── config/           # Spring Security & Rate Limiting Configurations
+│       ├── ml/               # ML Service Integration & Pre-warming Logic
+│       └── models/           # JPA Entities
 ├── frontend/                 # Next.js 15 App Router Frontend
 │   ├── app/                  # Pages, Routing, and Layouts
 │   ├── components/           # Reusable React UI Components
