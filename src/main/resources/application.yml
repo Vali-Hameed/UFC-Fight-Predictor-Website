@@ -42,3 +42,28 @@ jwt:
 fastapi:
   base-url: ${FASTAPI_BASE_URL:http://localhost:8000}
 
+rate-limiting:
+  global:
+    capacity: 100
+    refill: 100
+    refill-period-seconds: 60
+  login:
+    capacity: 5
+    refill: 5
+    refill-period-seconds: 60
+  password-reset:
+    capacity: 3
+    refill: 3
+    refill-period-seconds: 3600
+  prediction-query:
+    capacity: 20
+    refill: 20
+    refill-period-seconds: 60
+  forum-post:
+    capacity: 10
+    refill: 10
+    refill-period-seconds: 60
+
+jwt:
+  cookie-secure: ${JWT_COOKIE_SECURE:false}
+
