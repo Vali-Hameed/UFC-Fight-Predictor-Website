@@ -34,7 +34,7 @@ public class userService implements UserDetailsService {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
-
+// TODO: if email not confirmed send confirmation email check if attributes are the same
         user user = com.valihameed.ufcfightpredictor.users.user.builder()
                 .username(username)
                 .email(email)
@@ -75,7 +75,7 @@ public class userService implements UserDetailsService {
         ConfirmationToken confirmationToken = new ConfirmationToken(token, LocalDateTime.now(),LocalDateTime.now().plusMinutes(15),user);
         confirmationTokenService.saveConformationToken(confirmationToken);
         return token;
-        // TODO: SEND EMAIL
+
     }
     public int enableUser(String email) {
         return userRepository.enableAppUser(email);

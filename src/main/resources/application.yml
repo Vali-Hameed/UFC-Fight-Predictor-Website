@@ -33,3 +33,48 @@ spring:
           timeout: 3000
           writetimeout: 5000
 
+jwt:
+  secret: ${JWT_SECRET:change-me-in-prod-and-set-env}
+  refresh-secret: ${JWT_REFRESH_SECRET:change-refresh-in-prod}
+  access-token-expiry-minutes: 15
+  refresh-token-expiry-days: 7
+
+fastapi:
+  base-url: ${FASTAPI_BASE_URL:http://localhost:8000}
+
+ml:
+  cache-ttl-minutes: ${ML_CACHE_TTL_MINUTES:60}
+
+prewarm:
+  enabled: ${PREWARM_ENABLED:true}
+  lookahead-hours: ${PREWARM_LOOKAHEAD_HOURS:3}
+  cron: ${PREWARM_CRON:0 0 * * * *}
+
+scraper:
+  api-key: ${SCRAPER_API_KEY:change-me}
+
+rate-limiting:
+  global:
+    capacity: 100
+    refill: 100
+    refill-period-seconds: 60
+  login:
+    capacity: 5
+    refill: 5
+    refill-period-seconds: 60
+  password-reset:
+    capacity: 3
+    refill: 3
+    refill-period-seconds: 3600
+  prediction-query:
+    capacity: 20
+    refill: 20
+    refill-period-seconds: 60
+  forum-post:
+    capacity: 10
+    refill: 10
+    refill-period-seconds: 60
+
+jwt:
+  cookie-secure: ${JWT_COOKIE_SECURE:false}
+
