@@ -50,6 +50,9 @@ prewarm:
   lookahead-hours: ${PREWARM_LOOKAHEAD_HOURS:3}
   cron: ${PREWARM_CRON:0 0 * * * *}
 
+scraper:
+  api-key: ${SCRAPER_API_KEY:change-me}
+
 rate-limiting:
   global:
     capacity: 100

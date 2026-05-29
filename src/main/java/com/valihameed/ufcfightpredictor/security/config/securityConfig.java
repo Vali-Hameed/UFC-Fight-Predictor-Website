@@ -27,6 +27,7 @@ public class securityConfig{
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final com.valihameed.ufcfightpredictor.security.RateLimitingFilter rateLimitingFilter;
+    private final com.valihameed.ufcfightpredictor.scraper.ScraperAuthFilter scraperAuthFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -43,6 +44,7 @@ public class securityConfig{
                 .sessionManagement(sm -> sm.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .and()
                 .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
+                .addFilterBefore(scraperAuthFilter, rateLimitingFilter.getClass())
                 .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
