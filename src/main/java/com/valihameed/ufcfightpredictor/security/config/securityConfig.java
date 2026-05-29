@@ -1,5 +1,6 @@
 package com.valihameed.ufcfightpredictor.security.config;
 
+import com.valihameed.ufcfightpredictor.security.JwtAuthenticationFilter;
 import com.valihameed.ufcfightpredictor.users.userService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class securityConfig{
     private final userService userService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -33,19 +35,23 @@ public class securityConfig{
                 .authorizeHttpRequests(auth -> auth
                         // 3. Allow public access to the registration endpoint(s)
                         .requestMatchers("/api/v*/registration/**").permitAll()
+                        .requestMatchers("/api/v*/auth/**").permitAll()
                         // 4. Any other request needs to be authenticated
                         .anyRequest().authenticated()
                 )
-                // 5. Configure form login with default settings
-                .formLogin(withDefaults())
-                // 6. Configure logout with default settings
-                .logout(withDefaults());
+                .sessionManagement(sm -> sm.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
+                .and()
+                .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
-        // Build and return the configuration
         return http.build();
     }
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(daoAuthenticationProvider());
+    }
+
+    @Bean
+    public org.springframework.security.authentication.AuthenticationManager authenticationManager(org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
 
