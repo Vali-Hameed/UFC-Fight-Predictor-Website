@@ -45,6 +45,11 @@ fastapi:
 ml:
   cache-ttl-minutes: ${ML_CACHE_TTL_MINUTES:60}
 
+prewarm:
+  enabled: ${PREWARM_ENABLED:true}
+  lookahead-hours: ${PREWARM_LOOKAHEAD_HOURS:3}
+  cron: ${PREWARM_CRON:0 0 * * * *}
+
 rate-limiting:
   global:
     capacity: 100
