@@ -17,7 +17,7 @@ The **UFC Fight Predictor** is a highly scalable, microservices-oriented web app
 
 Users can view upcoming UFC events, participate in community voting, discuss fights in the forum, and submit their own predictions to compete on a global leaderboard against a custom **FastAPI Machine Learning model**.
 
-This repository (`ufc-app`) serves as the core monorepo, housing both the **Spring Boot REST API** and the **Next.js Web Frontend**. It operates in tandem with external Python scraping and ML microservices.
+This repository (`UFC-Fight-Predictor-Website`) serves as the core monorepo, housing both the **Spring Boot REST API** and the **Next.js Web Frontend**. It operates in tandem with external Python scraping and ML microservices.
 
 ---
 
@@ -55,9 +55,9 @@ flowchart LR
 ```
 
 ### Microservice Ecosystem
-1. **[ufc-app (This Repo)](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website)**: The primary application containing the user-facing web app and the central data management API.
+1. **[UFC-Fight-Predictor-Website (This Repo)](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website)**: The primary application containing the user-facing web app and the central data management API.
 2. **ufc-scraper**: An isolated Python (BeautifulSoup/Playwright) worker that scrapes live UFC data and pushes updates to the core API securely via `X-Scraper-Key`.
-3. **ufc-ml**: A separate Python FastAPI server hosting the trained prediction model.
+3. **[UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor)**: A separate Python FastAPI server hosting the trained prediction model.
 
 ---
 
@@ -148,5 +148,5 @@ If you are looking to run the full end-to-end environment locally, you will also
 ---
 
 <div align="center">
-  <i>Developed with ❤️ by <a href="https://github.com/Vali-Hameed">Vali Hameed</a></i>
+  <i>Developed by <a href="https://github.com/Vali-Hameed">Vali Hameed</a></i>
 </div>
