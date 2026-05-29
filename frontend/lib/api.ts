@@ -159,3 +159,20 @@ export type ScrapeLogDto = {
   status: string | null;
   errorMessage: string | null;
 };
+
+export type AdminRoleDto = {
+  id: number | null;
+  name: string | null;
+};
+
+export type AdminUserDto = {
+  id: number;
+  firstName: string | null;
+  lastName: string | null;
+  username: string | null;
+  email: string | null;
+  profileImageUrl: string | null;
+  role: AdminRoleDto | null;
+  locked: boolean;
+  enabled: boolean;
+};
