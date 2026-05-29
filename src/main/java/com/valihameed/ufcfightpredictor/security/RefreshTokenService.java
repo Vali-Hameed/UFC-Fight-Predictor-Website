@@ -26,12 +26,14 @@ public class RefreshTokenService {
     public String createRefreshToken(Long userId) {
         String raw = UUID.randomUUID().toString();
         String hash = hash(raw);
+        OffsetDateTime now = OffsetDateTime.now();
         RefreshToken token = RefreshToken.builder()
-                .userId(userId)
-                .tokenHash(hash)
-                .expiresAt(OffsetDateTime.now().plusDays(refreshExpiryDays))
-                .revoked(false)
-                .build();
+            .userId(userId)
+            .tokenHash(hash)
+            .expiresAt(now.plusDays(refreshExpiryDays))
+            .revoked(false)
+            .createdAt(now)
+            .build();
         refreshTokenRepository.save(token);
         return raw;
     }

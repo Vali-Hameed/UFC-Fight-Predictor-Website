@@ -4,6 +4,7 @@ import com.valihameed.ufcfightpredictor.security.JwtService;
 import com.valihameed.ufcfightpredictor.security.RefreshTokenService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
+import com.valihameed.ufcfightpredictor.users.user;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final UserDetailsService userDetailsService;
+    private final userRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest req) {
@@ -63,16 +65,23 @@ public class AuthController {
             if (rt.getRevoked() || rt.getExpiresAt().isBefore(OffsetDateTime.now())) {
                 return ResponseEntity.status(401).build();
             }
-            // TODO: load user id and username mapping - for now find user by id
             Long userId = rt.getUserId();
-            // In a full implementation we would load username from user repository; attempt naive approach
-            String username = ""; // placeholder
-            String accessToken = jwtService.generateToken(username);
-            // rotate refresh token
-            refreshTokenService.revoke(rt);
-            String newRaw = refreshTokenService.createRefreshToken(userId);
-            ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw).httpOnly(true).path("/").maxAge(Duration.ofDays(7)).build();
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new AuthResponse(accessToken, 15 * 60));
+            return userRepository.findById(userId).map(u -> {
+                String username = u.getUsername();
+                String accessToken = jwtService.generateToken(username);
+                // rotate refresh token: revoke old, create new
+                refreshTokenService.revoke(rt);
+                String newRaw = refreshTokenService.createRefreshToken(userId);
+                long maxAgeSecs = java.time.Duration.between(OffsetDateTime.now(), OffsetDateTime.now().plusDays(7)).getSeconds();
+                ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw)
+                        .httpOnly(true)
+                        .secure(false)
+                        .path("/")
+                        .maxAge(maxAgeSecs)
+                        .sameSite("Lax")
+                        .build();
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new AuthResponse(accessToken, 15 * 60));
+            }).orElse(ResponseEntity.status(401).build());
         }).orElse(ResponseEntity.status(401).build());
     }
 }
