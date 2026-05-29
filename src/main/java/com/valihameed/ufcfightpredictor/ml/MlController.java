@@ -25,12 +25,13 @@ public class MlController {
         String f1 = fight.getFighter1Name();
         String f2 = fight.getFighter2Name();
         if (f1 == null || f2 == null) return ResponseEntity.badRequest().body(Map.of("error","Fighter names missing"));
-        MlPrediction p = mlService.getPrediction(f1, f2, fightId);
-        if (p == null) {
-            return ResponseEntity.ok(Map.of("message", "Our prediction model is currently unavailable. Please try again later."));
+        try {
+            MlPrediction p = mlService.getPrediction(f1, f2, fightId);
+            CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.getCacheTtlMinutes())).cachePublic();
+            return ResponseEntity.ok().cacheControl(cc).body(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(503).body(Map.of("message", "Our prediction model is currently unavailable. Please try again later."));
         }
-        CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.getCacheTtlMinutes())).cachePublic();
-        return ResponseEntity.ok().cacheControl(cc).body(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
     }
 
     @PostMapping("/fight/{fightId}/refresh")
@@ -38,8 +39,11 @@ public class MlController {
     public ResponseEntity<?> refreshPrediction(@PathVariable Long fightId) {
         Fight fight = fightRepository.findById(fightId).orElse(null);
         if (fight == null) return ResponseEntity.notFound().build();
-        MlPrediction p = mlService.forceRefreshPrediction(fight.getFighter1Name(), fight.getFighter2Name(), fightId);
-        if (p == null) return ResponseEntity.status(503).body(Map.of("message", "Failed to refresh ML prediction"));
-        return ResponseEntity.ok(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
+        try {
+            MlPrediction p = mlService.forceRefreshPrediction(fight.getFighter1Name(), fight.getFighter2Name(), fightId);
+            return ResponseEntity.ok(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(503).body(Map.of("message", "Failed to refresh ML prediction"));
+        }
     }
 }

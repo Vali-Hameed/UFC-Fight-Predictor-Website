@@ -46,7 +46,7 @@ public class MlService {
             String url = String.format("%s/predict?fighter1=%s&fighter2=%s", fastapiBase, f1, f2);
             Map resp = restTemplate.getForObject(url, Map.class);
             if (resp == null || !resp.containsKey("predicted_winner")) {
-                return null;
+                throw new IllegalStateException("ML service response missing predicted_winner");
             }
             String winner = (String) resp.get("predicted_winner");
             Double confidence = Double.valueOf(resp.get("confidence_score").toString());
@@ -55,7 +55,7 @@ public class MlService {
             existing.ifPresent(old -> p.setId(old.getId()));
             return mlPredictionRepository.save(p);
         } catch (Exception e) {
-            return null;
+            throw new IllegalStateException("Failed to retrieve ML prediction", e);
         }
     }
 
@@ -66,7 +66,7 @@ public class MlService {
             String url = String.format("%s/predict?fighter1=%s&fighter2=%s", fastapiBase, f1, f2);
             Map resp = restTemplate.getForObject(url, Map.class);
             if (resp == null || !resp.containsKey("predicted_winner")) {
-                return null;
+                throw new IllegalStateException("ML service response missing predicted_winner");
             }
             String winner = (String) resp.get("predicted_winner");
             Double confidence = Double.valueOf(resp.get("confidence_score").toString());
@@ -75,7 +75,7 @@ public class MlService {
             existing.ifPresent(old -> p.setId(old.getId()));
             return mlPredictionRepository.save(p);
         } catch (Exception e) {
-            return null;
+            throw new IllegalStateException("Failed to refresh ML prediction", e);
         }
     }
 }
