@@ -10,10 +10,13 @@ export default async function ForumPage() {
       <SectionCard eyebrow="Forum" title="Event discussion" description="Each event has a forum and each fight has an auto-created thread.">
         <div className="space-y-3">
           {threads.map((thread) => (
-            <Link key={thread.id} href={`/events/${thread.eventId ?? 1}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10">
-              <div className="text-xs uppercase tracking-[0.3em] text-gold">Thread</div>
+            <Link key={thread.id} href={`/forum/${thread.id}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10">
+              <div className="text-xs uppercase tracking-[0.3em] text-gold">Thread #{thread.id}</div>
               <div className="mt-2 font-semibold text-white">{thread.title}</div>
-              <div className="mt-1 text-sm text-white/55">Fight thread #{thread.fightId ?? "N/A"}</div>
+              <div className="mt-1 text-sm text-white/55">
+                {thread.eventId ? `Event #${thread.eventId}` : "General discussion"}
+                {thread.fightId ? ` • Fight #${thread.fightId}` : ""}
+              </div>
             </Link>
           ))}
           {threads.length === 0 ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">No threads available yet.</div> : null}
