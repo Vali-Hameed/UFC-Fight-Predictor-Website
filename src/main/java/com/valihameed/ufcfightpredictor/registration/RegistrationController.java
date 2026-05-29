@@ -1,6 +1,7 @@
 package com.valihameed.ufcfightpredictor.registration;
 
 import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class RegistrationController {
     private final RegistrationService registrationService;
     @PostMapping
-    public String register(@RequestBody RegistrationRequest request) {
+    public String register(@Valid @RequestBody RegistrationRequest request) {
         return registrationService.register(request);
     }
     @GetMapping(path="confirm")

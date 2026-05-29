@@ -9,6 +9,7 @@ import com.valihameed.ufcfightpredictor.users.user;
 import com.valihameed.ufcfightpredictor.users.userService;
 
 import lombok.AllArgsConstructor;
+import com.valihameed.ufcfightpredictor.util.InputSanitizer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class RegistrationService {
     private final roleRepository roleRepository;
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
+    private final InputSanitizer inputSanitizer;
 
     @Transactional
     public String register(RegistrationRequest request) {
@@ -29,9 +31,14 @@ public class RegistrationService {
         if (!isValidEmail) {
             throw new IllegalArgumentException("Invalid email address");
         }
+        // sanitize inputs
+        String firstName = inputSanitizer.sanitize(request.getFirstName());
+        String lastName = inputSanitizer.sanitize(request.getLastName());
+        String email = inputSanitizer.sanitize(request.getEmail());
+        String userName = inputSanitizer.sanitize(request.getUserName());
         role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> roleRepository.save(new role(null, "ROLE_USER")));
-        String token = userService.signUpUser(new user(request.getFirstName(), request.getLastName(), request.getUserName(), request.getEmail(), request.getPassword(), userRole));
+            .orElseGet(() -> roleRepository.save(new role(null, "ROLE_USER")));
+        String token = userService.signUpUser(new user(firstName, lastName, userName, email, request.getPassword(), userRole));
         String link = "http://localhost:8080/api/v1/registration/confirm?token=" + token;
         emailSender.sendEmail(request.getEmail(),buildEmail(request.getFirstName(),link));
         return token;

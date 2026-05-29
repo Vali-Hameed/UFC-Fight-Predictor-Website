@@ -4,7 +4,6 @@ import com.valihameed.ufcfightpredictor.security.JwtService;
 import com.valihameed.ufcfightpredictor.security.RefreshTokenService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
-import com.valihameed.ufcfightpredictor.users.user;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -30,9 +30,11 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final UserDetailsService userDetailsService;
     private final userRepository userRepository;
+    @org.springframework.beans.factory.annotation.Value("${jwt.cookie-secure:false}")
+    private boolean cookieSecure;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
         Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(auth);
         user u = (user) auth.getPrincipal();
@@ -40,10 +42,12 @@ public class AuthController {
         String refreshRaw = refreshTokenService.createRefreshToken(u.getId());
         // TODO: link refresh token to actual user id when user model available; placeholder
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshRaw)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(Duration.ofDays(7))
-                .build();
+            .httpOnly(true)
+            .secure(cookieSecure)
+            .path("/")
+            .maxAge(Duration.ofDays(7))
+            .sameSite("Lax")
+            .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new AuthResponse(accessToken, 15 * 60));
     }
 
@@ -52,7 +56,7 @@ public class AuthController {
         if (refreshToken != null) {
             refreshTokenService.findByRaw(refreshToken).ifPresent(refreshTokenObj -> refreshTokenService.revoke(refreshTokenObj));
         }
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", "").httpOnly(true).path("/").maxAge(0).build();
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", "").httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite("Lax").build();
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
@@ -73,9 +77,9 @@ public class AuthController {
                 refreshTokenService.revoke(rt);
                 String newRaw = refreshTokenService.createRefreshToken(userId);
                 long maxAgeSecs = java.time.Duration.between(OffsetDateTime.now(), OffsetDateTime.now().plusDays(7)).getSeconds();
-                ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw)
+                    ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw)
                         .httpOnly(true)
-                        .secure(false)
+                        .secure(cookieSecure)
                         .path("/")
                         .maxAge(maxAgeSecs)
                         .sameSite("Lax")
