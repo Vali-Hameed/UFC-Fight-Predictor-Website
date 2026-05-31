@@ -3,34 +3,31 @@ package com.valihameed.ufcfightpredictor.registration;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
-@Getter
+@Data
 @AllArgsConstructor
-@EqualsAndHashCode
-@ToString
+@NoArgsConstructor
 public class RegistrationRequest {
     @NotBlank
     @Size(max = 100)
-    private final String firstName;
+    private String firstName;
 
     @NotBlank
     @Size(max = 100)
-    private final String lastName;
+    private String lastName;
 
     @NotBlank
     @Email
-    private final String email;
+    private String email;
 
     @NotBlank
     @Size(min = 8, max = 128)
-    private final String password;
+    private String password;
 
     @NotBlank
     @Size(min = 3, max = 30)
-    private final String userName;
-
+    private String userName;
 }
