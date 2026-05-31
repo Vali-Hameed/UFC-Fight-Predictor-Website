@@ -9,7 +9,7 @@ spring:
     password: ${DATABASE_PASSWORD:ufc_pass}
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
     properties:
@@ -17,8 +17,8 @@ spring:
         format_sql: true
     show-sql: true
   mail:
-    host: localhost
-    port: 1025
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
     username: hello
     password: hello
     properties:
@@ -56,6 +56,7 @@ prewarm:
 
 scraper:
   api-key: ${SCRAPER_API_KEY:change-me}
+  url: ${SCRAPER_URL:http://localhost:8001}
 
 frontend:
   url: ${FRONTEND_URL:http://localhost:3000}

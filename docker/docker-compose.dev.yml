@@ -25,6 +25,7 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8080
       FASTAPI_BASE_URL: http://ufc-ml:8000
       SCRAPER_API_KEY: change-me
+      SCRAPER_URL: http://host.docker.internal:8001
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
     volumes:

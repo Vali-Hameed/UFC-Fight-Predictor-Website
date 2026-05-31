@@ -47,6 +47,7 @@ public class securityConfig{
             .requestMatchers("/api/v*/registration/**").permitAll()
             .requestMatchers("/api/v*/auth/**").permitAll()
             .requestMatchers("/api/v*/password/**").permitAll()
+            .requestMatchers("/api/v*/internal/scraper/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v*/events/**", "/api/v*/leaderboard/**", "/api/v*/forum/**", "/api/v*/community-votes/**", "/api/v*/ml/**", "/api/v*/health").permitAll()
             .anyRequest().authenticated()
             )

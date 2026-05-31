@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 
@@ -18,12 +19,17 @@ public class ScraperAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-        if (path.startsWith("/api/v1/internal/scraper")) {
-            String header = request.getHeader("X-Scraper-Key");
-            if (header == null || !header.equals(scraperApiKey)) {
-                response.setStatus(401);
-                response.getWriter().write("Unauthorized scraper client");
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/api/v1/internal/scraper")) {
+            // Allow frontend to GET logs using JWT instead of Scraper Key
+            if (uri.equals("/api/v1/internal/scraper/logs") && request.getMethod().equals("GET")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            
+            String key = request.getHeader("X-Scraper-Key");
+            if (key == null || !key.equals(scraperApiKey)) {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
                 return;
             }
         }
