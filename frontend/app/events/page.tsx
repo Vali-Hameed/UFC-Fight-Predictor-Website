@@ -3,7 +3,10 @@ import { SectionCard } from "@/components/section-card";
 import { apiFetch, EventDto } from "@/lib/api";
 
 export default async function EventsPage() {
-  const events = await apiFetch<EventDto[]>("/api/v1/events").catch(() => []);
+  const events = await apiFetch<EventDto[]>("/api/v1/events").catch((e) => {
+    console.error("Events fetch failed:", e);
+    return [];
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

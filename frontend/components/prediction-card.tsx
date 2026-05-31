@@ -53,6 +53,8 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
     ? Math.round(((communityVote.fighter1Votes ?? 0) / Math.max((communityVote.fighter1Votes ?? 0) + (communityVote.fighter2Votes ?? 0), 1)) * 100)
     : 0;
 
+  const maxRounds = fight.isMainEvent || fight.weightClass?.toLowerCase().includes("title") ? 5 : 3;
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -96,7 +98,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
             </option>
           ))}
         </select>
-        <input name="predictedRound" disabled={locked} type="number" min={1} max={5} defaultValue={1} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60" />
+        <input name="predictedRound" disabled={locked} type="number" min={1} max={maxRounds} defaultValue={1} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60" />
         <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3">
           {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
         </button>

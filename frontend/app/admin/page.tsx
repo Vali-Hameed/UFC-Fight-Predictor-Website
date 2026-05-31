@@ -43,6 +43,17 @@ export default function AdminPage() {
     }
   };
 
+  const triggerScraper = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!token) return;
+    try {
+      await apiFetch("/api/v1/admin/scraper/trigger", { method: "POST" }, token);
+      setMessage("Scraper triggered successfully. This may take a few minutes.");
+    } catch {
+      setMessage("Could not trigger scraper. Check backend logs.");
+    }
+  };
+
   const saveRole = async (userId: number) => {
     if (!token) return;
     const role = roleDrafts[userId]?.trim();
@@ -96,9 +107,14 @@ export default function AdminPage() {
         <SectionCard eyebrow="Admin" title="Operations panel" description="Manage events, fights, scrape runs, predictions, and moderation.">
           {!token ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">Sign in as an admin to use this panel.</div> : null}
           {message ? <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">{message}</div> : null}
-          <form onSubmit={triggerPrewarm} className="mb-6">
-            <button className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white">Trigger ML prewarm</button>
-          </form>
+          <div className="mb-6 flex flex-wrap gap-4">
+            <form onSubmit={triggerPrewarm}>
+              <button className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white">Trigger ML prewarm</button>
+            </form>
+            <form onSubmit={triggerScraper}>
+              <button className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white">Trigger Scraper</button>
+            </form>
+          </div>
           <div className="space-y-3">
             {logs.map((log) => (
               <div key={log.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/75">
