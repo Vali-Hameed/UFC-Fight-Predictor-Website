@@ -1,3 +1,5 @@
+![UFC Logo](https://upload.wikimedia.org/wikipedia/commons/9/92/UFC_Logo.svg)
+
 <div align="center">
   <h1>🏆 UFC Fight Predictor</h1>
   <p><strong>A Full-Stack, AI-Powered Web Application for UFC Fight Analysis, Community Predictions, and Live Leaderboards.</strong></p>
