@@ -38,6 +38,13 @@ export default function LoginPage() {
           <input name="password" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Password" type="password" />
           {message ? <p className="text-sm text-red-300">{message}</p> : null}
           <button disabled={loading} className="w-full rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-60">{loading ? "Signing in..." : "Login"}</button>
+          
+          <div className="mt-4 text-center text-sm text-white/70">
+            Don't have an account?{" "}
+            <a href="/register" className="text-accent hover:underline">
+              Sign up
+            </a>
+          </div>
         </form>
       </SectionCard>
     </div>
