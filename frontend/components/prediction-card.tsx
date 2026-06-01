@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useRef, useState } from "react";
 import { apiFetch, FightDto, MlPredictionDto, CommunityVoteDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
+import { useRouter } from "next/navigation";
 
 type PredictionCardProps = {
   fight: FightDto;
@@ -12,17 +13,39 @@ type PredictionCardProps = {
 
 const methodOptions = ["KO/TKO", "Submission", "Decision"];
 
+/** Minimum ms between actual network submissions */
+const SUBMIT_COOLDOWN_MS = 2000;
+
 export function PredictionCard({ fight, mlPrediction, communityVote }: PredictionCardProps) {
   const { token } = useAuth();
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Tracks whether a request is currently in-flight to prevent overlap
+  const inflightRef = useRef(false);
+  // Timestamp of last successful submission for cooldown
+  const lastSubmitRef = useRef(0);
+
   const locked = fight.status === "LIVE" || fight.status === "COMPLETED";
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (!token) {
       setMessage("Sign in to submit a prediction.");
+      return;
+    }
+
+    // Block if already in-flight
+    if (inflightRef.current) {
+      return;
+    }
+
+    // Enforce cooldown between submissions
+    const timeSinceLast = Date.now() - lastSubmitRef.current;
+    if (timeSinceLast < SUBMIT_COOLDOWN_MS) {
+      setMessage("Slow down! Please wait a moment before submitting again.");
       return;
     }
 
@@ -34,24 +57,34 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
       predictedRound: Number(formData.get("predictedRound") ?? 1)
     };
 
+    inflightRef.current = true;
     setLoading(true);
     setMessage(null);
+
     try {
       await apiFetch("/api/v1/predictions", {
         method: "POST",
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       }, token);
+      lastSubmitRef.current = Date.now();
       setMessage("Prediction submitted successfully.");
-    } catch {
-      setMessage("Could not submit prediction.");
+      router.refresh();
+    } catch (error) {
+      console.error("Prediction submission failed:", error);
+      if (error instanceof Error && error.message.includes("Too Many Requests")) {
+        setMessage("Slow down! You're submitting too fast.");
+      } else {
+        setMessage("Could not submit prediction: " + (error instanceof Error ? error.message : "Unknown error"));
+      }
     } finally {
+      inflightRef.current = false;
       setLoading(false);
     }
-  };
+  }, [token, fight.id, router]);
 
-  const communityPercent = communityVote
-    ? Math.round(((communityVote.fighter1Votes ?? 0) / Math.max((communityVote.fighter1Votes ?? 0) + (communityVote.fighter2Votes ?? 0), 1)) * 100)
-    : 0;
+  const totalVotes = Math.max((communityVote?.fighter1Votes ?? 0) + (communityVote?.fighter2Votes ?? 0), 1);
+  const percent1 = communityVote ? Math.round(((communityVote.fighter1Votes ?? 0) / totalVotes) * 100) : 0;
+  const percent2 = communityVote ? Math.round(((communityVote.fighter2Votes ?? 0) / totalVotes) * 100) : 0;
 
   const maxRounds = fight.isMainEvent || fight.weightClass?.toLowerCase().includes("title") ? 5 : 3;
 
@@ -74,9 +107,9 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <div className="rounded-2xl border border-white/10 bg-bg/70 p-4 text-sm text-white/70">
-          Community split: {communityPercent}% {fight.fighter1Name}
+          Community split: {percent1}% {fight.fighter1Name} vs {percent2}% {fight.fighter2Name}
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full bg-accent" style={{ width: `${communityPercent}%` }} />
+            <div className="h-full bg-accent transition-all duration-500" style={{ width: `${percent1}%` }} />
           </div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-bg/70 p-4 text-sm text-white/70">

@@ -8,6 +8,18 @@ export type ApiError = {
   details?: Record<string, string>;
 };
 
+export class ApiResponseError extends Error {
+  status: number;
+  errorCode?: string;
+
+  constructor(status: number, message: string, errorCode?: string) {
+    super(message);
+    this.name = "ApiResponseError";
+    this.status = status;
+    this.errorCode = errorCode;
+  }
+}
+
 async function parseResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
   if (!text) {
@@ -23,7 +35,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 
   if (!response.ok) {
     const error = (data ?? {}) as ApiError;
-    throw new Error(error.message ?? "Request failed");
+    throw new ApiResponseError(response.status, error.message ?? "Request failed", error.error);
   }
   return data as T;
 }
