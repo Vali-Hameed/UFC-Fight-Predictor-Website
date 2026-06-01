@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface UserPredictionRepository extends JpaRepository<UserPrediction, Long> {
     List<UserPrediction> findByUserId(Long userId);
     List<UserPrediction> findByFightId(Long fightId);
-    Optional<UserPrediction> findByUserIdAndFightId(Long userId, Long fightId);
+    Optional<UserPrediction> findFirstByUserIdAndFightId(Long userId, Long fightId);
 }

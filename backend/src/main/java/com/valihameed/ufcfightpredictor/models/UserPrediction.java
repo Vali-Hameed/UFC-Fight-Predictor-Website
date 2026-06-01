@@ -6,7 +6,9 @@ import lombok.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "user_predictions")
+@Table(name = "user_predictions", indexes = {
+        @Index(name = "idx_user_prediction_user_fight", columnList = "user_id, fight_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
