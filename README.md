@@ -59,7 +59,7 @@ flowchart LR
 
 ### Microservice Ecosystem
 1. **[UFC-Fight-Predictor-Website (This Repo)](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website)**: The primary application containing the user-facing web app and the central data management API.
-2. **ufc-scraper**: An isolated Python (BeautifulSoup/Playwright) worker that scrapes live UFC data and pushes updates to the core API securely via `X-Scraper-Key`.
+2. **[UFC-Scraper](https://github.com/Vali-Hameed/UFC-Scraper)**: An isolated Python (BeautifulSoup/Playwright) worker that scrapes live UFC data and pushes updates to the core API securely via `X-Scraper-Key`.
 3. **[UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor)**: A separate Python FastAPI server hosting the trained prediction model.
 
 ---
@@ -146,7 +146,7 @@ docker-compose -f docker/docker-compose.dev.yml logs -f
 Contributions, issues, and feature requests are welcome! 
 Feel free to check the [issues page](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website/issues) to see what we're currently working on.
 
-If you are looking to run the full end-to-end environment locally, you will also need to clone and run the [UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor) and `ufc-scraper` repositories alongside this one.
+If you are looking to run the full end-to-end environment locally, you will also need to clone and run the [UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor) and [UFC-Scraper](https://github.com/Vali-Hameed/UFC-Scraper) repositories alongside this one.
 
 ---
 
