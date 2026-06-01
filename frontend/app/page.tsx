@@ -1,11 +1,48 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
-import { apiFetch, EventDto, LeaderboardDto } from "@/lib/api";
+import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto } from "@/lib/api";
 
 export default async function HomePage() {
   const events = await apiFetch<EventDto[]>("/api/v1/events").catch(() => []);
   const leaderboard = await apiFetch<LeaderboardDto[]>("/api/v1/leaderboard").catch(() => []);
   const featuredEvent = events.find(e => e.status === "UPCOMING") ?? events[0] ?? null;
+
+  let communityAccuracy = 0;
+  let aiAccuracy = 0;
+
+  if (featuredEvent) {
+    const fights = await apiFetch<FightDto[]>(`/api/v1/events/${featuredEvent.id}/fights`).catch(() => []);
+    const fightCards = await Promise.all(
+      fights.map(async (fight) => ({
+        fight,
+        mlPrediction: await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${fight.id}`).catch(() => null),
+        communityVote: await apiFetch<CommunityVoteDto>(`/api/v1/community-votes/${fight.id}`).catch(() => null)
+      }))
+    );
+    let communityCorrect = 0;
+    let aiCorrect = 0;
+    let completedFightsCount = 0;
+
+    fightCards.forEach(({ fight, mlPrediction, communityVote }) => {
+      if (fight.status === "COMPLETED" && fight.resultWinner) {
+        completedFightsCount++;
+        if (mlPrediction && mlPrediction.predictedWinner === fight.resultWinner) {
+          aiCorrect++;
+        }
+        if (communityVote) {
+          const f1Votes = communityVote.fighter1Votes ?? 0;
+          const f2Votes = communityVote.fighter2Votes ?? 0;
+          const communityWinner = f1Votes > f2Votes ? fight.fighter1Name : (f2Votes > f1Votes ? fight.fighter2Name : null);
+          if (communityWinner === fight.resultWinner) {
+            communityCorrect++;
+          }
+        }
+      }
+    });
+
+    communityAccuracy = completedFightsCount > 0 ? Math.round((communityCorrect / completedFightsCount) * 100) : 0;
+    aiAccuracy = completedFightsCount > 0 ? Math.round((aiCorrect / completedFightsCount) * 100) : 0;
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -33,18 +70,18 @@ export default async function HomePage() {
         </div>
         <div className="grid gap-4">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/45">Upcoming event</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-white/45">Featured event</p>
             <p className="mt-3 text-2xl font-semibold text-white">{featuredEvent?.name ?? "No events loaded"}</p>
             <p className="mt-2 text-sm text-white/60">{featuredEvent?.location ?? "Backend data unavailable"}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-              <p className="text-sm text-white/50">Community</p>
-              <p className="mt-2 text-3xl font-semibold text-white">58%</p>
+              <p className="text-sm text-white/50">Community Accuracy</p>
+              <p className="mt-2 text-3xl font-semibold text-white">{communityAccuracy}%</p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-              <p className="text-sm text-white/50">AI</p>
-              <p className="mt-2 text-3xl font-semibold text-gold">71%</p>
+              <p className="text-sm text-white/50">AI Accuracy</p>
+              <p className="mt-2 text-3xl font-semibold text-gold">{aiAccuracy}%</p>
             </div>
           </div>
         </div>

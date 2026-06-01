@@ -6,7 +6,9 @@ import lombok.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "events")
+@Table(name = "events", indexes = {
+        @Index(name = "idx_event_date_status", columnList = "event_date, status")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
