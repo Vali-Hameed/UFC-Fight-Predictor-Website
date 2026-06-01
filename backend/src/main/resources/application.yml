@@ -78,6 +78,10 @@ rate-limiting:
     capacity: 20
     refill: 20
     refill-period-seconds: 60
+  prediction-submit:
+    capacity: 5
+    refill: 5
+    refill-period-seconds: 10
   forum-post:
     capacity: 10
     refill: 10

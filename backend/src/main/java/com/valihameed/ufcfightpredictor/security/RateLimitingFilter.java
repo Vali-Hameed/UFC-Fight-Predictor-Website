@@ -37,25 +37,52 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     @Value("${rate-limiting.login.refill-period-seconds:60}")
     private long loginRefillPeriod;
 
+    @Value("${rate-limiting.prediction-submit.capacity:5}")
+    private long predictionSubmitCapacity;
+    @Value("${rate-limiting.prediction-submit.refill:5}")
+    private long predictionSubmitRefill;
+    @Value("${rate-limiting.prediction-submit.refill-period-seconds:60}")
+    private long predictionSubmitRefillPeriod;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String ip = extractClientIp(request);
-        String key = ip + ":global";
-        Bucket bucket = cache.get(key, k -> newBucket(globalCapacity, globalRefill, globalRefillPeriod));
-        if (bucket.tryConsume(1)) {
-            // path-specific tighter buckets
-            String path = request.getRequestURI();
-            if (path.startsWith("/api/v1/auth/login")) {
-                Bucket b = cache.get(ip + ":login", k -> newBucket(loginCapacity, loginRefill, loginRefillPeriod));
-                if (!b.tryConsume(1)) {
-                    sendRateLimit(response, b);
-                    return;
-                }
-            }
+        String method = request.getMethod();
+        String path = request.getRequestURI();
+
+        // GET/HEAD/OPTIONS requests are read-only — never rate-limit them.
+        // This prevents prediction spam from starving the global bucket and
+        // blocking server-side rendering requests that fetch events/fights.
+        if ("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method)) {
             filterChain.doFilter(request, response);
-        } else {
-            sendRateLimit(response, bucket);
+            return;
         }
+
+        String ip = extractClientIp(request);
+
+        // Global write-request bucket
+        String key = ip + ":global_write";
+        Bucket bucket = cache.get(key, k -> newBucket(globalCapacity, globalRefill, globalRefillPeriod));
+        if (!bucket.tryConsume(1)) {
+            sendRateLimit(response);
+            return;
+        }
+
+        // Path-specific tighter buckets for mutating endpoints
+        if (path.startsWith("/api/v1/auth/login")) {
+            Bucket b = cache.get(ip + ":login", k -> newBucket(loginCapacity, loginRefill, loginRefillPeriod));
+            if (!b.tryConsume(1)) {
+                sendRateLimit(response);
+                return;
+            }
+        } else if (path.startsWith("/api/v1/predictions") && "POST".equalsIgnoreCase(method)) {
+            Bucket b = cache.get(ip + ":prediction_submit", k -> newBucket(predictionSubmitCapacity, predictionSubmitRefill, predictionSubmitRefillPeriod));
+            if (!b.tryConsume(1)) {
+                sendRateLimit(response);
+                return;
+            }
+        }
+
+        filterChain.doFilter(request, response);
     }
 
     private Bucket newBucket(long capacity, long refill, long periodSeconds) {
@@ -64,10 +91,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return Bucket4j.builder().addLimit(limit).build();
     }
 
-    private void sendRateLimit(HttpServletResponse response, Bucket bucket) throws IOException {
+    private void sendRateLimit(HttpServletResponse response) throws IOException {
         response.setStatus(429);
         response.setHeader("Retry-After", "1");
-        response.getWriter().write("Too Many Requests");
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"RATE_LIMITED\",\"message\":\"Too Many Requests\"}");
     }
 
     private String extractClientIp(HttpServletRequest request) {
