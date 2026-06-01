@@ -111,7 +111,7 @@ Once the containers have finished booting (the Spring Boot API takes ~15 seconds
 
 - 🌐 **Web Frontend**: [http://localhost:3000](http://localhost:3000)
 - 🔌 **Backend API**: [http://localhost:8080](http://localhost:8080)
-- 🗄️ **Database**: `localhost:5332`
+- 🗄️ **Database**:  [http://localhost:5332](http://localhost:5332)
 - 📨 **MailHog (Local Emails)**: [http://localhost:8025](http://localhost:8025)
 
 You can monitor the logs at any time using:
