@@ -35,7 +35,7 @@ public class PasswordResetService {
 
         String raw = UUID.randomUUID().toString();
         String hash = hash(raw);
-        PasswordResetToken token = PasswordResetToken.builder().userId(u.getId()).tokenHash(hash).expiresAt(OffsetDateTime.now().plusMinutes(30)).used(false).createdAt(OffsetDateTime.now()).build();
+        PasswordResetToken token = PasswordResetToken.builder().userId(u.getId()).tokenHash(hash).expiresAt(OffsetDateTime.now().plusMinutes(15)).used(false).createdAt(OffsetDateTime.now()).build();
         tokenRepository.save(token);
         String link = String.format("http://localhost:3000/reset-password?token=%s", raw);
         emailSender.sendEmail(u.getEmail(), buildEmail(u.getFirstName() != null ? u.getFirstName() : u.getUsername(), link), "Reset your password");
@@ -52,7 +52,7 @@ public class PasswordResetService {
                "      <h2 style=\"color: #d4af37; margin-top: 0;\">Reset Your Password</h2>\n" +
                "      <p style=\"font-size: 16px; line-height: 1.5; margin-bottom: 25px;\">Hi " + name + ",<br><br>We received a request to reset your password. Click the button below to choose a new password.</p>\n" +
                "      <a href=\"" + link + "\" style=\"background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block;\">Reset Password</a>\n" +
-               "      <p style=\"font-size: 14px; color: #888; margin-top: 30px;\">This link will expire in 30 minutes.<br>If you did not request a password reset, you can safely ignore this email.</p>\n" +
+               "      <p style=\"font-size: 14px; color: #888; margin-top: 30px;\">This link will expire in 15 minutes.<br>If you did not request a password reset, you can safely ignore this email.</p>\n" +
                "    </div>\n" +
                "  </div>\n" +
                "</div>";

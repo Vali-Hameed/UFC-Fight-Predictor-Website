@@ -5,10 +5,10 @@ import { SectionCard } from "@/components/section-card";
 import { apiFetch } from "@/lib/api";
 import { PasswordInput } from "@/components/password-input";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ResetPasswordPage() {
   const [tokenFromQuery, setTokenFromQuery] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -25,26 +25,25 @@ export default function ResetPasswordPage() {
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
     if (!token) {
-        setMessage("Invalid or missing reset token.");
+        toast.error("Invalid or missing reset token.");
         return;
     }
 
     if (password !== confirmPassword) {
-        setMessage("Passwords do not match.");
+        toast.error("Passwords do not match.");
         return;
     }
 
     setLoading(true);
-    setMessage(null);
     try {
       await apiFetch("/api/v1/password/confirm", {
         method: "POST",
         body: JSON.stringify({ token, password })
       });
-      setMessage("Password updated successfully. You will be redirected to login.");
+      toast.success("Password updated successfully. You will be redirected to login.");
       setTimeout(() => router.push("/login"), 2000);
     } catch {
-      setMessage("Reset failed. The token may be expired or invalid.");
+      toast.error("Reset failed. The token may be expired or invalid.");
     } finally {
       setLoading(false);
     }
@@ -58,7 +57,6 @@ export default function ResetPasswordPage() {
           <PasswordInput name="confirmPassword" placeholder="Confirm new password" />
           <button disabled={loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-60">{loading ? "Updating..." : "Update password"}</button>
         </form>
-        {message ? <p className="mt-4 text-sm text-white/70">{message}</p> : null}
       </SectionCard>
     </div>
   );
