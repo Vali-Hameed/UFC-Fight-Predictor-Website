@@ -18,6 +18,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -114,6 +116,20 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
     }
   };
 
+  const requestPasswordReset = async () => {
+    if (!token) return;
+    setResetting(true);
+    setResetMessage(null);
+    try {
+      await apiFetch("/api/v1/password/request-me", { method: "POST" }, token);
+      setResetMessage("Password reset link sent to your email.");
+    } catch {
+      setResetMessage("Failed to send reset link.");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -192,6 +208,22 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
           <p className="text-xs text-white/45">Changes apply to your account and public profile display.</p>
         </div>
       </form>
+
+      <div className="mt-8 border-t border-white/10 pt-6">
+        <h4 className="mb-2 text-lg font-medium text-white">Security</h4>
+        <p className="mb-4 text-sm text-white/60">Need to change your password? We will send a reset link to your registered email address.</p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={requestPasswordReset}
+            disabled={resetting}
+            className="rounded-2xl border border-white/20 bg-transparent px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {resetting ? "Sending..." : "Reset password"}
+          </button>
+          {resetMessage && <span className="text-sm text-white/70">{resetMessage}</span>}
+        </div>
+      </div>
     </div>
   );
 }

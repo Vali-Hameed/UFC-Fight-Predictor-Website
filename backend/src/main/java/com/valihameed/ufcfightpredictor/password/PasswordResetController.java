@@ -2,6 +2,7 @@ package com.valihameed.ufcfightpredictor.password;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,5 +26,15 @@ public class PasswordResetController {
         String password = body.get("password");
         passwordResetService.confirmPasswordReset(token, password);
         return ResponseEntity.ok(Map.of("status","ok"));
+    }
+
+    @PostMapping("/request-me")
+    public ResponseEntity<?> requestResetMe(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof com.valihameed.ufcfightpredictor.users.user)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        com.valihameed.ufcfightpredictor.users.user currentUser = (com.valihameed.ufcfightpredictor.users.user) authentication.getPrincipal();
+        passwordResetService.createPasswordReset(currentUser.getEmail());
+        return ResponseEntity.ok(Map.of("status","sent"));
     }
 }
