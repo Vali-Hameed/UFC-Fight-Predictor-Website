@@ -95,6 +95,7 @@ export type FightDto = {
 export type LeaderboardDto = {
   id: number;
   userId: number;
+  username: string | null;
   totalPoints: number | null;
   correctPredictions: number | null;
   totalPredictions: number | null;
@@ -131,6 +132,26 @@ export type ForumPostDto = {
   isDeleted: boolean | null;
 };
 
+export type PredictionHistoryItemDto = {
+  fightId: number;
+  fighter1Name: string | null;
+  fighter2Name: string | null;
+  eventId: number | null;
+  eventName: string | null;
+  predictedWinner: string | null;
+  predictedMethod: string | null;
+  predictedRound: number | null;
+  resultWinner: string | null;
+  submittedAt: string | null;
+  locked: boolean;
+};
+
+export type LeaderboardStatsDto = {
+  rank: number | null;
+  totalPoints: number;
+  winRate: number;
+};
+
 export type ProfileDto = {
   id: number;
   username: string | null;
@@ -139,6 +160,9 @@ export type ProfileDto = {
   profileImageUrl: string | null;
   role: string | null;
   enabled: boolean;
+  publicProfile: boolean;
+  leaderboardStats?: LeaderboardStatsDto | null;
+  predictionHistory?: PredictionHistoryItemDto[] | null;
 };
 
 export type UserPredictionRequest = {

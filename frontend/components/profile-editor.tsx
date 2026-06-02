@@ -14,6 +14,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [publicProfile, setPublicProfile] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -24,6 +25,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setFirstName("");
       setLastName("");
       setProfileImageUrl("");
+      setPublicProfile(true);
       setMessage(null);
       return;
     }
@@ -42,6 +44,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
         setFirstName(currentUser.firstName ?? "");
         setLastName(currentUser.lastName ?? "");
         setProfileImageUrl(currentUser.profileImageUrl ?? "");
+        setPublicProfile(currentUser.publicProfile ?? true);
       })
       .catch(() => {
         if (active) {
@@ -92,7 +95,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
           body: JSON.stringify({
             firstName,
             lastName,
-            profileImageUrl
+            profileImageUrl,
+            publicProfile
           })
         },
         token
@@ -101,6 +105,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setFirstName(updatedProfile.firstName ?? "");
       setLastName(updatedProfile.lastName ?? "");
       setProfileImageUrl(updatedProfile.profileImageUrl ?? "");
+      setPublicProfile(updatedProfile.publicProfile ?? true);
       setMessage("Profile updated.");
     } catch {
       setMessage("Could not update your profile.");
@@ -151,6 +156,31 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             placeholder="https://..."
           />
         </label>
+        <div className="md:col-span-3">
+          <p className="mb-2 text-sm text-white/70">Profile Visibility</p>
+          <div className="flex items-center gap-3">
+            <span className={`text-sm ${!publicProfile ? 'font-medium text-white' : 'text-white/40'}`}>Private</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={publicProfile}
+              onClick={() => setPublicProfile(!publicProfile)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 ${
+                publicProfile ? 'bg-accent' : 'bg-white/20'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  publicProfile ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span className={`text-sm ${publicProfile ? 'font-medium text-white' : 'text-white/40'}`}>Public</span>
+          </div>
+          <p className="mt-2 text-xs text-white/40">
+            Public profiles are visible on the leaderboard and allow others to see your stats and predictions.
+          </p>
+        </div>
         <div className="md:col-span-3 flex items-center gap-3">
           <button
             type="submit"
