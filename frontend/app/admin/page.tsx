@@ -5,13 +5,13 @@ import { SectionCard } from "@/components/section-card";
 import { AdminUserDto, apiFetch, ScrapeLogDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { notFound } from "next/navigation";
+import { toast } from "sonner";
 
 export default function AdminPage() {
   const { token, loading, user } = useAuth();
   const [logs, setLogs] = useState<ScrapeLogDto[]>([]);
   const [users, setUsers] = useState<AdminUserDto[]>([]);
   const [roleDrafts, setRoleDrafts] = useState<Record<number, string>>({});
-  const [message, setMessage] = useState<string | null>(null);
 
 
 
@@ -31,8 +31,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (!token) return;
 
-    void loadUsers().catch(() => setMessage("Could not load users."));
-    void loadLogs().catch(() => setMessage("Could not load scraper logs."));
+    void loadUsers().catch(() => toast.error("Could not load users."));
+    void loadLogs().catch(() => toast.error("Could not load scraper logs."));
   }, [token]);
 
   const triggerPrewarm = async (event: FormEvent<HTMLFormElement>) => {
@@ -40,9 +40,9 @@ export default function AdminPage() {
     if (!token) return;
     try {
       await apiFetch("/api/v1/admin/prewarm/trigger", { method: "POST" }, token);
-      setMessage("Prewarm triggered.");
+      toast.success("Prewarm triggered.");
     } catch {
-      setMessage("Could not trigger prewarm.");
+      toast.error("Could not trigger prewarm.");
     }
   };
 
@@ -51,9 +51,9 @@ export default function AdminPage() {
     if (!token) return;
     try {
       await apiFetch("/api/v1/admin/scraper/trigger", { method: "POST" }, token);
-      setMessage("Scraper triggered successfully. This may take a few minutes.");
+      toast.success("Scraper triggered successfully. This may take a few minutes.");
     } catch {
-      setMessage("Could not trigger scraper. Check backend logs.");
+      toast.error("Could not trigger scraper. Check backend logs.");
     }
   };
 
@@ -61,7 +61,7 @@ export default function AdminPage() {
     if (!token) return;
     const role = roleDrafts[userId]?.trim();
     if (!role) {
-      setMessage("Role cannot be empty.");
+      toast.error("Role cannot be empty.");
       return;
     }
 
@@ -75,9 +75,9 @@ export default function AdminPage() {
         token
       );
       setUsers((current) => current.map((user) => (user.id === userId ? updatedUser : user)));
-      setMessage(`Updated role for ${updatedUser.username ?? `user #${userId}`}.`);
+      toast.success(`Updated role for ${updatedUser.username ?? `user #${userId}`}.`);
     } catch {
-      setMessage("Could not update role.");
+      toast.error("Could not update role.");
     }
   };
 
@@ -91,9 +91,9 @@ export default function AdminPage() {
         token
       );
       setUsers((current) => current.map((user) => (user.id === userId ? updatedUser : user)));
-      setMessage(`${updatedUser.username ?? `user #${userId}`} ${locked ? "locked" : "unlocked"}.`);
+      toast.success(`${updatedUser.username ?? `user #${userId}`} ${locked ? "locked" : "unlocked"}.`);
     } catch {
-      setMessage("Could not update lock state.");
+      toast.error("Could not update lock state.");
     }
   };
 
@@ -117,7 +117,6 @@ export default function AdminPage() {
       <div className="space-y-6">
         <SectionCard eyebrow="Admin" title="Operations panel" description="Manage events, fights, scrape runs, predictions, and moderation.">
           {!token ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">Sign in as an admin to use this panel.</div> : null}
-          {message ? <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">{message}</div> : null}
           <div className="mb-6 flex flex-wrap gap-4">
             <form onSubmit={triggerPrewarm}>
               <button className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white">Trigger ML prewarm</button>
