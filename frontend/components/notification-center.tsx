@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { apiFetch, NotificationDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
+import { toast } from "sonner";
 
 export function NotificationCenter() {
   const { token } = useAuth();
   const [items, setItems] = useState<NotificationDto[]>([]);
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -16,7 +16,7 @@ export function NotificationCenter() {
 
     void apiFetch<NotificationDto[]>("/api/v1/notifications", {}, token)
       .then(setItems)
-      .catch(() => setMessage("Could not load notifications."));
+      .catch(() => toast.error("Could not load notifications."));
   }, [token]);
 
   const markRead = async (id: number) => {
@@ -31,7 +31,6 @@ export function NotificationCenter() {
 
   return (
     <div className="space-y-3">
-      {message ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-red-200">{message}</div> : null}
       {items.map((item) => (
         <div key={item.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="flex items-start justify-between gap-3">

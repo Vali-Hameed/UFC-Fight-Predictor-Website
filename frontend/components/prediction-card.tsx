@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useRef, useState } from "react";
 import { apiFetch, FightDto, MlPredictionDto, CommunityVoteDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type PredictionCardProps = {
   fight: FightDto;
@@ -19,7 +20,6 @@ const SUBMIT_COOLDOWN_MS = 2000;
 export function PredictionCard({ fight, mlPrediction, communityVote }: PredictionCardProps) {
   const { token } = useAuth();
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Tracks whether a request is currently in-flight to prevent overlap
@@ -33,7 +33,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
     event.preventDefault();
 
     if (!token) {
-      setMessage("Sign in to submit a prediction.");
+      toast.error("Sign in to submit a prediction.");
       return;
     }
 
@@ -45,7 +45,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
     // Enforce cooldown between submissions
     const timeSinceLast = Date.now() - lastSubmitRef.current;
     if (timeSinceLast < SUBMIT_COOLDOWN_MS) {
-      setMessage("Slow down! Please wait a moment before submitting again.");
+      toast.error("Slow down! Please wait a moment before submitting again.");
       return;
     }
 
@@ -59,7 +59,6 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
 
     inflightRef.current = true;
     setLoading(true);
-    setMessage(null);
 
     try {
       await apiFetch("/api/v1/predictions", {
@@ -67,14 +66,14 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
         body: JSON.stringify(payload),
       }, token);
       lastSubmitRef.current = Date.now();
-      setMessage("Prediction submitted successfully.");
+      toast.success("Prediction submitted successfully.");
       router.refresh();
     } catch (error) {
       console.error("Prediction submission failed:", error);
       if (error instanceof Error && error.message.includes("Too Many Requests")) {
-        setMessage("Slow down! You're submitting too fast.");
+        toast.error("Slow down! You're submitting too fast.");
       } else {
-        setMessage("Could not submit prediction: " + (error instanceof Error ? error.message : "Unknown error"));
+        toast.error("Could not submit prediction: " + (error instanceof Error ? error.message : "Unknown error"));
       }
     } finally {
       inflightRef.current = false;
@@ -136,7 +135,6 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
           {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
         </button>
       </form>
-      {message ? <p className="mt-3 text-sm text-white/70">{message}</p> : null}
     </div>
   );
 }

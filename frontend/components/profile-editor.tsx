@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch, ProfileDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
+import { toast } from "sonner";
 
 type ProfileEditorProps = {
   username: string;
@@ -15,10 +16,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [lastName, setLastName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [publicProfile, setPublicProfile] = useState(true);
-  const [message, setMessage] = useState<string | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
@@ -28,13 +27,11 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setLastName("");
       setProfileImageUrl("");
       setPublicProfile(true);
-      setMessage(null);
       return;
     }
 
     let active = true;
     setLoadingProfile(true);
-    setMessage(null);
 
     void apiFetch<ProfileDto>("/api/v1/users/me", {}, token)
       .then((currentUser) => {
@@ -50,7 +47,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       })
       .catch(() => {
         if (active) {
-          setMessage("Could not load your profile details.");
+          toast.error("Could not load your profile details.");
         }
       })
       .finally(() => {
@@ -87,7 +84,6 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
     }
 
     setSaving(true);
-    setMessage(null);
 
     try {
       const updatedProfile = await apiFetch<ProfileDto>(
@@ -108,9 +104,9 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setLastName(updatedProfile.lastName ?? "");
       setProfileImageUrl(updatedProfile.profileImageUrl ?? "");
       setPublicProfile(updatedProfile.publicProfile ?? true);
-      setMessage("Profile updated.");
+      toast.success("Profile updated.");
     } catch {
-      setMessage("Could not update your profile.");
+      toast.error("Could not update your profile.");
     } finally {
       setSaving(false);
     }
@@ -119,12 +115,11 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const requestPasswordReset = async () => {
     if (!token) return;
     setResetting(true);
-    setResetMessage(null);
     try {
       await apiFetch("/api/v1/password/request-me", { method: "POST" }, token);
-      setResetMessage("Password reset link sent to your email.");
+      toast.success("Password reset link sent to your email.");
     } catch {
-      setResetMessage("Failed to send reset link.");
+      toast.error("Failed to send reset link.");
     } finally {
       setResetting(false);
     }
@@ -138,7 +133,6 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
           <h3 className="mt-2 text-xl font-semibold text-white">Edit account details</h3>
           <p className="mt-2 max-w-2xl text-sm text-white/60">Update the name and avatar URL shown on your public profile.</p>
         </div>
-        {message ? <div className="rounded-full border border-white/10 bg-bg/70 px-4 py-2 text-xs text-white/70">{message}</div> : null}
       </div>
 
       <form onSubmit={saveProfile} className="grid gap-4 md:grid-cols-3">
@@ -221,7 +215,6 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
           >
             {resetting ? "Sending..." : "Reset password"}
           </button>
-          {resetMessage && <span className="text-sm text-white/70">{resetMessage}</span>}
         </div>
       </div>
     </div>

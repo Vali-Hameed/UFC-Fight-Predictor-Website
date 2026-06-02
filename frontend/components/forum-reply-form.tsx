@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/session";
+import { toast } from "sonner";
 
 type ForumReplyFormProps = {
   threadId: number;
@@ -13,7 +14,6 @@ export function ForumReplyForm({ threadId }: ForumReplyFormProps) {
   const router = useRouter();
   const { token } = useAuth();
   const [content, setContent] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const submitReply = async (event: FormEvent<HTMLFormElement>) => {
@@ -23,7 +23,6 @@ export function ForumReplyForm({ threadId }: ForumReplyFormProps) {
     }
 
     setSaving(true);
-    setMessage(null);
 
     try {
       await apiFetch(
@@ -38,10 +37,10 @@ export function ForumReplyForm({ threadId }: ForumReplyFormProps) {
         token
       );
       setContent("");
-      setMessage("Reply posted.");
+      toast.success("Reply posted.");
       router.refresh();
     } catch {
-      setMessage("Could not post reply.");
+      toast.error("Could not post reply.");
     } finally {
       setSaving(false);
     }
@@ -58,7 +57,6 @@ export function ForumReplyForm({ threadId }: ForumReplyFormProps) {
           <p className="text-xs uppercase tracking-[0.3em] text-gold">Reply</p>
           <h3 className="mt-2 text-lg font-semibold text-white">Join the discussion</h3>
         </div>
-        {message ? <div className="rounded-full border border-white/10 bg-bg/70 px-4 py-2 text-xs text-white/70">{message}</div> : null}
       </div>
 
       <textarea
