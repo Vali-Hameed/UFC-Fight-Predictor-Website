@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { SectionCard } from "@/components/section-card";
 import { useAuth } from "@/lib/session";
+import { PasswordInput } from "@/components/password-input";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -35,7 +36,12 @@ export default function LoginPage() {
       <SectionCard eyebrow="Auth" title="Sign in" description="JWT access tokens stay in memory and refresh tokens are stored in HttpOnly cookies.">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input name="username" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Username or email" />
-          <input name="password" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Password" type="password" />
+          <PasswordInput name="password" />
+          
+          <div className="flex justify-end">
+            <a href="/forgot-password" className="text-sm text-white/50 hover:text-white hover:underline transition-colors">Forgot password?</a>
+          </div>
+
           {message ? <p className="text-sm text-red-300">{message}</p> : null}
           <button disabled={loading} className="w-full rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-60">{loading ? "Signing in..." : "Login"}</button>
           

@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SectionCard } from "@/components/section-card";
 import { apiFetch } from "@/lib/api";
+import { PasswordInput } from "@/components/password-input";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function RegisterPage() {
           <input name="lastName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Last name" />
           <input name="username" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Username" />
           <input name="email" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Email" />
-          <input name="password" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Password" type="password" />
+          <PasswordInput name="password" />
           {message ? <p className="text-sm text-red-300">{message}</p> : null}
           <button disabled={loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-60">{loading ? "Creating account..." : "Register"}</button>
         </form>
