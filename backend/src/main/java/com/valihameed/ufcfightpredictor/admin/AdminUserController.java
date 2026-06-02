@@ -27,9 +27,12 @@ public class AdminUserController {
     }
 
     @PatchMapping("/{id}/ban")
-    public ResponseEntity<user> ban(@PathVariable Long id, @RequestParam(defaultValue = "true") boolean locked) {
+    public ResponseEntity<?> ban(@PathVariable Long id, @RequestParam(defaultValue = "true") boolean locked) {
         return userRepository.findById(id)
             .map(u -> {
+                if (u.getRole() != null && "ROLE_ADMIN".equals(u.getRole().getName())) {
+                    return ResponseEntity.status(403).body(Map.of("error", "Cannot modify admin accounts via API"));
+                }
                 u.setLocked(locked);
                 return ResponseEntity.ok(userRepository.save(u));
             })
@@ -37,9 +40,12 @@ public class AdminUserController {
     }
 
     @PatchMapping("/{id}/role")
-    public ResponseEntity<user> setRole(@PathVariable Long id, @RequestBody RoleRequest request) {
+    public ResponseEntity<?> setRole(@PathVariable Long id, @RequestBody RoleRequest request) {
         return userRepository.findById(id)
             .map(u -> {
+                if (u.getRole() != null && "ROLE_ADMIN".equals(u.getRole().getName())) {
+                    return ResponseEntity.status(403).body(Map.of("error", "Cannot demote or modify admin accounts via API"));
+                }
                 role r = roleRepository.findByName(request.getRole())
                     .orElseGet(() -> roleRepository.save(role.builder().name(request.getRole()).build()));
                 u.setRole(r);

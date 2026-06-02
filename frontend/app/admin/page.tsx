@@ -156,7 +156,8 @@ export default function AdminPage() {
                     <button
                       type="button"
                       onClick={() => void toggleLock(user.id, !user.locked)}
-                      className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10"
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       {user.locked ? "Unlock" : "Lock"}
                     </button>
@@ -168,14 +169,16 @@ export default function AdminPage() {
                       <input
                         value={roleDrafts[user.id] ?? user.role?.name ?? ""}
                         onChange={(event) => handleRoleChange(user.id, event)}
-                        className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35"
+                        disabled={user.role?.name === "ROLE_ADMIN"}
+                        className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="ROLE_USER"
                       />
                     </label>
                     <button
                       type="button"
                       onClick={() => void saveRole(user.id)}
-                      className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white"
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Save role
                     </button>
