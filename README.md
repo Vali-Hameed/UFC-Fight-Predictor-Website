@@ -59,7 +59,7 @@ flowchart LR
 
 ### Microservice Ecosystem
 1. **[UFC-Fight-Predictor-Website (This Repo)](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website)**: The primary application containing the user-facing web app and the central data management API.
-2. **ufc-scraper**: An isolated Python (BeautifulSoup/Playwright) worker that scrapes live UFC data and pushes updates to the core API securely via `X-Scraper-Key`.
+2. **[UFC-Scraper](https://github.com/Vali-Hameed/UFC-Scraper)**: An isolated Python (BeautifulSoup/Playwright) worker that scrapes live UFC data and pushes updates to the core API securely via `X-Scraper-Key`.
 3. **[UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor)**: A separate Python FastAPI server hosting the trained prediction model.
 
 ---
@@ -111,7 +111,7 @@ Once the containers have finished booting (the Spring Boot API takes ~15 seconds
 
 - 🌐 **Web Frontend**: [http://localhost:3000](http://localhost:3000)
 - 🔌 **Backend API**: [http://localhost:8080](http://localhost:8080)
-- 🗄️ **Database**: `localhost:5332`
+- 🗄️ **Database**:  [http://localhost:5332](http://localhost:5332)
 - 📨 **MailHog (Local Emails)**: [http://localhost:8025](http://localhost:8025)
 
 You can monitor the logs at any time using:
@@ -146,7 +146,7 @@ docker-compose -f docker/docker-compose.dev.yml logs -f
 Contributions, issues, and feature requests are welcome! 
 Feel free to check the [issues page](https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website/issues) to see what we're currently working on.
 
-If you are looking to run the full end-to-end environment locally, you will also need to clone and run the [UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor) and `ufc-scraper` repositories alongside this one.
+If you are looking to run the full end-to-end environment locally, you will also need to clone and run the [UFC-Fight-Predictor](https://github.com/Vali-Hameed/UFC-Fight-Predictor) and [UFC-Scraper](https://github.com/Vali-Hameed/UFC-Scraper) repositories alongside this one.
 
 ---
 
