@@ -39,7 +39,7 @@ public class RegistrationService {
         role userRole = roleRepository.findByName("ROLE_USER")
             .orElseGet(() -> roleRepository.save(new role(null, "ROLE_USER")));
         String token = userService.signUpUser(new user(firstName, lastName, userName, email, request.getPassword(), userRole));
-        String link = "http://localhost:8080/api/v1/registration/confirm?token=" + token;
+        String link = "http://localhost:3000/verify-email?token=" + token;
         emailSender.sendEmail(request.getEmail(), buildEmail(request.getFirstName(), link), "Confirm your email");
         return token;
     }
@@ -64,6 +64,18 @@ public class RegistrationService {
         userService.enableUser(
                 confirmationToken.getUser().getEmail());
         return "confirmed";
+    }
+
+    @Transactional
+    public String resendVerificationToken(String email) {
+        user u = (user) userService.loadUserByEmail(email);
+        if (u.isEnabled()) {
+            throw new IllegalStateException("Account is already verified");
+        }
+        String token = userService.generateNewVerificationToken(u);
+        String link = "http://localhost:3000/verify-email?token=" + token;
+        emailSender.sendEmail(u.getEmail(), buildEmail(u.getFirstName(), link), "Confirm your email");
+        return "Verification email sent";
     }
     private String buildEmail(String name, String link) {
         return "<div style=\"font-family: Arial, sans-serif; background-color: #09090b; color: #ffffff; padding: 40px 20px; text-align: center;\">\n" +

@@ -62,6 +62,7 @@ public class user implements UserDetails {
         this.locked = false;
         this.enabled = false;
         this.publicProfile = true;
+        this.tokenVersion = 0;
     }
 
     public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
@@ -75,6 +76,7 @@ public class user implements UserDetails {
         this.locked = locked;
         this.enabled = enabled;
         this.publicProfile = true;
+        this.tokenVersion = 0;
     }
 
     @Override

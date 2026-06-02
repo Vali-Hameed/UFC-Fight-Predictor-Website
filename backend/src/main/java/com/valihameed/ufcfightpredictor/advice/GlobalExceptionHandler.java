@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,18 +14,19 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public Map<String, Object> handleValidation(MethodArgumentNotValidException ex) {
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         System.err.println("VALIDATION ERROR: " + ex.getMessage());
         Map<String, String> fieldErrors = new HashMap<>();
         for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
@@ -33,10 +35,15 @@ public class GlobalExceptionHandler {
         }
         Map<String, Object> body = new HashMap<>();
         body.put("error", "VALIDATION_ERROR");
-        body.put("message", "Validation failed");
+        // Create a user-friendly message from the first error
+        String firstError = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(fe -> fe.getField() + " " + fe.getDefaultMessage())
+                .orElse("Validation failed");
+        body.put("message", firstError);
         body.put("details", fieldErrors);
         body.put("timestamp", OffsetDateTime.now().toString());
-        return body;
+        return new ResponseEntity<>(body, headers, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -84,6 +91,33 @@ public class GlobalExceptionHandler {
         body.put("message", "Duplicate or conflicting data. Please try again.");
         body.put("timestamp", OffsetDateTime.now().toString());
         return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<Object> handleDisabledException(org.springframework.security.authentication.DisabledException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "USER_DISABLED");
+        body.put("message", "Account is not verified");
+        body.put("timestamp", OffsetDateTime.now().toString());
+        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<Object> handleBadCredentialsException(org.springframework.security.authentication.BadCredentialsException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "BAD_CREDENTIALS");
+        body.put("message", "Invalid username or password");
+        body.put("timestamp", OffsetDateTime.now().toString());
+        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
+    public ResponseEntity<Object> handleLockedException(org.springframework.security.authentication.LockedException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "USER_LOCKED");
+        body.put("message", "Your account is locked. Please contact an administrator.");
+        body.put("timestamp", OffsetDateTime.now().toString());
+        return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)

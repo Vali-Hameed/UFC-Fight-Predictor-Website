@@ -29,10 +29,10 @@ public class userService implements UserDetailsService {
 
     public user createNewUser(String username, String email, String password, role role) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("Username already taken");
+            throw new IllegalStateException("Username already taken");
         }
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email already registered");
+            throw new IllegalStateException("Email already registered");
         }
         if (role == null) {
             throw new IllegalArgumentException("Role is required");
@@ -66,9 +66,21 @@ public class userService implements UserDetailsService {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
     }
     public String signUpUser(user user){
-        boolean present= userRepository.findByEmail(user.getEmail()).isPresent();
-        if(present){
-            throw new RuntimeException("Email already taken");
+        com.valihameed.ufcfightpredictor.users.user existingUser = userRepository.findByEmail(user.getEmail()).orElse(null);
+        if(existingUser != null){
+            if (existingUser.isEnabled()) {
+                throw new IllegalStateException("Email is already registered");
+            } else {
+                throw new IllegalStateException("Email is registered but not verified");
+            }
+        }
+        com.valihameed.ufcfightpredictor.users.user existingUsername = userRepository.findByUsername(user.getUsername()).orElse(null);
+        if(existingUsername != null){
+            if (existingUsername.isEnabled()) {
+                throw new IllegalStateException("Username is already taken");
+            } else {
+                throw new IllegalStateException("Username is registered but not verified");
+            }
         }
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -79,6 +91,14 @@ public class userService implements UserDetailsService {
         return token;
 
     }
+
+    public String generateNewVerificationToken(user user) {
+        String token = UUID.randomUUID().toString();
+        ConfirmationToken confirmationToken = new ConfirmationToken(token, LocalDateTime.now(), LocalDateTime.now().plusMinutes(15), user);
+        confirmationTokenService.saveConformationToken(confirmationToken);
+        return token;
+    }
+
     public int enableUser(String email) {
         return userRepository.enableAppUser(email);
     }

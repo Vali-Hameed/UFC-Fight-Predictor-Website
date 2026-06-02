@@ -18,4 +18,9 @@ public class RegistrationController {
     public String confirm(@RequestParam("token") String token){
         return registrationService.confirmToken(token);
     }
+    
+    @PostMapping(path="resend-verification")
+    public String resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        return registrationService.resendVerificationToken(request.getEmail());
+    }
 }
