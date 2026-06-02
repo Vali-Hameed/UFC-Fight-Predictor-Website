@@ -44,8 +44,13 @@ public class user implements UserDetails {
     @Column(nullable = false)
     private boolean enabled;
     
+    @Builder.Default
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean publicProfile = true;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private Integer tokenVersion = 0;
 
     public user(String firstName, String lastName, String username, String email, String password,role role) {
         this.firstName = firstName;

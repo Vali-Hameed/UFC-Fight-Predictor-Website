@@ -42,6 +42,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Claims claims = jwtService.parseToken(token);
         String username = claims.getSubject();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        Integer tokenVersion = claims.get("tokenVersion", Integer.class);
+        if (userDetails instanceof com.valihameed.ufcfightpredictor.users.user) {
+            com.valihameed.ufcfightpredictor.users.user u = (com.valihameed.ufcfightpredictor.users.user) userDetails;
+            if (tokenVersion == null || !tokenVersion.equals(u.getTokenVersion())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
         filterChain.doFilter(request, response);

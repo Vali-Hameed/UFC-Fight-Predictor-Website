@@ -27,11 +27,12 @@ public class JwtService {
         key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public String generateToken(String subject) {
+    public String generateToken(String subject, Integer tokenVersion) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessExpiryMinutes * 60 * 1000);
         return Jwts.builder()
                 .setSubject(subject)
+                .claim("tokenVersion", tokenVersion)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)

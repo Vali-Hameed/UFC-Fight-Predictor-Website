@@ -48,6 +48,14 @@ public class RefreshTokenService {
         refreshTokenRepository.save(token);
     }
 
+    public void revokeAllForUser(Long userId) {
+        java.util.List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRevokedFalse(userId);
+        for (RefreshToken t : tokens) {
+            t.setRevoked(true);
+        }
+        refreshTokenRepository.saveAll(tokens);
+    }
+
     private String hash(String raw) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

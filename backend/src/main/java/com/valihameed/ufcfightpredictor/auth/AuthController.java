@@ -38,7 +38,7 @@ public class AuthController {
         Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(auth);
         user u = (user) auth.getPrincipal();
-        String accessToken = jwtService.generateToken(u.getUsername());
+        String accessToken = jwtService.generateToken(u.getUsername(), u.getTokenVersion());
         String refreshRaw = refreshTokenService.createRefreshToken(u.getId());
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshRaw)
             .httpOnly(true)
@@ -75,7 +75,7 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        String accessToken = jwtService.generateToken(u.getUsername());
+        String accessToken = jwtService.generateToken(u.getUsername(), u.getTokenVersion());
         refreshTokenService.revoke(refreshTokenEntity);
         String newRaw = refreshTokenService.createRefreshToken(userId);
         long maxAgeSecs = Duration.ofDays(7).getSeconds();
