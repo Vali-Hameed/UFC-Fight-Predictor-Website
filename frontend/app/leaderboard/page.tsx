@@ -12,7 +12,7 @@ export default async function LeaderboardPage() {
             <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
               <div className="text-lg font-semibold text-gold">#{index + 1}</div>
               <div>
-                <div className="font-semibold text-white">User #{row.userId}</div>
+                <div className="font-semibold text-white">@{row.username ?? `User #${row.userId}`}</div>
                 <div className="text-sm text-white/50">{row.correctPredictions ?? 0} correct predictions • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
               </div>
               <div className="text-right">
