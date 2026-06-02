@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 type AuthContextValue = {
   token: string | null;
   loading: boolean;
-  user: { username: string } | null;
+  user: { username: string; role?: string } | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<{ username: string; role?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshSession = async () => {
@@ -27,7 +27,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(response.accessToken);
     } catch {
       setToken(null);
-    } finally {
       setLoading(false);
     }
   };
@@ -41,14 +40,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       return;
     }
+    
     let active = true;
-    apiFetch<{ username: string }>("/api/v1/users/me", {}, token)
+    setLoading(true);
+    
+    apiFetch<{ username: string; role?: string }>("/api/v1/users/me", {}, token)
       .then((data) => {
-        if (active) setUser(data);
+        if (active) {
+          setUser(data);
+          setLoading(false);
+        }
       })
       .catch(() => {
-        if (active) setUser(null);
+        if (active) {
+          setUser(null);
+          setLoading(false);
+        }
       });
+      
     return () => {
       active = false;
     };

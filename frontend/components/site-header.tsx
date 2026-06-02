@@ -37,11 +37,14 @@ export function SiteHeader() {
           </div>
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-white/70 md:flex">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className={`transition hover:text-white ${pathname === link.href ? "text-white" : ""}`}>
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            if (link.href === "/admin" && user?.role !== "ROLE_ADMIN") return null;
+            return (
+              <Link key={link.href} href={link.href} className={`transition hover:text-white ${pathname === link.href ? "text-white" : ""}`}>
+                {link.label}
+              </Link>
+            );
+          })}
           {user && (
             <Link href={`/profile/${user.username}`} className={`transition hover:text-white ${pathname.startsWith("/profile") ? "text-white" : ""}`}>
               Profile

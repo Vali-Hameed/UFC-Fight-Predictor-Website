@@ -4,13 +4,16 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SectionCard } from "@/components/section-card";
 import { AdminUserDto, apiFetch, ScrapeLogDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
+import { notFound } from "next/navigation";
 
 export default function AdminPage() {
-  const { token } = useAuth();
+  const { token, loading, user } = useAuth();
   const [logs, setLogs] = useState<ScrapeLogDto[]>([]);
   const [users, setUsers] = useState<AdminUserDto[]>([]);
   const [roleDrafts, setRoleDrafts] = useState<Record<number, string>>({});
   const [message, setMessage] = useState<string | null>(null);
+
+
 
   const loadUsers = async () => {
     if (!token) return;
@@ -100,6 +103,14 @@ export default function AdminPage() {
       [userId]: event.target.value
     }));
   };
+
+  if (!loading && (!user || user.role !== "ROLE_ADMIN")) {
+    notFound();
+  }
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
