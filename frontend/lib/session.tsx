@@ -18,6 +18,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<{ username: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshSession = async () => {
@@ -34,6 +35,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refreshSession();
   }, []);
+
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    let active = true;
+    apiFetch<{ username: string }>("/api/v1/users/me", {}, token)
+      .then((data) => {
+        if (active) setUser(data);
+      })
+      .catch(() => {
+        if (active) setUser(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [token]);
 
   const login = async (username: string, password: string) => {
     const response = await apiFetch<AuthResponse>("/api/v1/auth/login", {
@@ -54,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextValue = {
     token,
     loading,
-    user: null,
+    user,
     login,
     logout,
     refreshSession,
