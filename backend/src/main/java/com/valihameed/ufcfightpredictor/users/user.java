@@ -43,6 +43,9 @@ public class user implements UserDetails {
     private boolean locked;
     @Column(nullable = false)
     private boolean enabled;
+    
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean publicProfile = true;
 
     public user(String firstName, String lastName, String username, String email, String password,role role) {
         this.firstName = firstName;
@@ -53,6 +56,7 @@ public class user implements UserDetails {
         this.role = role;
         this.locked = false;
         this.enabled = false;
+        this.publicProfile = true;
     }
 
     public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
@@ -65,6 +69,7 @@ public class user implements UserDetails {
         this.role = role;
         this.locked = locked;
         this.enabled = enabled;
+        this.publicProfile = true;
     }
 
     @Override
