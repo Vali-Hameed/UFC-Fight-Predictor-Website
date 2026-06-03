@@ -10,6 +10,7 @@ import { toast } from "sonner";
 const links = [
   { href: "/events", label: "Events" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/simulator", label: "Simulator" },
   { href: "/forum", label: "Forum" },
   { href: "/notifications", label: "Notifications" },
   { href: "/admin", label: "Admin" }

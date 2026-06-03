@@ -174,7 +174,9 @@ export type UserPredictionRequest = {
 
 export type MlPredictionDto = {
   id: number;
-  fightId: number;
+  fightId: number | null;
+  fighter1Name?: string | null;
+  fighter2Name?: string | null;
   predictedWinner: string | null;
   confidenceScore: number | null;
   cachedAt: string | null;
