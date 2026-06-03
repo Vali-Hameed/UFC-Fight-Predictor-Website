@@ -23,7 +23,7 @@ services:
       JWT_REFRESH_SECRET: change-refresh-in-prod-and-make-it-longer
       FRONTEND_URL: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:8080
-      FASTAPI_BASE_URL: http://ufc-ml:8000
+      FASTAPI_BASE_URL: http://host.docker.internal:8000
       SCRAPER_API_KEY: change-me
       SCRAPER_URL: http://host.docker.internal:8001
       MAIL_HOST: mailhog
