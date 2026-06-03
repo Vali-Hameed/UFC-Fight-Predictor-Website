@@ -46,4 +46,22 @@ public class MlController {
             return ResponseEntity.status(503).body(Map.of("message", "Failed to refresh ML prediction"));
         }
     }
+
+    @GetMapping("/predict")
+    public ResponseEntity<?> predictHypotheticalFight(@RequestParam String fighter1, @RequestParam String fighter2) {
+        if (fighter1 == null || fighter1.trim().isEmpty() || fighter2 == null || fighter2.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Both fighter1 and fighter2 parameters are required"));
+        }
+        try {
+            MlPrediction p = mlService.getHypotheticalPrediction(fighter1, fighter2);
+            CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.getCacheTtlMinutes())).cachePublic();
+            return ResponseEntity.ok().cacheControl(cc).body(Map.of(
+                "predicted_winner", p.getPredictedWinner(),
+                "confidence_score", p.getConfidenceScore(),
+                "cached_at", p.getCachedAt()
+            ));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(503).body(Map.of("message", "Our prediction model is currently unavailable. Please try again later."));
+        }
+    }
 }

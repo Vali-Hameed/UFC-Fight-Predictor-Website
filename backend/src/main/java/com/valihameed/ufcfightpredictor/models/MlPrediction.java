@@ -16,8 +16,14 @@ public class MlPrediction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "fight_id", unique = true)
+    @Column(name = "fight_id")
     private Long fightId;
+
+    @Column(name = "fighter1_name")
+    private String fighter1Name;
+
+    @Column(name = "fighter2_name")
+    private String fighter2Name;
 
     @Column(name = "predicted_winner")
     private String predictedWinner;
