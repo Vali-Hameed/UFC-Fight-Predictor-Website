@@ -1,6 +1,6 @@
 import { SectionCard } from "@/components/section-card";
 import { ForumReplyForm } from "@/components/forum-reply-form";
-import { apiFetch, ForumPostDto, ForumThreadDto } from "@/lib/api";
+import { apiFetch, ForumPostDto, ForumThreadDto, MlPredictionDto } from "@/lib/api";
 
 type ForumThreadPageProps = {
   params: Promise<{ id: string }>;
@@ -25,6 +25,11 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
     apiFetch<ForumPostDto[]>(`/api/v1/forum/posts?threadId=${threadId}`).catch(() => [])
   ]);
 
+  let mlPrediction: MlPredictionDto | null = null;
+  if (thread && thread.fightId) {
+    mlPrediction = await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${thread.fightId}`).catch(() => null);
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="space-y-6">
@@ -47,6 +52,14 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
                 <p className="text-sm text-white/50">Fight</p>
                 <p className="mt-2 text-2xl font-semibold text-white">{thread.fightId ?? "N/A"}</p>
               </div>
+              {mlPrediction ? (
+                <div className="rounded-2xl border border-gold/20 bg-gold/10 p-4 md:col-span-3">
+                  <p className="text-sm text-gold/70">ML Prediction</p>
+                  <p className="mt-2 text-2xl font-semibold text-gold">
+                    {mlPrediction.predictedWinner} ({Math.round((mlPrediction.confidenceScore ?? 0) * 100)}%)
+                  </p>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">Open another thread from the forum list.</div>

@@ -140,8 +140,8 @@ export default function SimulatorPage() {
       const data = await apiFetch<any>(`/api/v1/ml/predict?fighter1=${encodeURIComponent(fighter1)}&fighter2=${encodeURIComponent(fighter2)}`);
       
       setResult({
-        predictedWinner: data.predicted_winner,
-        confidenceScore: data.confidence_score,
+        predictedWinner: data.predictedWinner,
+        confidenceScore: data.confidenceScore,
         fighter1,
         fighter2
       });

@@ -118,13 +118,23 @@ export default async function EventPage({ params }: EventPageProps) {
 
           <SectionCard eyebrow="Forum" title="Event threads" description="ML winner and vote split are shown at the top of each fight thread.">
             <div className="space-y-3">
-              {threads.map((thread) => (
-                <Link key={thread.id} href={`/forum/${thread.id}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70 transition hover:bg-white/10">
-                  <div className="text-xs uppercase tracking-[0.3em] text-gold">Thread</div>
-                  <div className="mt-2 font-semibold text-white">{thread.title}</div>
-                  <div className="mt-1 text-xs text-white/45">Open discussion</div>
-                </Link>
-              ))}
+              {threads.map((thread) => {
+                const threadFight = fightCards.find(f => f.fight.id === thread.fightId);
+                return (
+                  <Link key={thread.id} href={`/forum/${thread.id}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70 transition hover:bg-white/10">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-xs uppercase tracking-[0.3em] text-gold">Thread</div>
+                      {threadFight?.mlPrediction ? (
+                        <div className="rounded-xl border border-gold/20 bg-gold/10 px-2 py-1 text-xs font-semibold text-gold">
+                          ML: {threadFight.mlPrediction.predictedWinner} • {Math.round((threadFight.mlPrediction.confidenceScore ?? 0) * 100)}%
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="mt-2 font-semibold text-white">{thread.title}</div>
+                    <div className="mt-1 text-xs text-white/45">Open discussion</div>
+                  </Link>
+                );
+              })}
               {threads.length === 0 ? (
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
                   No forum threads available yet for this event.
