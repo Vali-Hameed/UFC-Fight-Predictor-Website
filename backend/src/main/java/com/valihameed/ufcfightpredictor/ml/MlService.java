@@ -35,7 +35,9 @@ public class MlService {
         if (existing.isPresent()) {
             MlPrediction p = existing.get();
             if (p.getCachedAt() != null && p.getCachedAt().isAfter(OffsetDateTime.now().minus(Duration.ofMinutes(cacheTtlMinutes)))) {
-                return p;
+                if (p.getConfidenceScore() != null && !Double.isNaN(p.getConfidenceScore())) {
+                    return p;
+                }
             }
         }
 
@@ -52,6 +54,9 @@ public class MlService {
                 confidence = Double.valueOf(resp.get("red_fighter_win_probability").toString());
             } else {
                 confidence = Double.valueOf(resp.get("blue_fighter_win_probability").toString());
+            }
+            if (confidence.isNaN()) {
+                throw new IllegalStateException("ML service returned NaN for confidence");
             }
             MlPrediction p = MlPrediction.builder().fightId(fightId).fighter1Name(fighter1).fighter2Name(fighter2).predictedWinner(winner).confidenceScore(confidence).cachedAt(OffsetDateTime.now()).build();
             // upsert
@@ -76,6 +81,9 @@ public class MlService {
             } else {
                 confidence = Double.valueOf(resp.get("blue_fighter_win_probability").toString());
             }
+            if (confidence.isNaN()) {
+                throw new IllegalStateException("ML service returned NaN for confidence");
+            }
             MlPrediction p = MlPrediction.builder().fightId(fightId).fighter1Name(fighter1).fighter2Name(fighter2).predictedWinner(winner).confidenceScore(confidence).cachedAt(OffsetDateTime.now()).build();
             var existing = mlPredictionRepository.findByFightId(fightId);
             existing.ifPresent(old -> p.setId(old.getId()));
@@ -90,7 +98,9 @@ public class MlService {
         if (existing.isPresent()) {
             MlPrediction p = existing.get();
             if (p.getCachedAt() != null && p.getCachedAt().isAfter(OffsetDateTime.now().minus(Duration.ofMinutes(cacheTtlMinutes)))) {
-                return p;
+                if (p.getConfidenceScore() != null && !Double.isNaN(p.getConfidenceScore())) {
+                    return p;
+                }
             }
         }
         
@@ -106,6 +116,9 @@ public class MlService {
                 confidence = Double.valueOf(resp.get("red_fighter_win_probability").toString());
             } else {
                 confidence = Double.valueOf(resp.get("blue_fighter_win_probability").toString());
+            }
+            if (confidence.isNaN()) {
+                throw new IllegalStateException("ML service returned NaN for confidence");
             }
             MlPrediction p = MlPrediction.builder()
                 .fighter1Name(fighter1)
