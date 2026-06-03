@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface MlPredictionRepository extends JpaRepository<MlPrediction, Long> {
     Optional<MlPrediction> findByFightId(Long fightId);
-    Optional<MlPrediction> findByFighter1NameAndFighter2Name(String fighter1Name, String fighter2Name);
+    Optional<MlPrediction> findFirstByFighter1NameAndFighter2NameOrderByCachedAtDesc(String fighter1Name, String fighter2Name);
 }

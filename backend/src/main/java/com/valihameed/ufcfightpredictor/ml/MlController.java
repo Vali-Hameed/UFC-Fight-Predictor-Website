@@ -28,7 +28,7 @@ public class MlController {
         try {
             MlPrediction p = mlService.getPrediction(f1, f2, fightId);
             CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.getCacheTtlMinutes())).cachePublic();
-            return ResponseEntity.ok().cacheControl(cc).body(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
+            return ResponseEntity.ok().cacheControl(cc).body(p);
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(503).body(Map.of("message", "Our prediction model is currently unavailable. Please try again later."));
         }
@@ -41,7 +41,7 @@ public class MlController {
         if (fight == null) return ResponseEntity.notFound().build();
         try {
             MlPrediction p = mlService.forceRefreshPrediction(fight.getFighter1Name(), fight.getFighter2Name(), fightId);
-            return ResponseEntity.ok(Map.of("predicted_winner", p.getPredictedWinner(), "confidence_score", p.getConfidenceScore(), "cached_at", p.getCachedAt()));
+            return ResponseEntity.ok(p);
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(503).body(Map.of("message", "Failed to refresh ML prediction"));
         }
@@ -55,11 +55,7 @@ public class MlController {
         try {
             MlPrediction p = mlService.getHypotheticalPrediction(fighter1, fighter2);
             CacheControl cc = CacheControl.maxAge(java.time.Duration.ofMinutes(mlService.getCacheTtlMinutes())).cachePublic();
-            return ResponseEntity.ok().cacheControl(cc).body(Map.of(
-                "predicted_winner", p.getPredictedWinner(),
-                "confidence_score", p.getConfidenceScore(),
-                "cached_at", p.getCachedAt()
-            ));
+            return ResponseEntity.ok().cacheControl(cc).body(p);
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(503).body(Map.of("message", "Our prediction model is currently unavailable. Please try again later."));
         }
