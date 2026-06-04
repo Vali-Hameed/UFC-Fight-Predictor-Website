@@ -141,6 +141,10 @@ export type LeaderboardDto = {
   lastUpdated: string | null;
 };
 
+export async function getEventLeaderboard(eventId: number | string): Promise<LeaderboardDto[]> {
+  return apiFetch<LeaderboardDto[]>(`/api/v1/leaderboard/event/${eventId}`);
+}
+
 export type NotificationDto = {
   id: number;
   userId: number;

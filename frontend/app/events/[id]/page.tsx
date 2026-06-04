@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { PredictionCard } from "@/components/prediction-card";
-import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto } from "@/lib/api";
+import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +49,7 @@ export default async function EventPage({ params }: EventPageProps) {
 
   const fights = await apiFetch<FightDto[]>(`/api/v1/events/${id}/fights`).catch(() => [] as FightDto[]);
   const threads = await apiFetch<ForumThreadDto[]>(`/api/v1/forum/threads?eventId=${id}`).catch(() => []);
+  const leaderboard = await getEventLeaderboard(id).catch(() => []);
 
   const fightCards = [];
   for (const fight of fights) {
@@ -113,6 +114,24 @@ export default async function EventPage({ params }: EventPageProps) {
                   <div className="h-full rounded-full bg-gold" style={{ width: `${aiAccuracy}%` }} />
                 </div>
               </div>
+            </div>
+          </SectionCard>
+          
+          <SectionCard eyebrow="Event Leaderboard" title="Top Predictors" description="Ranked by total points earned for this event.">
+            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {leaderboard.map((row, index) => (
+                <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-lg font-semibold text-gold">#{index + 1}</div>
+                  <div>
+                    <div className="font-semibold text-white">@{row.username ?? `User #${row.userId}`}</div>
+                    <div className="text-sm text-white/50">{row.correctPredictions ?? 0} correct predictions • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-white">{row.totalPoints ?? 0} pts</div>
+                  </div>
+                </div>
+              ))}
+              {leaderboard.length === 0 ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">Leaderboard has not been populated yet.</div> : null}
             </div>
           </SectionCard>
 

@@ -52,6 +52,27 @@ public class LeaderboardController {
         return ResponseEntity.of(leaderboardRepository.findByUserId(userId));
     }
     
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<List<LeaderboardResponseDto>> byEvent(
+            @PathVariable Long eventId,
+            com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository) {
+        
+        List<Object[]> data = predictionResultRepository.getEventLeaderboardData(eventId);
+        List<LeaderboardResponseDto> dtos = data.stream().map(row -> {
+            LeaderboardResponseDto dto = new LeaderboardResponseDto();
+            dto.setUserId(row[0] != null ? ((Number) row[0]).longValue() : null);
+            dto.setUsername((String) row[1]);
+            dto.setTotalPoints(row[2] != null ? ((Number) row[2]).intValue() : 0);
+            dto.setCorrectPredictions(row[3] != null ? ((Number) row[3]).intValue() : 0);
+            dto.setTotalPredictions(row[4] != null ? ((Number) row[4]).intValue() : 0);
+            dto.setCurrentStreak(0);
+            dto.setBestStreak(0);
+            return dto;
+        }).collect(Collectors.toList());
+        
+        return ResponseEntity.ok(dtos);
+    }
+
     @Data
     public static class LeaderboardResponseDto {
         private Long id;
