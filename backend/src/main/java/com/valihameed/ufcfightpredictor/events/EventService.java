@@ -3,8 +3,10 @@ package com.valihameed.ufcfightpredictor.events;
 import com.valihameed.ufcfightpredictor.models.Event;
 import com.valihameed.ufcfightpredictor.repository.EventRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +16,14 @@ public class EventService {
     private final EventRepository eventRepository;
 
     public List<Event> listAll() {
-        return eventRepository.findAll();
+        List<Event> completedEvents = eventRepository.findByStatusOrderByEventDateDesc("COMPLETED", PageRequest.of(0, 1));
+        List<Event> upcomingEvents = eventRepository.findByStatusOrderByEventDateAsc("UPCOMING", PageRequest.of(0, 5));
+        
+        List<Event> combined = new ArrayList<>();
+        combined.addAll(completedEvents);
+        combined.addAll(upcomingEvents);
+        
+        return combined;
     }
 
     public Optional<Event> findById(Long id) { return eventRepository.findById(id); }

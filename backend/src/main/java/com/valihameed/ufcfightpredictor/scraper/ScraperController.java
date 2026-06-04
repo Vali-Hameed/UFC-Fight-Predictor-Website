@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.valihameed.ufcfightpredictor.results.ResultProcessingService;
+
 @RestController
 @RequestMapping("/api/v1/internal/scraper")
 @AllArgsConstructor
@@ -28,6 +30,7 @@ public class ScraperController {
     private final UserPredictionRepository userPredictionRepository;
     private final NotificationRepository notificationRepository;
     private final userRepository userRepository;
+    private final ResultProcessingService resultProcessingService;
 
     @PostMapping("/events")
     public ResponseEntity<List<Event>> upsertEvents(@RequestBody List<Event> events) {
@@ -80,7 +83,16 @@ public class ScraperController {
                 ft.setResultRound(f.getResultRound());
                 ft.setResultTime(f.getResultTime());
                 ft.setStatus(f.getStatus());
-                savedFights.add(fightRepository.save(ft));
+                Fight savedFight = fightRepository.save(ft);
+                savedFights.add(savedFight);
+                
+                if ("COMPLETED".equals(savedFight.getStatus()) && savedFight.getResultWinner() != null) {
+                    try {
+                        resultProcessingService.processFightResult(savedFight.getId());
+                    } catch (Exception ex) {
+                        // Ignore any errors in processing so the scraper doesn't fail
+                    }
+                }
                 
                 // Auto-create thread if missing
                 if (!forumThreadRepository.existsByFightId(ft.getId())) {
