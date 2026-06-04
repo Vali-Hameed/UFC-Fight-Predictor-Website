@@ -34,14 +34,33 @@ public class ResultProcessingService {
             List<PredictionResult> existing = predictionResultRepository.findByUserPredictionId(up.getId());
             if (!existing.isEmpty()) continue;
 
+            boolean predictedMethodProvided = up.getPredictedMethod() != null && !up.getPredictedMethod().trim().isEmpty();
+            boolean predictedRoundProvided = up.getPredictedRound() != null && up.getPredictedRound() > 0;
+
             boolean winnerCorrect = fight.getResultWinner().equalsIgnoreCase(up.getPredictedWinner());
-            boolean methodCorrect = fight.getResultMethod() != null && fight.getResultMethod().equalsIgnoreCase(up.getPredictedMethod());
-            boolean roundCorrect = fight.getResultRound() != null && up.getPredictedRound() != null && fight.getResultRound().equals(up.getPredictedRound());
+            
+            boolean methodCorrect = false;
+            if (predictedMethodProvided) {
+                methodCorrect = fight.getResultMethod() != null && fight.getResultMethod().equalsIgnoreCase(up.getPredictedMethod());
+            }
+
+            boolean roundCorrect = false;
+            if (predictedRoundProvided) {
+                roundCorrect = fight.getResultRound() != null && fight.getResultRound().equals(up.getPredictedRound());
+            }
 
             int points = 0;
-            if (winnerCorrect) points += 10;
-            if (methodCorrect) points += 5;
-            if (roundCorrect) points += 3;
+            if (winnerCorrect) {
+                boolean methodFailed = predictedMethodProvided && !methodCorrect;
+                boolean roundFailed = predictedRoundProvided && !roundCorrect;
+
+                if (!methodFailed && !roundFailed) {
+                    points += 10; // Base winner
+                    if (predictedMethodProvided) points += 4; // Method
+                    if (predictedRoundProvided) points += 7; // Round
+                    if (predictedMethodProvided && predictedRoundProvided) points += 10; // Bonus
+                }
+            }
 
             PredictionResult pr = PredictionResult.builder()
                     .userPredictionId(up.getId())
