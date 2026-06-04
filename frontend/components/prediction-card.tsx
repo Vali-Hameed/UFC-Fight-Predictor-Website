@@ -27,7 +27,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
   // Timestamp of last successful submission for cooldown
   const lastSubmitRef = useRef(0);
 
-  const locked = fight.status === "LIVE" || fight.status === "COMPLETED";
+  const locked = fight.status === "LIVE" || fight.status === "COMPLETED" || fight.status === "CANCELED";
 
   const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -114,6 +114,8 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
         <div className="rounded-2xl border border-white/10 bg-bg/70 p-4 text-sm text-white/70">
           {fight.status === "COMPLETED"
             ? `Result: ${fight.resultWinner ?? "TBD"}`
+            : fight.status === "CANCELED"
+            ? "Result: Canceled/Draw"
             : "Predictions can be submitted until the event is live."}
         </div>
       </div>

@@ -10,8 +10,10 @@ export default async function HomePage() {
   let communityAccuracy = 0;
   let aiAccuracy = 0;
 
-  if (featuredEvent) {
-    const fights = await apiFetch<FightDto[]>(`/api/v1/events/${featuredEvent.id}/fights`).catch(() => []);
+  const lastCompletedEvent = events.find(e => e.status === "COMPLETED");
+  
+  if (lastCompletedEvent) {
+    const fights = await apiFetch<FightDto[]>(`/api/v1/events/${lastCompletedEvent.id}/fights`).catch(() => []);
     const fightCards = await Promise.all(
       fights.map(async (fight) => ({
         fight,
