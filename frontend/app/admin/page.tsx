@@ -2,7 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SectionCard } from "@/components/section-card";
-import { AdminUserDto, apiFetch, ScrapeLogDto } from "@/lib/api";
+import { AdminUserDto, apiFetch, ScrapeLogDto, warnUser, banUser, unbanUser, deleteUser } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { notFound } from "next/navigation";
 import { toast } from "sonner";
@@ -97,6 +97,56 @@ export default function AdminPage() {
     }
   };
 
+  const handleWarn = async (userId: number) => {
+    if (!token) return;
+    if (confirm("Warn this user?")) {
+      try {
+        await warnUser(userId, token);
+        toast.success("User warned.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to warn user.");
+      }
+    }
+  };
+
+  const handleBan = async (userId: number, durationDays?: number) => {
+    if (!token) return;
+    const msg = durationDays ? `Ban user for ${durationDays} days?` : "Permanently ban this user?";
+    if (confirm(msg)) {
+      try {
+        await banUser(userId, token, durationDays);
+        toast.success("User banned.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to ban user.");
+      }
+    }
+  };
+
+  const handleUnban = async (userId: number) => {
+    if (!token) return;
+    if (confirm("Remove this user's forum ban?")) {
+      try {
+        await unbanUser(userId, token);
+        toast.success("User unbanned.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to unban user.");
+      }
+    }
+  };
+
+  const handleDelete = async (userId: number) => {
+    if (!token) return;
+    if (confirm("Permanently delete this user? This cannot be undone.")) {
+      try {
+        await deleteUser(userId, token);
+        setUsers((current) => current.filter((u) => u.id !== userId));
+        toast.success("User deleted.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete user.");
+      }
+    }
+  };
+
   const handleRoleChange = (userId: number, event: ChangeEvent<HTMLInputElement>) => {
     setRoleDrafts((current) => ({
       ...current,
@@ -159,6 +209,49 @@ export default function AdminPage() {
                       className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       {user.locked ? "Unlock" : "Lock"}
+                    </button>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => handleWarn(user.id)}
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded bg-yellow-500/20 px-3 py-1.5 text-xs text-yellow-400 hover:bg-yellow-500/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Warn
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBan(user.id, 7)}
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded bg-orange-500/20 px-3 py-1.5 text-xs text-orange-400 hover:bg-orange-500/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Ban 7d
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBan(user.id)}
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded bg-red-900/40 px-3 py-1.5 text-xs text-red-500 hover:bg-red-900/60 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Ban Perm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUnban(user.id)}
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded bg-green-500/20 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Unban
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(user.id)}
+                      disabled={user.role?.name === "ROLE_ADMIN"}
+                      className="rounded bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/40 transition disabled:opacity-30 disabled:cursor-not-allowed ml-auto"
+                    >
+                      Delete User
                     </button>
                   </div>
 

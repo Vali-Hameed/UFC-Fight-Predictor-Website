@@ -23,7 +23,9 @@ public class AdminUserController {
 
     @GetMapping
     public List<user> listUsers() {
-        return userRepository.findAll();
+        return userRepository.findAll().stream()
+            .filter(u -> u.getUsername() == null || !u.getUsername().startsWith("deleted_user_"))
+            .toList();
     }
 
     @PatchMapping("/{id}/ban")
@@ -50,6 +52,27 @@ public class AdminUserController {
                     .orElseGet(() -> roleRepository.save(role.builder().name(request.getRole()).build()));
                 u.setRole(r);
                 return ResponseEntity.ok(userRepository.save(u));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        return userRepository.findById(id)
+            .map(u -> {
+                if (u.getRole() != null && "ROLE_ADMIN".equals(u.getRole().getName())) {
+                    return ResponseEntity.status(403).body(Map.of("error", "Cannot delete admin accounts"));
+                }
+                u.setUsername("deleted_user_" + u.getId());
+                u.setEmail("deleted_" + u.getId() + "@deleted.com");
+                u.setPassword("");
+                u.setFirstName("Deleted");
+                u.setLastName("User");
+                u.setLocked(true);
+                u.setEnabled(false);
+                u.setProfileImageUrl(null);
+                userRepository.save(u);
+                return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
             })
             .orElse(ResponseEntity.notFound().build());
     }

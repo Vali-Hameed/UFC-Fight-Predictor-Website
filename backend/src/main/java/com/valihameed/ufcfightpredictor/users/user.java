@@ -52,6 +52,17 @@ public class user implements UserDetails {
     @Column(nullable = false, columnDefinition = "integer default 0")
     private Integer tokenVersion = 0;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private Integer warningCount = 0;
+
+    @Column
+    private java.time.OffsetDateTime bannedFromForumUntil;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean optOutResultNotifications = false;
+
     public user(String firstName, String lastName, String username, String email, String password,role role) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -63,6 +74,8 @@ public class user implements UserDetails {
         this.enabled = false;
         this.publicProfile = true;
         this.tokenVersion = 0;
+        this.warningCount = 0;
+        this.optOutResultNotifications = false;
     }
 
     public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
@@ -77,6 +90,8 @@ public class user implements UserDetails {
         this.enabled = enabled;
         this.publicProfile = true;
         this.tokenVersion = 0;
+        this.warningCount = 0;
+        this.optOutResultNotifications = false;
     }
 
     @Override

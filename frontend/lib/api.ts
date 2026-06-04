@@ -63,6 +63,43 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}, token
   return parseResponse<T>(response);
 }
 
+export async function markNotificationAsRead(id: number, token: string): Promise<NotificationDto> {
+  return apiFetch<NotificationDto>(`/api/v1/notifications/${id}/read`, { method: "PATCH" }, token);
+}
+
+export async function getUnreadNotificationCount(token: string): Promise<number> {
+  return apiFetch<number>(`/api/v1/notifications/unread-count`, {}, token);
+}
+
+export async function toggleThreadSubscription(threadId: number, token: string): Promise<boolean> {
+  return apiFetch<boolean>(`/api/v1/forum/threads/${threadId}/subscribe`, { method: "POST" }, token);
+}
+
+export async function getSubscriptionStatus(threadId: number, token?: string | null): Promise<boolean> {
+  return apiFetch<boolean>(`/api/v1/forum/threads/${threadId}/subscription-status`, {}, token);
+}
+
+export async function warnUser(userId: number, token: string): Promise<void> {
+  await apiFetch(`/api/v1/admin/users/${userId}/warn`, { method: "POST" }, token);
+}
+
+export async function banUser(userId: number, token: string, durationDays?: number): Promise<void> {
+  const url = `/api/v1/admin/users/${userId}/ban` + (durationDays ? `?durationDays=${durationDays}` : "");
+  await apiFetch(url, { method: "POST" }, token);
+}
+
+export async function unbanUser(userId: number, token: string): Promise<void> {
+  await apiFetch(`/api/v1/admin/users/${userId}/unban`, { method: "POST" }, token);
+}
+
+export async function deletePost(postId: number, token: string): Promise<void> {
+  await apiFetch(`/api/v1/forum/posts/${postId}/delete`, { method: "PATCH" }, token);
+}
+
+export async function deleteUser(userId: number, token: string): Promise<void> {
+  await apiFetch(`/api/v1/admin/users/${userId}`, { method: "DELETE" }, token);
+}
+
 export type AuthResponse = {
   accessToken: string;
   expiresInSeconds: number;
@@ -110,6 +147,7 @@ export type NotificationDto = {
   type: string | null;
   message: string | null;
   read: boolean | null;
+  link?: string | null;
   createdAt: string | null;
 };
 
@@ -126,6 +164,7 @@ export type ForumPostDto = {
   id: number;
   threadId: number | null;
   userId: number | null;
+  username?: string | null;
   content: string | null;
   createdAt: string | null;
   updatedAt: string | null;
