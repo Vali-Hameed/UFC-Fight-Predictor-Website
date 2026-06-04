@@ -60,7 +60,7 @@ public class MlPrewarmService {
             totalEvents = events.size();
             for (Event e : events) {
                 log.info("Pre-warming ML for event {} (id={})", e.getName(), e.getId());
-                List<Fight> fights = fightRepository.findByEventId(e.getId());
+                List<Fight> fights = fightRepository.findByEventIdOrderByFightOrderAsc(e.getId());
                 for (Fight f : fights) {
                     try {
                         if (f.getFighter1Name() == null || f.getFighter2Name() == null) continue;

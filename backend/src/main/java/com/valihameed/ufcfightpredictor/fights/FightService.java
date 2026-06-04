@@ -13,7 +13,7 @@ import java.util.Optional;
 public class FightService {
     private final FightRepository fightRepository;
 
-    public List<Fight> findByEventId(Long eventId) { return fightRepository.findByEventId(eventId); }
+    public List<Fight> findByEventId(Long eventId) { return fightRepository.findByEventIdOrderByFightOrderAsc(eventId); }
 
     public Fight create(Fight fight) { return fightRepository.save(fight); }
 
