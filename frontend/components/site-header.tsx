@@ -4,14 +4,14 @@ import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/session";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getUnreadNotificationCount } from "@/lib/api";
 import { toast } from "sonner";
 
 const links = [
   { href: "/events", label: "Events" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/simulator", label: "Simulator" },
-  { href: "/forum", label: "Forum" },
   { href: "/notifications", label: "Notifications" },
   { href: "/admin", label: "Admin" }
 ] satisfies ReadonlyArray<{ href: Route; label: string }>;
@@ -22,6 +22,15 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (token) {
+      getUnreadNotificationCount(token).then(setUnreadCount).catch(() => {});
+    } else {
+      setUnreadCount(0);
+    }
+  }, [token, pathname]);
 
   const handleLogout = async () => {
     await logout();
@@ -51,8 +60,13 @@ export function SiteHeader() {
           {links.map((link) => {
             if (link.href === "/admin" && user?.role !== "ROLE_ADMIN") return null;
             return (
-              <Link key={link.href} href={link.href} className={`transition hover:text-white ${pathname === link.href ? "text-white" : ""}`}>
+              <Link key={link.href} href={link.href} className={`relative transition hover:text-white ${pathname === link.href ? "text-white" : ""}`}>
                 {link.label}
+                {link.href === "/notifications" && unreadCount > 0 && (
+                  <span className="absolute -right-5 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-glow">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -101,9 +115,14 @@ export function SiteHeader() {
                   key={link.href} 
                   href={link.href} 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`transition hover:text-white ${pathname === link.href ? "text-white" : ""}`}
+                  className={`relative flex items-center transition hover:text-white ${pathname === link.href ? "text-white" : ""}`}
                 >
                   {link.label}
+                  {link.href === "/notifications" && unreadCount > 0 && (
+                    <span className="ml-2 flex h-5 px-1.5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white shadow-glow">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

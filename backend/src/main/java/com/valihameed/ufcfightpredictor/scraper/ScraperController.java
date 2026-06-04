@@ -5,6 +5,12 @@ import com.valihameed.ufcfightpredictor.models.Fight;
 import com.valihameed.ufcfightpredictor.repository.EventRepository;
 import com.valihameed.ufcfightpredictor.repository.FightRepository;
 import com.valihameed.ufcfightpredictor.repository.ForumThreadRepository;
+import com.valihameed.ufcfightpredictor.repository.UserPredictionRepository;
+import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
+import com.valihameed.ufcfightpredictor.repository.userRepository;
+import com.valihameed.ufcfightpredictor.models.Notification;
+import com.valihameed.ufcfightpredictor.models.UserPrediction;
+import com.valihameed.ufcfightpredictor.users.user;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +25,9 @@ public class ScraperController {
     private final EventRepository eventRepository;
     private final FightRepository fightRepository;
     private final ForumThreadRepository forumThreadRepository;
+    private final UserPredictionRepository userPredictionRepository;
+    private final NotificationRepository notificationRepository;
+    private final userRepository userRepository;
 
     @PostMapping("/events")
     public ResponseEntity<List<Event>> upsertEvents(@RequestBody List<Event> events) {
@@ -31,6 +40,16 @@ public class ScraperController {
                 ev.setLocation(e.getLocation());
                 ev.setStatus(e.getStatus());
                 savedEvents.add(eventRepository.save(ev));
+                
+                // Auto-create thread if missing
+                if (!forumThreadRepository.existsByEventIdAndFightIdIsNull(ev.getId())) {
+                    com.valihameed.ufcfightpredictor.models.ForumThread thread = com.valihameed.ufcfightpredictor.models.ForumThread.builder()
+                            .eventId(ev.getId())
+                            .title(ev.getName() + " Discussion")
+                            .createdAt(java.time.OffsetDateTime.now())
+                            .build();
+                    forumThreadRepository.save(thread);
+                }
             } else {
                 Event savedEvent = eventRepository.save(e);
                 savedEvents.add(savedEvent);
@@ -62,6 +81,17 @@ public class ScraperController {
                 ft.setResultTime(f.getResultTime());
                 ft.setStatus(f.getStatus());
                 savedFights.add(fightRepository.save(ft));
+                
+                // Auto-create thread if missing
+                if (!forumThreadRepository.existsByFightId(ft.getId())) {
+                    com.valihameed.ufcfightpredictor.models.ForumThread thread = com.valihameed.ufcfightpredictor.models.ForumThread.builder()
+                            .eventId(ft.getEventId())
+                            .fightId(ft.getId())
+                            .title(ft.getFighter1Name() + " vs " + ft.getFighter2Name() + " Discussion")
+                            .createdAt(java.time.OffsetDateTime.now())
+                            .build();
+                    forumThreadRepository.save(thread);
+                }
             } else {
                 Fight savedFight = fightRepository.save(f);
                 savedFights.add(savedFight);
@@ -83,12 +113,33 @@ public class ScraperController {
         for (Fight f : fights) {
             if (f.getId() == null) continue;
             fightRepository.findById(f.getId()).ifPresent(existing -> {
+                boolean isNewResult = existing.getResultWinner() == null && f.getResultWinner() != null;
+                
                 existing.setResultWinner(f.getResultWinner());
                 existing.setResultMethod(f.getResultMethod());
                 existing.setResultRound(f.getResultRound());
                 existing.setResultTime(f.getResultTime());
                 existing.setStatus(f.getStatus());
                 fightRepository.save(existing);
+                
+                if (isNewResult) {
+                    List<UserPrediction> predictions = userPredictionRepository.findByFightId(existing.getId());
+                    for (UserPrediction pred : predictions) {
+                        userRepository.findById(pred.getUserId()).ifPresent(u -> {
+                            if (!u.isOptOutResultNotifications()) {
+                                Notification n = Notification.builder()
+                                    .userId(u.getId())
+                                    .type("FIGHT_RESULT")
+                                    .message("Results are out for " + existing.getFighter1Name() + " vs " + existing.getFighter2Name() + "!")
+                                    .link("/events")
+                                    .read(false)
+                                    .createdAt(java.time.OffsetDateTime.now())
+                                    .build();
+                                notificationRepository.save(n);
+                            }
+                        });
+                    }
+                }
             });
         }
         return ResponseEntity.ok().body("results upserted");

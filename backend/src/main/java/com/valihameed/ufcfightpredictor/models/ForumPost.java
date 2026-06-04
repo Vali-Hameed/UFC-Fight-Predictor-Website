@@ -33,4 +33,7 @@ public class ForumPost {
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    @Transient
+    private String username;
 }

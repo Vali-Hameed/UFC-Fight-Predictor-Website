@@ -23,6 +23,15 @@ public class NotificationController {
         return notificationRepository.findByUserId(currentUser.getId());
     }
 
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
+        user currentUser = (user) authentication.getPrincipal();
+        long count = notificationRepository.findByUserId(currentUser.getId()).stream()
+            .filter(n -> Boolean.FALSE.equals(n.getRead()))
+            .count();
+        return ResponseEntity.ok(count);
+    }
+
     @PatchMapping("/{id}/read")
     public ResponseEntity<Notification> markRead(@PathVariable Long id, Authentication authentication) {
         user currentUser = (user) authentication.getPrincipal();

@@ -6,28 +6,24 @@ import lombok.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "thread_subscriptions", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "thread_id"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notification {
+public class ThreadSubscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    private String type;
-
-    @Column(columnDefinition = "TEXT")
-    private String message;
-
-    private Boolean read;
+    @Column(name = "thread_id", nullable = false)
+    private Long threadId;
 
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
-
-    private String link;
 }

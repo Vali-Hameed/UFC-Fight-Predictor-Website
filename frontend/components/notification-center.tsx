@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, NotificationDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export function NotificationCenter() {
   const { token } = useAuth();
@@ -36,7 +37,13 @@ export function NotificationCenter() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-gold">{item.type ?? "Notification"}</p>
-              <p className="mt-2 text-sm text-white/75">{item.message}</p>
+              {item.link ? (
+                <Link href={item.link} onClick={() => { if (!item.read) markRead(item.id); }} className="mt-2 text-sm text-white hover:text-accent transition block">
+                  {item.message}
+                </Link>
+              ) : (
+                <p className="mt-2 text-sm text-white/75">{item.message}</p>
+              )}
             </div>
             <button onClick={() => void markRead(item.id)} className="rounded-full border border-white/10 bg-bg/70 px-3 py-1 text-xs text-white/70">
               {item.read ? "Read" : "Mark read"}

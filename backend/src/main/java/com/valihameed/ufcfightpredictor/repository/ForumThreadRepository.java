@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface ForumThreadRepository extends JpaRepository<ForumThread, Long> {
     List<ForumThread> findByEventId(Long eventId);
+    List<ForumThread> findByFightId(Long fightId);
+    boolean existsByEventIdAndFightIdIsNull(Long eventId);
+    boolean existsByFightId(Long fightId);
 }
