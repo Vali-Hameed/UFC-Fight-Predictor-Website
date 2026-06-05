@@ -96,8 +96,8 @@ export default async function HomePage() {
           description="Browse event pages, fights, and prediction cards in one place."
         >
           <div className="space-y-4">
-            {events.map((event) => (
-              <div key={event.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            {events.filter(e => e.status === "UPCOMING").map((event) => (
+              <Link key={event.id} href={`/events/${event.id}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-semibold text-white">{event.name}</p>
@@ -107,7 +107,7 @@ export default async function HomePage() {
                     {event.status}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </SectionCard>
