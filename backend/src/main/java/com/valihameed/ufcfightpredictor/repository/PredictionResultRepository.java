@@ -12,7 +12,7 @@ public interface PredictionResultRepository extends JpaRepository<PredictionResu
 
     @org.springframework.data.jpa.repository.Query("SELECT up.userId, u.username, " +
             "SUM(pr.pointsAwarded), " +
-            "SUM(CASE WHEN pr.isWinnerCorrect = true THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN pr.pointsAwarded > 0 THEN 1 ELSE 0 END), " +
             "COUNT(pr.id) " +
             "FROM PredictionResult pr " +
             "JOIN UserPrediction up ON pr.userPredictionId = up.id " +

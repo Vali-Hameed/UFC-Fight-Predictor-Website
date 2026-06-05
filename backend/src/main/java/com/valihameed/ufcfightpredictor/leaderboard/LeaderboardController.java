@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class LeaderboardController {
     private final LeaderboardRepository leaderboardRepository;
     private final userRepository userRepository;
+    private final com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository;
 
     @GetMapping
     public ResponseEntity<List<LeaderboardResponseDto>> global(@RequestParam(defaultValue = "0") int page) {
@@ -54,8 +55,7 @@ public class LeaderboardController {
     
     @GetMapping("/event/{eventId}")
     public ResponseEntity<List<LeaderboardResponseDto>> byEvent(
-            @PathVariable Long eventId,
-            com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository) {
+            @PathVariable Long eventId) {
         
         List<Object[]> data = predictionResultRepository.getEventLeaderboardData(eventId);
         List<LeaderboardResponseDto> dtos = data.stream().map(row -> {

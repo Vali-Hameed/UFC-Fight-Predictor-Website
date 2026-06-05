@@ -32,6 +32,7 @@ public class userController {
 	private final UserPredictionRepository userPredictionRepository;
 	private final FightRepository fightRepository;
 	private final EventRepository eventRepository;
+	private final com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository;
 
 	@GetMapping("/me")
 	public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
@@ -122,11 +123,22 @@ public class userController {
 	        dto.setSubmittedAt(p.getSubmittedAt());
 	        dto.setLocked(p.getLocked());
 	        
+	        List<com.valihameed.ufcfightpredictor.models.PredictionResult> results = predictionResultRepository.findByUserPredictionId(p.getId());
+	        if (!results.isEmpty()) {
+	            dto.setPointsAwarded(results.get(0).getPointsAwarded());
+	            dto.setIsWinnerCorrect(results.get(0).getIsWinnerCorrect());
+	        } else {
+	            dto.setPointsAwarded(0);
+	            dto.setIsWinnerCorrect(false);
+	        }
+	        
 	        fightRepository.findById(p.getFightId()).ifPresent(fight -> {
 	            dto.setFighter1Name(fight.getFighter1Name());
 	            dto.setFighter2Name(fight.getFighter2Name());
 	            dto.setEventId(fight.getEventId());
 	            dto.setResultWinner(fight.getResultWinner());
+	            dto.setResultMethod(fight.getResultMethod());
+	            dto.setResultRound(fight.getResultRound());
 	            if (fight.getEventId() != null) {
 	                eventRepository.findById(fight.getEventId()).ifPresent(event -> {
 	                    dto.setEventName(event.getName());
@@ -167,8 +179,12 @@ public class userController {
 	    private String predictedMethod;
 	    private Integer predictedRound;
 	    private String resultWinner;
+	    private String resultMethod;
+	    private Integer resultRound;
 	    private OffsetDateTime submittedAt;
 	    private Boolean locked;
+	    private Integer pointsAwarded;
+	    private Boolean isWinnerCorrect;
 	}
 
 	@Data

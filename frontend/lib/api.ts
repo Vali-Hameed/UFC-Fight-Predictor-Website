@@ -185,8 +185,12 @@ export type PredictionHistoryItemDto = {
   predictedMethod: string | null;
   predictedRound: number | null;
   resultWinner: string | null;
+  resultMethod?: string | null;
+  resultRound?: number | null;
   submittedAt: string | null;
   locked: boolean;
+  pointsAwarded?: number | null;
+  isWinnerCorrect?: boolean | null;
 };
 
 export type LeaderboardStatsDto = {
