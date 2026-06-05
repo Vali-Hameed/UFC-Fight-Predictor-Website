@@ -86,7 +86,7 @@ public class ScraperController {
                 Fight savedFight = fightRepository.save(ft);
                 savedFights.add(savedFight);
                 
-                if ("COMPLETED".equals(savedFight.getStatus()) && savedFight.getResultWinner() != null) {
+                if (("COMPLETED".equals(savedFight.getStatus()) || "CANCELED".equals(savedFight.getStatus())) && savedFight.getResultWinner() != null) {
                     try {
                         resultProcessingService.processFightResult(savedFight.getId());
                     } catch (Exception ex) {

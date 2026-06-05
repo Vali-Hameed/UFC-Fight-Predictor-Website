@@ -17,6 +17,6 @@ public class PredictionRequest {
     private String predictedMethod;
 
     @NotNull
-    @Min(1)
+    @Min(0)
     private Integer predictedRound;
 }
