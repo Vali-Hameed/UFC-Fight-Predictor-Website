@@ -58,28 +58,26 @@ export default async function EventPage({ params }: EventPageProps) {
     fightCards.push({ fight, mlPrediction, communityVote });
   }
 
-  let communityCorrect = 0;
   let aiCorrect = 0;
   let completedFightsCount = 0;
 
-  fightCards.forEach(({ fight, mlPrediction, communityVote }) => {
+  fightCards.forEach(({ fight, mlPrediction }) => {
     if (fight.status === "COMPLETED" && fight.resultWinner) {
       completedFightsCount++;
       if (mlPrediction && mlPrediction.predictedWinner === fight.resultWinner) {
         aiCorrect++;
       }
-      if (communityVote) {
-        const f1Votes = communityVote.fighter1Votes ?? 0;
-        const f2Votes = communityVote.fighter2Votes ?? 0;
-        const communityWinner = f1Votes > f2Votes ? fight.fighter1Name : (f2Votes > f1Votes ? fight.fighter2Name : null);
-        if (communityWinner === fight.resultWinner) {
-          communityCorrect++;
-        }
-      }
     }
   });
 
-  const communityAccuracy = completedFightsCount > 0 ? Math.round((communityCorrect / completedFightsCount) * 100) : 0;
+  let totalEventPredictions = 0;
+  let correctEventPredictions = 0;
+  leaderboard.forEach(row => {
+    totalEventPredictions += (row.totalPredictions ?? 0);
+    correctEventPredictions += (row.correctPredictions ?? 0);
+  });
+
+  const communityAccuracy = totalEventPredictions > 0 ? Math.round((correctEventPredictions / totalEventPredictions) * 100) : 0;
   const aiAccuracy = completedFightsCount > 0 ? Math.round((aiCorrect / completedFightsCount) * 100) : 0;
 
   return (
@@ -123,7 +121,7 @@ export default async function EventPage({ params }: EventPageProps) {
                 <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="text-lg font-semibold text-gold">#{index + 1}</div>
                   <div>
-                    <div className="font-semibold text-white">@{row.username ?? `User #${row.userId}`}</div>
+                    <Link href={`/profile/${row.username ?? row.userId}`} className="font-semibold text-white hover:underline">@{row.username ?? `User #${row.userId}`}</Link>
                     <div className="text-sm text-white/50">{row.correctPredictions ?? 0} correct predictions • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
                   </div>
                   <div className="text-right">

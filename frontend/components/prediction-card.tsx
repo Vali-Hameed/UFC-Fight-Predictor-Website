@@ -12,7 +12,7 @@ type PredictionCardProps = {
   communityVote: CommunityVoteDto | null;
 };
 
-const methodOptions = ["KO/TKO", "Submission", "Decision"];
+const methodOptions = ["Any Method", "KO/TKO", "Submission", "Decision"];
 
 /** Minimum ms between actual network submissions */
 const SUBMIT_COOLDOWN_MS = 2000;
@@ -54,7 +54,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
       fightId: fight.id,
       predictedWinner: String(formData.get("predictedWinner") ?? ""),
       predictedMethod: String(formData.get("predictedMethod") ?? ""),
-      predictedRound: Number(formData.get("predictedRound") ?? 1)
+      predictedRound: Number(formData.get("predictedRound") ?? 0)
     };
 
     inflightRef.current = true;
@@ -113,7 +113,9 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
         </div>
         <div className="rounded-2xl border border-white/10 bg-bg/70 p-4 text-sm text-white/70">
           {fight.status === "COMPLETED"
-            ? `Result: ${fight.resultWinner ?? "TBD"}`
+            ? (["Canceled", "Draw", "No Contest", "Canceled/No Contest"].includes(fight.resultWinner || "") 
+                ? `Result: ${fight.resultWinner}` 
+                : `Result: ${fight.resultWinner ?? "TBD"}${fight.resultWinner ? ` by ${fight.resultMethod || 'Decision'}${fight.resultRound ? ` (Round ${fight.resultRound})` : ''}` : ''}`)
             : fight.status === "CANCELED"
             ? "Result: Canceled/Draw"
             : "Predictions can be submitted until the event is live."}
@@ -124,6 +126,8 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
         <select name="predictedWinner" disabled={locked} defaultValue={fight.fighter1Name ?? ""} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
           <option value={fight.fighter1Name ?? ""}>{fight.fighter1Name}</option>
           <option value={fight.fighter2Name ?? ""}>{fight.fighter2Name}</option>
+          <option value="Draw">Draw</option>
+          <option value="Canceled/No Contest">Canceled / No Contest</option>
         </select>
         <select name="predictedMethod" disabled={locked} defaultValue={methodOptions[0]} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
           {methodOptions.map((method) => (
@@ -132,7 +136,14 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
             </option>
           ))}
         </select>
-        <input name="predictedRound" disabled={locked} type="number" min={1} max={maxRounds} defaultValue={1} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60" />
+        <select name="predictedRound" disabled={locked} defaultValue={0} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+          <option value={0}>Any Round</option>
+          {Array.from({ length: maxRounds }, (_, i) => (
+            <option key={i + 1} value={i + 1}>
+              Round {i + 1}
+            </option>
+          ))}
+        </select>
         <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3">
           {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
         </button>

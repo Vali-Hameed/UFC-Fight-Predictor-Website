@@ -74,7 +74,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                 {Object.entries(groupedPredictions).map(([eventId, preds]) => {
                   const eventName = preds[0]?.eventName || `Event #${eventId}`;
                   const total = preds.length;
-                  const correct = preds.filter(p => p.resultWinner && p.resultWinner === p.predictedWinner).length;
+                  const correct = preds.filter(p => p.pointsAwarded && p.pointsAwarded > 0).length;
                   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
                   return (
@@ -97,15 +97,19 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                               <div>
                                 <p className="text-sm font-medium text-white">{pred.fighter1Name} vs {pred.fighter2Name}</p>
                                 <p className="mt-1 text-xs text-white/50">
-                                  {pred.resultWinner ? `Result: ${pred.resultWinner} won` : "Pending result"}
+                                  {pred.resultWinner 
+                                    ? (["Canceled", "Draw", "No Contest", "Canceled/No Contest"].includes(pred.resultWinner) 
+                                        ? `Result: ${pred.resultWinner}` 
+                                        : `Result: ${pred.resultWinner} by ${pred.resultMethod || 'Decision'}${pred.resultRound ? ` (Round ${pred.resultRound})` : ''}`)
+                                    : "Pending result"}
                                 </p>
                               </div>
                               <div className="text-right">
                                 <p className="text-sm font-semibold text-gold">
-                                  {pred.predictedWinner} by {pred.predictedMethod}
+                                  {pred.predictedWinner} {pred.predictedMethod !== "Any Method" ? `by ${pred.predictedMethod}` : ""}
                                 </p>
                                 <p className="mt-1 text-xs text-white/50">
-                                  Round {pred.predictedRound} • {new Date(pred.submittedAt!).toLocaleDateString()}
+                                  {pred.predictedRound ? `Round ${pred.predictedRound}` : "Any Round"} • {new Date(pred.submittedAt!).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
