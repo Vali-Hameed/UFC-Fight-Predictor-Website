@@ -1,11 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch, ApiResponseError } from "@/lib/api";
-import fightersDataJson from "./fighters.json";
-
-// The imported JSON has shape: { Active: { 'Welterweight': ['A', 'B'], ... }, Inactive: { ... } }
-const fightersData = fightersDataJson as Record<string, Record<string, string[]>>;
 
 const WEIGHT_CLASS_ORDER = [
   "Flyweight",
@@ -32,11 +28,13 @@ const getWeightClassRank = (wc: string) => {
 function FighterSelector({ 
   side, 
   value, 
-  onChange 
+  onChange,
+  fightersData 
 }: { 
   side: string; 
   value: string; 
   onChange: (v: string) => void;
+  fightersData: Record<string, Record<string, string[]>>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -110,10 +108,23 @@ function FighterSelector({
 }
 
 export default function SimulatorPage() {
+  const [fightersData, setFightersData] = useState<Record<string, Record<string, string[]>>>({ Active: {}, Inactive: {} });
   const [fighter1, setFighter1] = useState("");
   const [fighter2, setFighter2] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const loadFighters = async () => {
+      try {
+        const data = await apiFetch<Record<string, Record<string, string[]>>>('/api/v1/fighters');
+        if (data) setFightersData(data);
+      } catch (err) {
+        console.error("Failed to fetch fighters data", err);
+      }
+    };
+    loadFighters();
+  }, []);
   
   const [result, setResult] = useState<{
     predictedWinner: string;
@@ -177,6 +188,7 @@ export default function SimulatorPage() {
               side="Fighter 1 (Red Corner)" 
               value={fighter1} 
               onChange={setFighter1} 
+              fightersData={fightersData}
             />
           </div>
 
@@ -223,6 +235,7 @@ export default function SimulatorPage() {
               side="Fighter 2 (Blue Corner)" 
               value={fighter2} 
               onChange={setFighter2} 
+              fightersData={fightersData}
             />
           </div>
 

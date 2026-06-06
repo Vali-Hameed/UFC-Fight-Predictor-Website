@@ -4,18 +4,19 @@ import { FormEvent, useEffect, useState } from "react";
 import { SectionCard } from "@/components/section-card";
 import { apiFetch } from "@/lib/api";
 import { PasswordInput } from "@/components/password-input";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 export default function ResetPasswordPage() {
   const [tokenFromQuery, setTokenFromQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const queryToken = new URLSearchParams(window.location.search).get("token") ?? "";
+    const queryToken = searchParams.get("token") ?? "";
     setTokenFromQuery(queryToken);
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

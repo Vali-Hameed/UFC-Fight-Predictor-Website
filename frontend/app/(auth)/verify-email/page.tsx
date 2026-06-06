@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SectionCard } from "@/components/section-card";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hasToken, setHasToken] = useState(false);
@@ -17,7 +18,7 @@ export default function VerifyEmailPage() {
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    const queryToken = new URLSearchParams(window.location.search).get("token");
+    const queryToken = searchParams.get("token");
     if (!queryToken) {
       setLoading(false);
       return;
