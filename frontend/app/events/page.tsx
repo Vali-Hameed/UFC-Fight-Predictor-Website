@@ -17,7 +17,7 @@ export default async function EventsPage() {
         if (mainFight) {
           mainPrediction = await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${mainFight.id}`).catch(() => null);
         }
-      } catch (e) {
+      } catch {
         // Ignore
       }
       return { ...event, mainPrediction };

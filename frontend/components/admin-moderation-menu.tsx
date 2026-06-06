@@ -44,7 +44,8 @@ export function AdminModerationMenu({ postId, postUserId }: AdminModerationMenuP
       try {
         await warnUser(postUserId, token);
         toast.success("User warned.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to warn user.");
       }
     }
@@ -56,7 +57,8 @@ export function AdminModerationMenu({ postId, postUserId }: AdminModerationMenuP
       try {
         await banUser(postUserId, token, durationDays);
         toast.success("User banned.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to ban user.");
       }
     }
@@ -68,7 +70,8 @@ export function AdminModerationMenu({ postId, postUserId }: AdminModerationMenuP
         await deletePost(postId, token);
         toast.success("Post deleted.");
         router.refresh();
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to delete post.");
       }
     }

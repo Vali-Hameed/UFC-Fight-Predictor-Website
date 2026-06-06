@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SiteHeader } from "@/components/site-header";
-import { toast } from "sonner";
 
 jest.mock("sonner");
 

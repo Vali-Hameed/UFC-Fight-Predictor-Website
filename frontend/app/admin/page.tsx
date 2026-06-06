@@ -33,6 +33,7 @@ export default function AdminPage() {
 
     void loadUsers().catch(() => toast.error("Could not load users."));
     void loadLogs().catch(() => toast.error("Could not load scraper logs."));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const triggerPrewarm = async (event: FormEvent<HTMLFormElement>) => {
@@ -103,7 +104,8 @@ export default function AdminPage() {
       try {
         await warnUser(userId, token);
         toast.success("User warned.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to warn user.");
       }
     }
@@ -116,7 +118,8 @@ export default function AdminPage() {
       try {
         await banUser(userId, token, durationDays);
         toast.success("User banned.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to ban user.");
       }
     }
@@ -128,7 +131,8 @@ export default function AdminPage() {
       try {
         await unbanUser(userId, token);
         toast.success("User unbanned.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to unban user.");
       }
     }
@@ -141,7 +145,8 @@ export default function AdminPage() {
         await deleteUser(userId, token);
         setUsers((current) => current.filter((u) => u.id !== userId));
         toast.success("User deleted.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to delete user.");
       }
     }
@@ -154,7 +159,8 @@ export default function AdminPage() {
         await deleteScrapeLog(logId, token);
         setLogs((current) => current.filter((l) => l.id !== logId));
         toast.success("Scraper log deleted.");
-      } catch (error: any) {
+      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
         toast.error(error.message || "Failed to delete log.");
       }
     }

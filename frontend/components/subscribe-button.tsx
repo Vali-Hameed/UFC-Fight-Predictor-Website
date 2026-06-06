@@ -10,7 +10,7 @@ type SubscribeButtonProps = {
 };
 
 export function SubscribeButton({ threadId }: SubscribeButtonProps) {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);

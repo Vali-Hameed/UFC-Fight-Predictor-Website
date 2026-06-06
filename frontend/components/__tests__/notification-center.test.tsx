@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificationCenter } from "@/components/notification-center";
-import { toast } from "sonner";
 
 jest.mock("sonner");
 

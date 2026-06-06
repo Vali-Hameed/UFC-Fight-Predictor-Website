@@ -16,6 +16,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [lastName, setLastName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [publicProfile, setPublicProfile] = useState(true);
+  const [optOutEmailNotifications, setOptOutEmailNotifications] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -27,6 +28,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setLastName("");
       setProfileImageUrl("");
       setPublicProfile(true);
+      setOptOutEmailNotifications(false);
       return;
     }
 
@@ -44,6 +46,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
         setLastName(currentUser.lastName ?? "");
         setProfileImageUrl(currentUser.profileImageUrl ?? "");
         setPublicProfile(currentUser.publicProfile ?? true);
+        setOptOutEmailNotifications(currentUser.optOutEmailNotifications ?? false);
       })
       .catch(() => {
         if (active) {
@@ -94,7 +97,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             firstName,
             lastName,
             profileImageUrl,
-            publicProfile
+            publicProfile,
+            optOutEmailNotifications
           })
         },
         token
@@ -104,6 +108,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setLastName(updatedProfile.lastName ?? "");
       setProfileImageUrl(updatedProfile.profileImageUrl ?? "");
       setPublicProfile(updatedProfile.publicProfile ?? true);
+      setOptOutEmailNotifications(updatedProfile.optOutEmailNotifications ?? false);
       toast.success("Profile updated.");
     } catch {
       toast.error("Could not update your profile.");
@@ -190,6 +195,18 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
           <p className="mt-2 text-xs text-white/40">
             Public profiles are visible on the leaderboard and allow others to see your stats and predictions.
           </p>
+        </div>
+        <div className="md:col-span-3 mt-2">
+          <p className="mb-2 text-sm text-white/70">Notification Preferences</p>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={optOutEmailNotifications}
+              onChange={(e) => setOptOutEmailNotifications(e.target.checked)}
+              className="h-4 w-4 rounded border-white/10 bg-bg/70 accent-accent cursor-pointer"
+            />
+            <span className="text-sm text-white">Opt-out of all email notifications</span>
+          </label>
         </div>
         <div className="md:col-span-3 flex items-center gap-3">
           <button

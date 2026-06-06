@@ -40,7 +40,8 @@ export default function RegisterPage() {
       toast.success("Account created! Please check your email.");
       router.push("/verify-email");
       router.refresh();
-    } catch (error: any) {
+    } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
       const msg = error?.message || "";
       if (msg.includes("registered but not verified")) {
         setUnverifiedEmail(payload.email);

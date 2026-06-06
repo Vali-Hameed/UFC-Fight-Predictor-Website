@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -38,7 +39,7 @@ export function NotificationCenter() {
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-gold">{item.type ?? "Notification"}</p>
               {item.link ? (
-                <Link href={item.link} onClick={() => { if (!item.read) markRead(item.id); }} className="mt-2 text-sm text-white hover:text-accent transition block">
+                <Link href={item.link as any} onClick={() => { if (!item.read) markRead(item.id); }} className="mt-2 text-sm text-white hover:text-accent transition block">
                   {item.message}
                 </Link>
               ) : (

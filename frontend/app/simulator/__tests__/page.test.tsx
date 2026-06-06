@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SimulatorPage from "@/app/simulator/page";
@@ -62,7 +63,7 @@ describe("SimulatorPage", () => {
   });
 
   it("shows error when same fighter selected", async () => {
-    const user = userEvent.setup();
+    // const user = userEvent.setup();
     await act(async () => {
       render(<SimulatorPage />);
     });

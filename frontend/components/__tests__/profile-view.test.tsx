@@ -1,6 +1,6 @@
 import { render, screen, act } from "@testing-library/react";
 import { ProfileView } from "@/components/profile-view";
-import type { ProfileDto } from "@/lib/api";
+import { apiFetch, type ProfileDto } from "@/lib/api";
 
 jest.mock("@/lib/session", () => ({
   useAuth: () => ({ user: { username: "john" }, token: "token123" }),
@@ -18,7 +18,7 @@ jest.mock("@/components/profile-editor", () => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
-  (require("@/lib/api").apiFetch as jest.Mock).mockResolvedValue(null);
+  (apiFetch as jest.Mock).mockResolvedValue(null);
 });
 
 const publicProfile: ProfileDto = {

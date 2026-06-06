@@ -124,7 +124,7 @@ describe("apiFetch", () => {
     await expect(apiFetch("/api/test")).rejects.toThrow(ApiResponseError);
     try {
       await apiFetch("/api/test");
-    } catch (e) {
+    } catch {
       // Second call for detailed checks — need new mock
     }
   });
@@ -154,7 +154,7 @@ describe("apiFetch", () => {
       text: () => Promise.resolve("Bad Gateway"),
     });
 
-    await expect(apiFetch("/api/test")).rejects.toThrow("Request failed");
+    await expect(apiFetch("/api/test")).rejects.toThrow("Bad Gateway");
   });
 
   it("includes credentials and no-store cache", async () => {
@@ -199,7 +199,7 @@ describe("Named API functions", () => {
       text: () => Promise.resolve("5"),
     });
     const { getUnreadNotificationCount } = await import("@/lib/api");
-    const result = await getUnreadNotificationCount("token123");
+    await getUnreadNotificationCount("token123");
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/v1/notifications/unread-count"),
       expect.any(Object)

@@ -51,7 +51,7 @@ export default async function EventPage({ params }: EventPageProps) {
   const threads = await apiFetch<ForumThreadDto[]>(`/api/v1/forum/threads?eventId=${id}`).catch(() => []);
   const leaderboard = await getEventLeaderboard(id).catch(() => []);
 
-  const fightCards = [];
+  const fightCards: { fight: FightDto; mlPrediction: MlPredictionDto | null; communityVote: CommunityVoteDto | null }[] = [];
   for (const fight of fights) {
     const mlPrediction = await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${fight.id}`).catch(() => null);
     const communityVote = await apiFetch<CommunityVoteDto>(`/api/v1/community-votes/${fight.id}`).catch(() => null);

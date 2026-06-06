@@ -27,14 +27,15 @@ export default function LoginPage() {
       toast.success("Successfully logged in.");
       router.push("/");
       router.refresh();
-    } catch (error: any) {
+    } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
       if (error?.errorCode === "USER_DISABLED") {
         setUnverifiedEmail(username);
         toast.error("Account is not verified. Please verify your email.");
       } else if (error?.errorCode === "USER_LOCKED") {
         toast.error("Your account is locked. Please contact an administrator.");
       } else {
-        toast.error("Login failed. Check your credentials and try again.");
+        toast.error(error.message || "Login failed. Check your credentials and try again.");
       }
     } finally {
       setLoading(false);
@@ -91,7 +92,7 @@ export default function LoginPage() {
           )}
 
           <div className="mt-4 text-center text-sm text-white/70">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="/register" className="text-accent hover:underline">
               Sign up
             </a>

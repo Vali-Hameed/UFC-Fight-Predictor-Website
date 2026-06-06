@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Tests for app/events/[id]/page.tsx (server component)
  */
@@ -24,6 +25,7 @@ jest.mock("next/navigation", () => ({
 }));
 
 jest.mock("@/components/prediction-card", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PredictionCard: ({ fight }: any) => <div data-testid="prediction-card">{fight.fighter1Name} vs {fight.fighter2Name}</div>,
 }));
 

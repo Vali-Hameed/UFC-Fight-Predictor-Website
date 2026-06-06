@@ -42,7 +42,7 @@ export default function VerifyEmailPage() {
     }).finally(() => {
       setLoading(false);
     });
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleResend = async () => {
     if (!emailToResend) {
