@@ -280,4 +280,5 @@ export type AdminUserDto = {
   role: AdminRoleDto | null;
   locked: boolean;
   enabled: boolean;
+  bannedFromForumUntil?: string | null;
 };

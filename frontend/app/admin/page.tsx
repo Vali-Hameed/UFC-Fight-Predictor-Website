@@ -117,6 +117,7 @@ export default function AdminPage() {
     if (confirm(msg)) {
       try {
         await banUser(userId, token, durationDays);
+        await loadUsers();
         toast.success("User banned.");
       } // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catch (error: any) {
@@ -130,6 +131,7 @@ export default function AdminPage() {
     if (confirm("Remove this user's forum ban?")) {
       try {
         await unbanUser(userId, token);
+        await loadUsers();
         toast.success("User unbanned.");
       } // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catch (error: any) {
@@ -267,14 +269,16 @@ export default function AdminPage() {
                     >
                       Ban Perm
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleUnban(user.id)}
-                      disabled={user.role?.name === "ROLE_ADMIN"}
-                      className="rounded bg-green-500/20 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      Unban
-                    </button>
+                    {user.bannedFromForumUntil && new Date(user.bannedFromForumUntil).getTime() > Date.now() && (
+                      <button
+                        type="button"
+                        onClick={() => handleUnban(user.id)}
+                        disabled={user.role?.name === "ROLE_ADMIN"}
+                        className="rounded bg-green-500/20 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        Unban
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleDelete(user.id)}
