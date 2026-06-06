@@ -22,6 +22,22 @@ export class ApiResponseError extends Error {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
+  
+  if (!response.ok) {
+    let errorMsg = "Request failed";
+    let errorCode = undefined;
+    if (text) {
+      try {
+        const errData = JSON.parse(text) as ApiError;
+        errorMsg = errData.message ?? errorMsg;
+        errorCode = errData.error;
+      } catch {
+        errorMsg = text;
+      }
+    }
+    throw new ApiResponseError(response.status, errorMsg, errorCode);
+  }
+
   if (!text) {
     return undefined as T;
   }
@@ -33,10 +49,6 @@ async function parseResponse<T>(response: Response): Promise<T> {
     data = text;
   }
 
-  if (!response.ok) {
-    const error = (data ?? {}) as ApiError;
-    throw new ApiResponseError(response.status, error.message ?? "Request failed", error.error);
-  }
   return data as T;
 }
 
@@ -98,6 +110,10 @@ export async function deletePost(postId: number, token: string): Promise<void> {
 
 export async function deleteUser(userId: number, token: string): Promise<void> {
   await apiFetch(`/api/v1/admin/users/${userId}`, { method: "DELETE" }, token);
+}
+
+export async function deleteScrapeLog(logId: number, token: string): Promise<void> {
+  await apiFetch(`/api/v1/internal/scraper/logs/${logId}`, { method: "DELETE" }, token);
 }
 
 export type AuthResponse = {

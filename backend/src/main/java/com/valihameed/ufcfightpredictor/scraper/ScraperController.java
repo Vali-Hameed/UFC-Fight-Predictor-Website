@@ -156,4 +156,18 @@ public class ScraperController {
         }
         return ResponseEntity.ok().body("results upserted");
     }
+    @PostMapping("/roster")
+    public ResponseEntity<?> upsertRoster(@RequestBody java.util.Map<String, Object> roster) {
+        try {
+            java.io.File directory = new java.io.File("data");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new java.io.File("data/fighters.json"), roster);
+            return ResponseEntity.ok().body("roster upserted");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error saving roster: " + e.getMessage());
+        }
+    }
 }

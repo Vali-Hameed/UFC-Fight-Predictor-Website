@@ -48,7 +48,7 @@ public class securityConfig{
             .requestMatchers("/api/v*/auth/**").permitAll()
             .requestMatchers("/api/v*/password/**").permitAll()
             .requestMatchers("/api/v*/internal/scraper/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/v*/events/**", "/api/v*/leaderboard/**", "/api/v*/forum/**", "/api/v*/community-votes/**", "/api/v*/ml/**", "/api/v*/health", "/api/v*/users/*").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v*/fighters/**", "/api/v*/events/**", "/api/v*/leaderboard/**", "/api/v*/forum/**", "/api/v*/community-votes/**", "/api/v*/ml/**", "/api/v*/health", "/api/v*/users/*").permitAll()
             .anyRequest().authenticated()
             )
             .sessionManagement(sm -> sm.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))

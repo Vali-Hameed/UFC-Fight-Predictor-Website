@@ -21,8 +21,9 @@ public class ScraperAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
         if (uri.startsWith("/api/v1/internal/scraper")) {
-            // Allow frontend to GET logs using JWT instead of Scraper Key
-            if (uri.equals("/api/v1/internal/scraper/logs") && request.getMethod().equals("GET")) {
+            // Allow frontend to GET/DELETE logs using JWT instead of Scraper Key
+            if (uri.startsWith("/api/v1/internal/scraper/logs") && 
+                (request.getMethod().equals("GET") || request.getMethod().equals("DELETE") || request.getMethod().equals("OPTIONS"))) {
                 filterChain.doFilter(request, response);
                 return;
             }

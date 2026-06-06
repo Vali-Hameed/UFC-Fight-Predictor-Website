@@ -2,7 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SectionCard } from "@/components/section-card";
-import { AdminUserDto, apiFetch, ScrapeLogDto, warnUser, banUser, unbanUser, deleteUser } from "@/lib/api";
+import { AdminUserDto, apiFetch, ScrapeLogDto, warnUser, banUser, unbanUser, deleteUser, deleteScrapeLog } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { notFound } from "next/navigation";
 import { toast } from "sonner";
@@ -147,6 +147,19 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteLog = async (logId: number) => {
+    if (!token) return;
+    if (confirm("Delete this scraper log?")) {
+      try {
+        await deleteScrapeLog(logId, token);
+        setLogs((current) => current.filter((l) => l.id !== logId));
+        toast.success("Scraper log deleted.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete log.");
+      }
+    }
+  };
+
   const handleRoleChange = (userId: number, event: ChangeEvent<HTMLInputElement>) => {
     setRoleDrafts((current) => ({
       ...current,
@@ -177,9 +190,20 @@ export default function AdminPage() {
           </div>
           <div className="space-y-3">
             {logs.map((log) => (
-              <div key={log.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/75">
-                <div className="font-semibold text-white">{log.status}</div>
-                <div className="mt-1 text-white/55">Events: {log.eventsFound ?? 0} • Fights: {log.fightsUpdated ?? 0}</div>
+              <div key={log.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/75 flex justify-between items-center">
+                <div>
+                  <div className="font-semibold text-white">{log.status}</div>
+                  {log.startedAt && <div className="text-xs text-white/50 mt-0.5">Started: {new Date(log.startedAt).toLocaleString()}</div>}
+                  {log.completedAt && <div className="text-xs text-white/50">Completed: {new Date(log.completedAt).toLocaleString()}</div>}
+                  <div className="mt-1 text-white/55">Events: {log.eventsFound ?? 0} • Fights: {log.fightsUpdated ?? 0}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteLog(log.id)}
+                  className="rounded bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/40 transition"
+                >
+                  Delete
+                </button>
               </div>
             ))}
             {logs.length === 0 ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">No scraper logs loaded yet.</div> : null}

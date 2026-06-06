@@ -37,6 +37,13 @@ public class ScrapeLogController {
         return scrapeLogRepository.findAll();
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        scrapeLogRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @Data
     public static class ScrapeLogRequest {
         private OffsetDateTime startedAt;
