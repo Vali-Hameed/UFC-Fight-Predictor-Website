@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @RestController
@@ -64,18 +65,33 @@ public class AdminModerationController {
             // Permanent ban (e.g. year 9999)
             u.setBannedFromForumUntil(OffsetDateTime.parse("9999-12-31T23:59:59Z"));
         } else {
-            u.setBannedFromForumUntil(OffsetDateTime.now().plusDays(durationDays));
+            OffsetDateTime currentBanEnd = u.getBannedFromForumUntil();
+            if (currentBanEnd != null && currentBanEnd.isAfter(OffsetDateTime.now()) && currentBanEnd.getYear() < 9999) {
+                u.setBannedFromForumUntil(currentBanEnd.plusDays(durationDays));
+            } else if (currentBanEnd == null || currentBanEnd.isBefore(OffsetDateTime.now())) {
+                u.setBannedFromForumUntil(OffsetDateTime.now().plusDays(durationDays));
+            }
         }
         userRepository.save(u);
+
+        String banMessage;
+        String formattedDate = null;
+        if (u.getBannedFromForumUntil() != null && u.getBannedFromForumUntil().getYear() >= 9999) {
+            banMessage = "You have been permanently banned from the forum. Contact support if you believe this is an error.";
+        } else {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm z");
+            formattedDate = u.getBannedFromForumUntil().atZoneSameInstant(java.time.ZoneId.of("UTC")).format(formatter);
+            banMessage = "You have been banned from the forum until " + formattedDate + ". Contact support if you believe this is an error.";
+        }
 
         Notification n = Notification.builder()
             .userId(u.getId())
             .type("BAN")
-            .message("You have been banned from the forum until " + u.getBannedFromForumUntil() + ". Contact support if you believe this is an error.")
+            .message(banMessage)
             .build();
         notificationService.createNotification(n);
 
-        return ResponseEntity.ok().body("User banned until " + u.getBannedFromForumUntil());
+        return ResponseEntity.ok().body(u.getBannedFromForumUntil() != null && u.getBannedFromForumUntil().getYear() >= 9999 ? "User permanently banned." : "User banned until " + formattedDate);
     }
 
     @PostMapping("/{id}/unban")
