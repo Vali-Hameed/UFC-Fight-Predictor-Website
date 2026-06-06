@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
+@lombok.AllArgsConstructor
+@lombok.NoArgsConstructor
 public class PredictionRequest {
     @NotNull
     private Long fightId;

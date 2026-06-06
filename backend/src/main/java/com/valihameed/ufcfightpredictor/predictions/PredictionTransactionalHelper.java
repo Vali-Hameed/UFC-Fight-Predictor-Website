@@ -6,6 +6,7 @@ import com.valihameed.ufcfightpredictor.models.UserPrediction;
 import com.valihameed.ufcfightpredictor.repository.CommunityVoteRepository;
 import com.valihameed.ufcfightpredictor.repository.FightRepository;
 import com.valihameed.ufcfightpredictor.repository.UserPredictionRepository;
+import com.valihameed.ufcfightpredictor.repository.EventRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,6 +27,7 @@ public class PredictionTransactionalHelper {
     private final UserPredictionRepository userPredictionRepository;
     private final FightRepository fightRepository;
     private final CommunityVoteRepository communityVoteRepository;
+    private final EventRepository eventRepository;
 
     @Transactional
     public UserPrediction doSubmitPrediction(Long userId, PredictionRequest req) {
@@ -34,6 +36,13 @@ public class PredictionTransactionalHelper {
 
         if ("COMPLETED".equals(fight.getStatus()) || "LIVE".equals(fight.getStatus())) {
             throw new IllegalStateException("Fight is locked for predictions");
+        }
+
+        com.valihameed.ufcfightpredictor.models.Event event = eventRepository.findById(fight.getEventId())
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        if (OffsetDateTime.now().isAfter(event.getEventDate())) {
+            throw new IllegalStateException("Event has already started. Predictions are locked.");
         }
 
         UserPrediction existing = userPredictionRepository
