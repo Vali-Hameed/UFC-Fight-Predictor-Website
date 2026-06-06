@@ -25,6 +25,7 @@ public class AdminUserController {
     public List<user> listUsers() {
         return userRepository.findAll().stream()
             .filter(u -> u.getUsername() == null || !u.getUsername().startsWith("deleted_user_"))
+            .sorted(java.util.Comparator.comparing(user::getId))
             .toList();
     }
 
