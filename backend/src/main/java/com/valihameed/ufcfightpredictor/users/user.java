@@ -60,8 +60,8 @@ public class user implements UserDetails {
     private java.time.OffsetDateTime bannedFromForumUntil;
 
     @Builder.Default
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean optOutResultNotifications = false;
+    @Column(name = "opt_out_email_notifications", nullable = false, columnDefinition = "boolean default false")
+    private boolean optOutEmailNotifications = false;
 
     public user(String firstName, String lastName, String username, String email, String password,role role) {
         this.firstName = firstName;
@@ -75,7 +75,7 @@ public class user implements UserDetails {
         this.publicProfile = true;
         this.tokenVersion = 0;
         this.warningCount = 0;
-        this.optOutResultNotifications = false;
+        this.optOutEmailNotifications = false;
     }
 
     public user(String firstName, String lastName, String username, String email, String password, String profileImageUrl, role role, boolean locked, boolean enabled) {
@@ -91,7 +91,7 @@ public class user implements UserDetails {
         this.publicProfile = true;
         this.tokenVersion = 0;
         this.warningCount = 0;
-        this.optOutResultNotifications = false;
+        this.optOutEmailNotifications = false;
     }
 
     @Override

@@ -21,4 +21,6 @@ public class PredictionRequest {
     @NotNull
     @Min(0)
     private Integer predictedRound;
+
+    private Boolean optOutResultNotification;
 }

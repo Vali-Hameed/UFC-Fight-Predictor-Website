@@ -21,6 +21,7 @@ public class ResultProcessingService {
     private final PredictionResultRepository predictionResultRepository;
     private final LeaderboardRepository leaderboardRepository;
     private final NotificationRepository notificationRepository;
+    private final com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
 
     @Transactional
     public void processFightResult(Long fightId) {
@@ -112,14 +113,14 @@ public class ResultProcessingService {
             leaderboardRepository.save(lb);
 
             // notification
-            Notification note = Notification.builder()
-                    .userId(userId)
-                    .type("RESULT")
-                    .message(String.format("Your prediction for fight %d scored %d points.", fightId, points))
-                    .read(false)
-                    .createdAt(OffsetDateTime.now())
-                    .build();
-            notificationRepository.save(note);
+            if (up.getOptOutResultNotification() == null || !up.getOptOutResultNotification()) {
+                Notification note = Notification.builder()
+                        .userId(userId)
+                        .type("RESULT")
+                        .message(String.format("Your prediction for fight %d scored %d points.", fightId, points))
+                        .build();
+                notificationService.createNotification(note);
+            }
         }
     }
 }

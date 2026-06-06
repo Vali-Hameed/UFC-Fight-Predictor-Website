@@ -27,6 +27,7 @@ public class ResultProcessingServiceTest {
     @Mock private PredictionResultRepository predictionResultRepository;
     @Mock private LeaderboardRepository leaderboardRepository;
     @Mock private NotificationRepository notificationRepository;
+    @Mock private com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
 
     private ResultProcessingService underTest;
 
@@ -37,7 +38,8 @@ public class ResultProcessingServiceTest {
                 userPredictionRepository,
                 predictionResultRepository,
                 leaderboardRepository,
-                notificationRepository
+                notificationRepository,
+                notificationService
         );
     }
 
@@ -158,5 +160,40 @@ public class ResultProcessingServiceTest {
         assertThatThrownBy(() -> underTest.processFightResult(1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Fight result not set");
+    }
+
+    @Test
+    void processFightResultSkipsNotificationWhenOptedOut() {
+        // Given
+        Long fightId = 1L;
+        Fight fight = new Fight();
+        fight.setId(fightId);
+        fight.setResultWinner("Conor McGregor");
+        fight.setResultMethod("KO/TKO");
+        fight.setResultRound(2);
+
+        UserPrediction prediction = new UserPrediction();
+        prediction.setId(10L);
+        prediction.setUserId(100L);
+        prediction.setPredictedWinner("Conor McGregor");
+        prediction.setPredictedMethod("KO/TKO");
+        prediction.setPredictedRound(2);
+        prediction.setOptOutResultNotification(true);
+
+        Leaderboard leaderboard = Leaderboard.builder()
+                .userId(100L)
+                .totalPoints(0)
+                .build();
+
+        given(fightRepository.findById(fightId)).willReturn(Optional.of(fight));
+        given(userPredictionRepository.findByFightId(fightId)).willReturn(List.of(prediction));
+        given(predictionResultRepository.findByUserPredictionId(10L)).willReturn(Collections.emptyList());
+        given(leaderboardRepository.findByUserId(100L)).willReturn(Optional.of(leaderboard));
+
+        // When
+        underTest.processFightResult(fightId);
+
+        // Then
+        verify(notificationService, never()).createNotification(any());
     }
 }

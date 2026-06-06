@@ -49,7 +49,7 @@ public class PredictionTransactionalHelperTest {
     void canSubmitNewPrediction() {
         // Given
         Long userId = 1L;
-        PredictionRequest req = new PredictionRequest(10L, "Conor McGregor", "KO/TKO", 2);
+        PredictionRequest req = new PredictionRequest(10L, "Conor McGregor", "KO/TKO", 2, false);
 
         Fight fight = new Fight();
         fight.setId(10L);
@@ -91,7 +91,7 @@ public class PredictionTransactionalHelperTest {
     @Test
     void willThrowWhenFightIsCompleted() {
         // Given
-        PredictionRequest req = new PredictionRequest(10L, "Conor McGregor", "KO/TKO", 2);
+        PredictionRequest req = new PredictionRequest(10L, "Conor McGregor", "KO/TKO", 2, false);
         Fight fight = new Fight();
         fight.setId(10L);
         fight.setStatus("COMPLETED");
@@ -107,7 +107,7 @@ public class PredictionTransactionalHelperTest {
     @Test
     void willThrowWhenEventAlreadyStarted() {
         // Given
-        PredictionRequest req = new PredictionRequest(10L, "Conor McGregor", "KO/TKO", 2);
+        PredictionRequest req = new PredictionRequest(10L, "Conor McGregor", "KO/TKO", 2, false);
         Fight fight = new Fight();
         fight.setId(10L);
         fight.setEventId(100L);

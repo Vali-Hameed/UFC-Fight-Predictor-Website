@@ -65,6 +65,7 @@ public class PredictionTransactionalHelper {
         p.setPredictedRound(req.getPredictedRound());
         p.setSubmittedAt(OffsetDateTime.now());
         p.setLocked(false);
+        p.setOptOutResultNotification(req.getOptOutResultNotification() != null ? req.getOptOutResultNotification() : false);
 
         // Update CommunityVote only when the pick actually changed
         if (oldPredictedWinner == null || !oldPredictedWinner.equals(req.getPredictedWinner())) {

@@ -224,6 +224,7 @@ export type ProfileDto = {
   role: string | null;
   enabled: boolean;
   publicProfile: boolean;
+  optOutEmailNotifications?: boolean;
   leaderboardStats?: LeaderboardStatsDto | null;
   predictionHistory?: PredictionHistoryItemDto[] | null;
 };
@@ -233,6 +234,7 @@ export type UserPredictionRequest = {
   predictedWinner: string;
   predictedMethod: string;
   predictedRound: number;
+  optOutResultNotification?: boolean;
 };
 
 export type MlPredictionDto = {

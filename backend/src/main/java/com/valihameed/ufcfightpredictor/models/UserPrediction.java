@@ -37,4 +37,7 @@ public class UserPrediction {
     private OffsetDateTime submittedAt;
 
     private Boolean locked;
+
+    @Column(name = "opt_out_result_notification", nullable = false, columnDefinition = "boolean default false")
+    private Boolean optOutResultNotification = false;
 }

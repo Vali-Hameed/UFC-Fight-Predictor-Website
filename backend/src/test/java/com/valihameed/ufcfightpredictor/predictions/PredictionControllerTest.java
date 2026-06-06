@@ -61,7 +61,7 @@ public class PredictionControllerTest {
     @Test
     void canSubmitPrediction() throws Exception {
         // Given
-        PredictionRequest request = new PredictionRequest(10L, "Conor", "KO/TKO", 2);
+        PredictionRequest request = new PredictionRequest(10L, "Conor", "KO/TKO", 2, false);
 
         given(inputSanitizer.sanitize(any(String.class))).willAnswer(i -> i.getArgument(0));
         given(predictionService.submitPrediction(anyLong(), any(PredictionRequest.class))).willReturn(new UserPrediction());
@@ -80,7 +80,7 @@ public class PredictionControllerTest {
     @Test
     void submitPredictionValidatesInput() throws Exception {
         // Given
-        PredictionRequest request = new PredictionRequest(null, "", "", -1);
+        PredictionRequest request = new PredictionRequest(null, "", "", -1, false);
 
         // When / Then
         mockMvc.perform(post("/api/v1/predictions")

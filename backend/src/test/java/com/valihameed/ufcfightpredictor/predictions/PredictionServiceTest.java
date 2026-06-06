@@ -45,7 +45,7 @@ public class PredictionServiceTest {
     void submitPredictionRejectsConcurrentRequests() throws InterruptedException {
         // Given
         Long userId = 1L;
-        PredictionRequest req = new PredictionRequest(10L, "Fighter A", "DEC", null);
+        PredictionRequest req = new PredictionRequest(10L, "Fighter A", "DEC", null, false);
         
         // Mock txHelper to sleep to simulate a long DB transaction
         given(txHelper.doSubmitPrediction(anyLong(), any(PredictionRequest.class))).willAnswer(invocation -> {
@@ -84,7 +84,7 @@ public class PredictionServiceTest {
     @Test
     void submitPredictionSucceedsSequentially() {
         Long userId = 1L;
-        PredictionRequest req = new PredictionRequest(10L, "Fighter A", "DEC", null);
+        PredictionRequest req = new PredictionRequest(10L, "Fighter A", "DEC", null, false);
         
         given(txHelper.doSubmitPrediction(anyLong(), any(PredictionRequest.class))).willReturn(new UserPrediction());
 
