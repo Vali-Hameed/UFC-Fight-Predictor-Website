@@ -54,7 +54,8 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
       fightId: fight.id,
       predictedWinner: String(formData.get("predictedWinner") ?? ""),
       predictedMethod: String(formData.get("predictedMethod") ?? ""),
-      predictedRound: Number(formData.get("predictedRound") ?? 0)
+      predictedRound: Number(formData.get("predictedRound") ?? 0),
+      optOutResultNotification: formData.get("optOutResultNotification") === "on"
     };
 
     inflightRef.current = true;
@@ -144,7 +145,18 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
             </option>
           ))}
         </select>
-        <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3">
+        <div className="md:col-span-3 flex items-center gap-2 mt-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="optOutResultNotification"
+              disabled={locked}
+              className="h-4 w-4 rounded border-white/10 bg-bg/70 accent-accent cursor-pointer disabled:opacity-60"
+            />
+            <span className="text-sm text-white/70">Opt-out of result notification for this fight</span>
+          </label>
+        </div>
+        <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3 mt-2">
           {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
         </button>
       </form>

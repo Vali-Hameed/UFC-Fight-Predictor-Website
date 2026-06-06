@@ -109,7 +109,8 @@ describe("PredictionCard", () => {
   });
 
   it("shows error toast when submitting without token", async () => {
-    mockToken.current = null as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mockToken.current = null as any;
     const user = userEvent.setup();
     render(<PredictionCard fight={baseFight} mlPrediction={null} communityVote={null} />);
     
@@ -163,5 +164,29 @@ describe("PredictionCard", () => {
     };
     render(<PredictionCard fight={completedFight} mlPrediction={null} communityVote={null} />);
     expect(screen.getByText(/Result: Jon Jones by KO\/TKO \(Round 3\)/)).toBeInTheDocument();
+  });
+
+  it("submits prediction with optOutResultNotification correctly toggled", async () => {
+    mockApiFetch.mockResolvedValueOnce({});
+    const user = userEvent.setup();
+    render(<PredictionCard fight={baseFight} mlPrediction={null} communityVote={null} />);
+
+    // Toggle the checkbox
+    const checkbox = screen.getByRole("checkbox", { name: "Opt-out of result notification for this fight" });
+    await user.click(checkbox);
+
+    const button = screen.getByRole("button", { name: "Submit prediction" });
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(mockApiFetch).toHaveBeenCalledWith(
+        "/api/v1/predictions",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining('"optOutResultNotification":true')
+        }),
+        "test-token"
+      );
+    });
   });
 });
