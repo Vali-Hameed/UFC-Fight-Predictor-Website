@@ -7,6 +7,7 @@ import com.valihameed.ufcfightpredictor.repository.FightRepository;
 import com.valihameed.ufcfightpredictor.repository.ForumThreadRepository;
 import com.valihameed.ufcfightpredictor.repository.UserPredictionRepository;
 import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
+import com.valihameed.ufcfightpredictor.notifications.NotificationService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.models.Notification;
 import com.valihameed.ufcfightpredictor.models.UserPrediction;
@@ -29,6 +30,7 @@ public class ScraperController {
     private final ForumThreadRepository forumThreadRepository;
     private final UserPredictionRepository userPredictionRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final userRepository userRepository;
     private final ResultProcessingService resultProcessingService;
 
@@ -137,18 +139,15 @@ public class ScraperController {
                 if (isNewResult) {
                     List<UserPrediction> predictions = userPredictionRepository.findByFightId(existing.getId());
                     for (UserPrediction pred : predictions) {
+                        if (pred.getOptOutResultNotification() != null && pred.getOptOutResultNotification()) continue;
                         userRepository.findById(pred.getUserId()).ifPresent(u -> {
-                            if (!u.isOptOutResultNotifications()) {
-                                Notification n = Notification.builder()
+                            Notification n = Notification.builder()
                                     .userId(u.getId())
                                     .type("FIGHT_RESULT")
                                     .message("Results are out for " + existing.getFighter1Name() + " vs " + existing.getFighter2Name() + "!")
                                     .link("/events")
-                                    .read(false)
-                                    .createdAt(java.time.OffsetDateTime.now())
                                     .build();
-                                notificationRepository.save(n);
-                            }
+                                notificationService.createNotification(n);
                         });
                     }
                 }

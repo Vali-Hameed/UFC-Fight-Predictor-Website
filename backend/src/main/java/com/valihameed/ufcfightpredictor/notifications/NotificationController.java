@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class NotificationController {
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @GetMapping
     public List<Notification> list(Authentication authentication) {
@@ -47,8 +48,6 @@ public class NotificationController {
 
     @PostMapping
     public ResponseEntity<Notification> create(@RequestBody Notification notification) {
-        notification.setCreatedAt(OffsetDateTime.now());
-        notification.setRead(false);
-        return ResponseEntity.ok(notificationRepository.save(notification));
+        return ResponseEntity.ok(notificationService.createNotification(notification));
     }
 }

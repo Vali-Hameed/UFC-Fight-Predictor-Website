@@ -38,6 +38,7 @@ public class ScraperControllerTest {
     @MockBean private ForumThreadRepository forumThreadRepository;
     @MockBean private UserPredictionRepository userPredictionRepository;
     @MockBean private NotificationRepository notificationRepository;
+    @MockBean private com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
     @MockBean private userRepository userRepository;
     @MockBean private ResultProcessingService resultProcessingService;
     @MockBean private com.valihameed.ufcfightpredictor.security.JwtService jwtService;

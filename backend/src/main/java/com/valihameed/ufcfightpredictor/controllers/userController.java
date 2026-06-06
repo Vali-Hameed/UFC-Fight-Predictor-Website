@@ -81,6 +81,9 @@ public class userController {
 		if (request.publicProfile != null) {
 		    currentUser.setPublicProfile(request.publicProfile);
 		}
+		if (request.optOutEmailNotifications != null) {
+		    currentUser.setOptOutEmailNotifications(request.optOutEmailNotifications);
+		}
 		userRepository.save(currentUser);
 		return ResponseEntity.ok(buildFullProfileResponse(currentUser));
 	}
@@ -159,6 +162,7 @@ public class userController {
 		private String lastName;
 		private String profileImageUrl;
 		private Boolean publicProfile;
+		private Boolean optOutEmailNotifications;
 	}
 
 	@Data
@@ -197,6 +201,7 @@ public class userController {
 		private String role;
 		private boolean enabled;
 		private boolean publicProfile;
+		private boolean optOutEmailNotifications;
 		private OffsetDateTime updatedAt;
 		private LeaderboardStatsDto leaderboardStats;
 		private List<PredictionHistoryDto> predictionHistory;
@@ -211,6 +216,7 @@ public class userController {
 			response.role = source.getRole() != null ? source.getRole().getName() : null;
 			response.enabled = source.isEnabled();
 			response.publicProfile = source.isPublicProfile();
+			response.optOutEmailNotifications = source.isOptOutEmailNotifications();
 			return response;
 		}
 

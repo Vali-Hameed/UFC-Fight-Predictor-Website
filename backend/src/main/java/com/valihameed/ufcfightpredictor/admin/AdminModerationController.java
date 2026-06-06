@@ -2,6 +2,7 @@ package com.valihameed.ufcfightpredictor.admin;
 
 import com.valihameed.ufcfightpredictor.models.Notification;
 import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
+import com.valihameed.ufcfightpredictor.notifications.NotificationService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class AdminModerationController {
     private final userRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @PostMapping("/{id}/warn")
     public ResponseEntity<?> warnUser(@PathVariable Long id, Authentication authentication) {
@@ -40,10 +42,8 @@ public class AdminModerationController {
             .userId(u.getId())
             .type("WARNING")
             .message("You have received an official warning from a moderator. Please adhere to the community guidelines.")
-            .read(false)
-            .createdAt(OffsetDateTime.now())
             .build();
-        notificationRepository.save(n);
+        notificationService.createNotification(n);
 
         return ResponseEntity.ok().body("User warned. Total warnings: " + u.getWarningCount());
     }
@@ -72,10 +72,8 @@ public class AdminModerationController {
             .userId(u.getId())
             .type("BAN")
             .message("You have been banned from the forum until " + u.getBannedFromForumUntil() + ". Contact support if you believe this is an error.")
-            .read(false)
-            .createdAt(OffsetDateTime.now())
             .build();
-        notificationRepository.save(n);
+        notificationService.createNotification(n);
 
         return ResponseEntity.ok().body("User banned until " + u.getBannedFromForumUntil());
     }
@@ -96,10 +94,8 @@ public class AdminModerationController {
             .userId(u.getId())
             .type("UNBAN")
             .message("Your forum ban has been lifted. Welcome back.")
-            .read(false)
-            .createdAt(OffsetDateTime.now())
             .build();
-        notificationRepository.save(n);
+        notificationService.createNotification(n);
 
         return ResponseEntity.ok().body("User unbanned.");
     }

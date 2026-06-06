@@ -6,6 +6,7 @@ import com.valihameed.ufcfightpredictor.users.user;
 import com.valihameed.ufcfightpredictor.models.Notification;
 import com.valihameed.ufcfightpredictor.models.ThreadSubscription;
 import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
+import com.valihameed.ufcfightpredictor.notifications.NotificationService;
 import com.valihameed.ufcfightpredictor.repository.ThreadSubscriptionRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.util.InputSanitizer;
@@ -31,6 +32,7 @@ public class ForumPostController {
     private final userRepository userRepository;
     private final ThreadSubscriptionRepository threadSubscriptionRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final InputSanitizer inputSanitizer;
 
     private ForumPost populateUsername(ForumPost post) {
@@ -90,10 +92,8 @@ public class ForumPostController {
                         .type("FORUM_MENTION")
                         .message("You were mentioned by " + currentUser.getUsername() + " in a forum thread.")
                         .link("/forum/" + request.getThreadId())
-                        .read(false)
-                        .createdAt(OffsetDateTime.now())
                         .build();
-                    notificationRepository.save(n);
+                    notificationService.createNotification(n);
                     notifiedUsers.add(mentionedUser.getId());
                 }
             });
@@ -108,10 +108,8 @@ public class ForumPostController {
                     .type("FORUM_REPLY")
                     .message(currentUser.getUsername() + " replied to a thread you are subscribed to.")
                     .link("/forum/" + request.getThreadId())
-                    .read(false)
-                    .createdAt(OffsetDateTime.now())
                     .build();
-                notificationRepository.save(n);
+                notificationService.createNotification(n);
                 notifiedUsers.add(sub.getUserId());
             }
         }
