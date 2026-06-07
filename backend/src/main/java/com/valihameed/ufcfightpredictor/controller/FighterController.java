@@ -1,4 +1,4 @@
-package com.valihameed.UFCFightPredictor.controller;
+package com.valihameed.ufcfightpredictor.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
