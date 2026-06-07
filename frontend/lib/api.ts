@@ -215,6 +215,17 @@ export type LeaderboardStatsDto = {
   winRate: number;
 };
 
+export type GlobalAccuracyDto = {
+  aiAccuracy: number;
+  communityAccuracy: number;
+  totalAiFights: number;
+  totalCommunityPredictions: number;
+};
+
+export async function getGlobalAccuracy(): Promise<GlobalAccuracyDto> {
+  return apiFetch<GlobalAccuracyDto>("/api/v1/stats/global-accuracy");
+}
+
 export type ProfileDto = {
   id: number;
   username: string | null;

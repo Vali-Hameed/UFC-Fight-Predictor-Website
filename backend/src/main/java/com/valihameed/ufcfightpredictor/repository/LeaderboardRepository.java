@@ -19,4 +19,10 @@ public interface LeaderboardRepository extends JpaRepository<Leaderboard, Long> 
 
     @Query("SELECT COUNT(l) FROM Leaderboard l JOIN user u ON l.userId = u.id WHERE u.publicProfile = true AND l.totalPoints > :points")
     long countUsersWithMorePoints(@Param("points") int points);
+
+    @Query("SELECT SUM(l.correctPredictions) FROM Leaderboard l")
+    Long sumCorrectPredictions();
+
+    @Query("SELECT SUM(l.totalPredictions) FROM Leaderboard l")
+    Long sumTotalPredictions();
 }

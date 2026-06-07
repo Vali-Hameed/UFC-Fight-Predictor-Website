@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
-import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard, getEventDisplayStatus } from "@/lib/api";
+import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard, getEventDisplayStatus, getGlobalAccuracy } from "@/lib/api";
 
 export default async function HomePage() {
   const events = await apiFetch<EventDto[]>("/api/v1/events").catch(() => []);
@@ -8,43 +8,9 @@ export default async function HomePage() {
   const eventsWithStatus = events.map(e => ({ ...e, displayStatus: getEventDisplayStatus(e) }));
   const featuredEvent = eventsWithStatus.find(e => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE") ?? eventsWithStatus[0] ?? null;
 
-  let communityAccuracy = 0;
-  let aiAccuracy = 0;
-
-  const lastCompletedEvent = eventsWithStatus.find(e => e.displayStatus === "COMPLETED");
-  
-  if (lastCompletedEvent) {
-    const fights = await apiFetch<FightDto[]>(`/api/v1/events/${lastCompletedEvent.id}/fights`).catch(() => []);
-    const fightCards = await Promise.all(
-      fights.map(async (fight) => ({
-        fight,
-        mlPrediction: await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${fight.id}`).catch(() => null),
-        communityVote: await apiFetch<CommunityVoteDto>(`/api/v1/community-votes/${fight.id}`).catch(() => null)
-      }))
-    );
-    let aiCorrect = 0;
-    let completedFightsCount = 0;
-
-    fightCards.forEach(({ fight, mlPrediction }) => {
-      if (fight.status === "COMPLETED" && fight.resultWinner) {
-        completedFightsCount++;
-        if (mlPrediction && mlPrediction.predictedWinner === fight.resultWinner) {
-          aiCorrect++;
-        }
-      }
-    });
-
-    const eventLeaderboard = await getEventLeaderboard(lastCompletedEvent.id).catch(() => []);
-    let totalEventPredictions = 0;
-    let correctEventPredictions = 0;
-    eventLeaderboard.forEach(row => {
-      totalEventPredictions += (row.totalPredictions ?? 0);
-      correctEventPredictions += (row.correctPredictions ?? 0);
-    });
-
-    communityAccuracy = totalEventPredictions > 0 ? Math.round((correctEventPredictions / totalEventPredictions) * 100) : 0;
-    aiAccuracy = completedFightsCount > 0 ? Math.round((aiCorrect / completedFightsCount) * 100) : 0;
-  }
+  const globalStats = await getGlobalAccuracy().catch(() => ({ aiAccuracy: 0, communityAccuracy: 0, totalAiFights: 0, totalCommunityPredictions: 0 }));
+  let communityAccuracy = globalStats.communityAccuracy;
+  let aiAccuracy = globalStats.aiAccuracy;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
