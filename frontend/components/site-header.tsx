@@ -47,9 +47,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-bg/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-accent to-gold text-sm font-black text-white shadow-glow">
-            UFC
-          </div>
+          <img src="/logo.png" alt="UFC Fight Predictor Logo" className="h-10 w-10 object-contain" />
           <div>
             <div className="text-sm font-semibold uppercase tracking-[0.35em] text-white/60">Fight Predictor</div>
             <div className="text-xs text-white/40 hidden sm:block">Prediction engine and community scoreboard</div>
