@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { PredictionCard } from "@/components/prediction-card";
-import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard } from "@/lib/api";
+import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard, getEventDisplayStatus } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +58,12 @@ export default async function EventPage({ params }: EventPageProps) {
     fightCards.push({ fight, mlPrediction, communityVote });
   }
 
+  fightCards.sort((a, b) => {
+    if (a.fight.isMainEvent && !b.fight.isMainEvent) return -1;
+    if (!a.fight.isMainEvent && b.fight.isMainEvent) return 1;
+    return (a.fight.fightOrder ?? 999) - (b.fight.fightOrder ?? 999);
+  });
+
   let aiCorrect = 0;
   let completedFightsCount = 0;
 
@@ -80,13 +86,17 @@ export default async function EventPage({ params }: EventPageProps) {
   const communityAccuracy = totalEventPredictions > 0 ? Math.round((correctEventPredictions / totalEventPredictions) * 100) : 0;
   const aiAccuracy = completedFightsCount > 0 ? Math.round((aiCorrect / completedFightsCount) * 100) : 0;
 
+  const isEventStarted = event.eventDate ? new Date(event.eventDate) < new Date() : false;
+  const mainFightStatus = fightCards.find(f => f.fight.isMainEvent)?.fight.status || fightCards[0]?.fight.status;
+  const displayStatus = getEventDisplayStatus(event, mainFightStatus);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${event.status ?? "UNKNOWN"}`}>
+        <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}`}>
           <div className="space-y-4">
             {fightCards.map(({ fight, mlPrediction, communityVote }) => (
-              <PredictionCard key={fight.id} fight={fight} mlPrediction={mlPrediction} communityVote={communityVote} />
+              <PredictionCard key={fight.id} fight={fight} mlPrediction={mlPrediction} communityVote={communityVote} isEventStarted={isEventStarted} />
             ))}
           </div>
         </SectionCard>

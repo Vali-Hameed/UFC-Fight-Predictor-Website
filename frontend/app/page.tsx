@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
-import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard } from "@/lib/api";
+import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard, getEventDisplayStatus } from "@/lib/api";
 
 export default async function HomePage() {
   const events = await apiFetch<EventDto[]>("/api/v1/events").catch(() => []);
   const leaderboard = await apiFetch<LeaderboardDto[]>("/api/v1/leaderboard").catch(() => []);
-  const featuredEvent = events.find(e => e.status === "UPCOMING") ?? events[0] ?? null;
+  const eventsWithStatus = events.map(e => ({ ...e, displayStatus: getEventDisplayStatus(e) }));
+  const featuredEvent = eventsWithStatus.find(e => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE") ?? eventsWithStatus[0] ?? null;
 
   let communityAccuracy = 0;
   let aiAccuracy = 0;
 
-  const lastCompletedEvent = events.find(e => e.status === "COMPLETED");
+  const lastCompletedEvent = eventsWithStatus.find(e => e.displayStatus === "COMPLETED");
   
   if (lastCompletedEvent) {
     const fights = await apiFetch<FightDto[]>(`/api/v1/events/${lastCompletedEvent.id}/fights`).catch(() => []);
@@ -103,7 +104,7 @@ export default async function HomePage() {
           description="Browse event pages, fights, and prediction cards in one place."
         >
           <div className="space-y-4">
-            {events.filter(e => e.status === "UPCOMING").map((event) => (
+            {eventsWithStatus.filter(e => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE").map((event) => (
               <Link key={event.id} href={`/events/${event.id}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10">
                 <div className="flex items-center justify-between gap-4">
                   <div>
@@ -111,7 +112,7 @@ export default async function HomePage() {
                     <p className="text-sm text-white/55">{event.location}</p>
                   </div>
                   <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
-                    {event.status}
+                    {event.displayStatus}
                   </span>
                 </div>
               </Link>

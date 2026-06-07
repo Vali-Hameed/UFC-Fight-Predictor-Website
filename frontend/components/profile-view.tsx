@@ -73,9 +73,18 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
               <div className="grid gap-3">
                 {Object.entries(groupedPredictions).map(([eventId, preds]) => {
                   const eventName = preds[0]?.eventName || `Event #${eventId}`;
-                  const total = preds.length;
-                  const correct = preds.filter(p => p.pointsAwarded && p.pointsAwarded > 0).length;
-                  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+                  
+                  const completedPreds = preds.filter(p => {
+                    if (!p.resultWinner) return false;
+                    const isFightCancelledOrNC = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.resultWinner);
+                    const userPredictedCancelledOrNC = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.predictedWinner || "");
+                    if (isFightCancelledOrNC && !userPredictedCancelledOrNC) return false;
+                    return true;
+                  });
+
+                  const totalCompleted = completedPreds.length;
+                  const correct = completedPreds.filter(p => p.pointsAwarded && p.pointsAwarded > 0).length;
+                  const accuracyStr = totalCompleted > 0 ? `${Math.round((correct / totalCompleted) * 100)}%` : "N/A";
 
                   return (
                     <details key={eventId} className="group rounded-2xl border border-white/10 bg-white/5 [&_summary::-webkit-details-marker]:hidden">
@@ -83,7 +92,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                         <div>
                           <p className="text-base font-semibold text-white">{eventName}</p>
                           <p className="text-sm text-white/50">
-                            {total} prediction{total > 1 ? 's' : ''} • {accuracy}% accuracy
+                            {preds.length} prediction{preds.length !== 1 ? 's' : ''} • {accuracyStr} accuracy
                           </p>
                         </div>
                         <div className="text-white/50 transition-transform group-open:rotate-180">

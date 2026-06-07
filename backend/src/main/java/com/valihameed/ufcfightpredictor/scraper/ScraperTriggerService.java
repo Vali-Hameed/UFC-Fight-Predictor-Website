@@ -27,18 +27,18 @@ public class ScraperTriggerService {
         this.restTemplate = new RestTemplate();
     }
 
-    @Scheduled(cron = "0 0 * * * *") // Runs at the top of every hour
+    @Scheduled(cron = "0 */5 * * * *") // Runs every 5 minutes
     public void checkAndTriggerScraper() {
-        log.info("Checking if any events have finished to trigger the scraper...");
+        log.info("Checking if any events are ongoing to trigger the scraper...");
         List<Event> upcomingEvents = eventRepository.findByStatus("UPCOMING");
         
         boolean shouldTrigger = false;
         
         for (Event event : upcomingEvents) {
             if (event.getEventDate() != null) {
-                // If the event started more than 6 hours ago
-                if (OffsetDateTime.now().isAfter(event.getEventDate().plusHours(6))) {
-                    log.info("Event {} started more than 6 hours ago. Triggering scraper.", event.getName());
+                // If the event has started, it is ongoing. Scrape frequently for live results.
+                if (OffsetDateTime.now().isAfter(event.getEventDate())) {
+                    log.info("Event {} is currently ongoing. Triggering scraper.", event.getName());
                     shouldTrigger = true;
                     break;
                 }

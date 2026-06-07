@@ -10,6 +10,7 @@ type PredictionCardProps = {
   fight: FightDto;
   mlPrediction: MlPredictionDto | null;
   communityVote: CommunityVoteDto | null;
+  isEventStarted?: boolean;
 };
 
 const methodOptions = ["Any Method", "KO/TKO", "Submission", "Decision"];
@@ -17,7 +18,7 @@ const methodOptions = ["Any Method", "KO/TKO", "Submission", "Decision"];
 /** Minimum ms between actual network submissions */
 const SUBMIT_COOLDOWN_MS = 2000;
 
-export function PredictionCard({ fight, mlPrediction, communityVote }: PredictionCardProps) {
+export function PredictionCard({ fight, mlPrediction, communityVote, isEventStarted = false }: PredictionCardProps) {
   const { token } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote }: Predictio
   // Timestamp of last successful submission for cooldown
   const lastSubmitRef = useRef(0);
 
-  const locked = fight.status === "LIVE" || fight.status === "COMPLETED" || fight.status === "CANCELED";
+  const locked = fight.status === "LIVE" || fight.status === "COMPLETED" || fight.status === "CANCELED" || isEventStarted;
 
   const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -282,3 +282,23 @@ export type AdminUserDto = {
   enabled: boolean;
   bannedFromForumUntil?: string | null;
 };
+
+export function getEventDisplayStatus(event: EventDto, mainFightStatus?: string | null): string {
+  if (!event.eventDate) return event.status ?? "UNKNOWN";
+  
+  const eventTime = new Date(event.eventDate).getTime();
+  const now = Date.now();
+  const hoursSinceStart = (now - eventTime) / (1000 * 60 * 60);
+
+  if (hoursSinceStart < 0) return "UPCOMING";
+
+  if (mainFightStatus === "COMPLETED" || mainFightStatus === "CANCELED") {
+    return "COMPLETED";
+  }
+
+  if (hoursSinceStart >= 0 && hoursSinceStart <= 12) {
+    return "LIVE";
+  }
+
+  return "COMPLETED";
+}
