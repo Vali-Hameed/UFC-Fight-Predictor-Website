@@ -19,9 +19,9 @@ public class StatsController {
 
     @GetMapping("/global-accuracy")
     public ResponseEntity<GlobalAccuracyDto> getGlobalAccuracy() {
-        Long correctAi = fightRepository.countCorrectAiPredictions();
-        Long totalAi = fightRepository.countTotalAiPredictions();
-
+        java.time.OffsetDateTime modernEraStart = java.time.OffsetDateTime.parse("2020-01-01T00:00:00Z");
+        Long correctAi = fightRepository.countCorrectAiPredictions(modernEraStart);
+        Long totalAi = fightRepository.countTotalAiPredictions(modernEraStart);
         Long correctCommunity = leaderboardRepository.sumCorrectPredictions();
         Long totalCommunity = leaderboardRepository.sumTotalPredictions();
 
