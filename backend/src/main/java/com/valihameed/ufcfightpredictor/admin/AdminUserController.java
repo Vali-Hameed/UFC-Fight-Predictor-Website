@@ -4,6 +4,7 @@ import com.valihameed.ufcfightpredictor.repository.roleRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.role;
 import com.valihameed.ufcfightpredictor.users.user;
+import com.valihameed.ufcfightpredictor.email.EmailSender;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class AdminUserController {
     private final userRepository userRepository;
     private final roleRepository roleRepository;
+    private final EmailSender emailSender;
 
     @GetMapping
     public List<user> listUsers() {
@@ -35,6 +37,13 @@ public class AdminUserController {
             .map(u -> {
                 if (u.getRole() != null && "ROLE_ADMIN".equals(u.getRole().getName())) {
                     return ResponseEntity.status(403).body(Map.of("error", "Cannot modify admin accounts via API"));
+                }
+                if (locked && !u.isLocked()) {
+                    emailSender.sendEmail(
+                        u.getEmail(),
+                        "Hello " + u.getFirstName() + ",<br><br>Your account has been locked. If you believe this is a mistake, please contact an administrator.",
+                        "Account Locked Notification"
+                    );
                 }
                 u.setLocked(locked);
                 return ResponseEntity.ok(userRepository.save(u));
