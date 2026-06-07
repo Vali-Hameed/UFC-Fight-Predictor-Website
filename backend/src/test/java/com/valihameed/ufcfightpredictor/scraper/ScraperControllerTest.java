@@ -87,6 +87,7 @@ public class ScraperControllerTest {
         savedFight.setResultWinner("Conor");
 
         given(fightRepository.findByEventIdAndFighter1NameAndFighter2Name(100L, "Conor", "Dustin")).willReturn(Optional.empty());
+        given(fightRepository.findByEventIdAndFighter1NameAndFighter2Name(100L, "Dustin", "Conor")).willReturn(Optional.empty());
         given(fightRepository.save(any(Fight.class))).willReturn(savedFight);
 
         // When / Then

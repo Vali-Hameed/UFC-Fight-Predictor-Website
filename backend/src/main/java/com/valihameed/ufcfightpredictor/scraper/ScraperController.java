@@ -75,6 +75,9 @@ public class ScraperController {
         List<Fight> savedFights = new java.util.ArrayList<>();
         for (Fight f : fights) {
             java.util.Optional<Fight> existing = fightRepository.findByEventIdAndFighter1NameAndFighter2Name(f.getEventId(), f.getFighter1Name(), f.getFighter2Name());
+            if (existing.isEmpty()) {
+                existing = fightRepository.findByEventIdAndFighter1NameAndFighter2Name(f.getEventId(), f.getFighter2Name(), f.getFighter1Name());
+            }
             if (existing.isPresent()) {
                 Fight ft = existing.get();
                 ft.setWeightClass(f.getWeightClass());
