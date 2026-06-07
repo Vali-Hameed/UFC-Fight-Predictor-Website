@@ -51,19 +51,22 @@ export default async function HomePage() {
       <section className="grid gap-6 rounded-[2rem] border border-white/10 bg-gradient-to-br from-panel via-bg to-panelSoft p-8 shadow-2xl shadow-black/30 lg:grid-cols-[1.3fr_0.7fr] lg:p-12">
         <div className="space-y-6">
           <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-accent">
-            Live predictions • community vs AI • leaderboard
+            Live predictions • community vs AI • simulator • leaderboard
           </div>
           <div className="space-y-4">
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
-              Predict every UFC fight with a clean, dark, premium interface.
+              Outsmart the Octagon: Make your UFC predictions and see how you stack up.
             </h1>
             <p className="max-w-2xl text-base leading-7 text-white/68 sm:text-lg">
-              Lock in winner, method, and round picks, compare them against the ML model, and track your rank across events.
+              Predict the winner, method, and round. Compete with thousands of MMA fans and test your knowledge against our advanced machine learning models.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/events" className="rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90">
               View events
+            </Link>
+            <Link href="/simulator" className="rounded-full border border-accent/50 bg-accent/10 px-5 py-3 text-sm font-semibold text-accent transition hover:bg-accent/20">
+              Try simulator
             </Link>
             <Link href="/leaderboard" className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
               Open leaderboard
@@ -101,7 +104,7 @@ export default async function HomePage() {
         <SectionCard
           eyebrow="Events"
           title="Upcoming cards"
-          description="Browse event pages, fights, and prediction cards in one place."
+          description="Stay up to date with the latest UFC events, access detailed fight cards, and submit your predictions."
         >
           <div className="space-y-4">
             {eventsWithStatus.filter(e => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE").map((event) => (
@@ -123,7 +126,7 @@ export default async function HomePage() {
         <SectionCard
           eyebrow="Leaderboard"
           title="Top ranked predictors"
-          description="Ranks update from prediction result processing and streak tracking."
+          description="Climb the global ranks by making accurate predictions and building your winning streak."
         >
           <div className="space-y-3">
             {leaderboard.map((row, index) => (

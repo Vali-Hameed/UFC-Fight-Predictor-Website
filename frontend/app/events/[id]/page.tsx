@@ -102,7 +102,7 @@ export default async function EventPage({ params }: EventPageProps) {
         </SectionCard>
 
         <div className="space-y-6">
-          <SectionCard eyebrow="Community vs AI" title="Accuracy" description="Prediction accuracy for this event.">
+          <SectionCard eyebrow="Community vs AI" title="Accuracy" description="Compare the community's overall prediction accuracy against our machine learning model for this event.">
             <div className="space-y-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center justify-between text-sm text-white/70">
@@ -125,7 +125,7 @@ export default async function EventPage({ params }: EventPageProps) {
             </div>
           </SectionCard>
           
-          <SectionCard eyebrow="Event Leaderboard" title="Top Predictors" description="Ranked by total points earned for this event.">
+          <SectionCard eyebrow="Event Leaderboard" title="Top Predictors" description="See who is dominating the predictions for this specific event.">
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
               {leaderboard.map((row, index) => (
                 <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
@@ -143,7 +143,7 @@ export default async function EventPage({ params }: EventPageProps) {
             </div>
           </SectionCard>
 
-          <SectionCard eyebrow="Forum" title="Event threads" description="ML winner and vote split are shown at the top of each fight thread.">
+          <SectionCard eyebrow="Forum" title="Event threads" description="Discuss the fights with the community. ML predictions and vote splits are highlighted for each fight.">
             <div className="space-y-3">
               {threads.map((thread) => {
                 const threadFight = fightCards.find(f => f.fight.id === thread.fightId);

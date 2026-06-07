@@ -175,7 +175,7 @@ export default function SimulatorPage() {
           Hypothetical Fight Simulator
         </h1>
         <p className="mt-4 text-lg text-white/60">
-          Pit any two fighters against each other and let our ML model predict the likely winner.
+          Pit any two fighters from across divisions against each other and let our advanced ML model predict the ultimate winner.
         </p>
       </div>
 

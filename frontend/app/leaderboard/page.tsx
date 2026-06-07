@@ -7,7 +7,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SectionCard eyebrow="Ranks" title="Global leaderboard" description="Ranked by total points, with current streak and win rate visible.">
+      <SectionCard eyebrow="Ranks" title="Global leaderboard" description="See who holds the crown. Rankings are based on total prediction points, accuracy, and current win streaks.">
         <div className="space-y-3">
           {leaderboard.map((row, index) => (
             <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">

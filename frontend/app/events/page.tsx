@@ -32,7 +32,7 @@ export default async function EventsPage() {
       <SectionCard
         eyebrow="Schedule"
         title="Event listing"
-        description="Each event page includes fights, community votes, ML predictions, and forum threads."
+        description="Explore upcoming and past UFC events. Dive into detailed fight cards to submit your predictions and analyze community trends."
       >
         <div className="grid gap-4 lg:grid-cols-2">
           {eventsWithPredictions.map((event) => (
