@@ -8,10 +8,12 @@ export const dynamic = "force-dynamic";
 
 type EventPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function EventPage({ params }: EventPageProps) {
+export default async function EventPage({ params, searchParams }: EventPageProps) {
   const { id } = await params;
+  const isArchived = (await searchParams).archived === "true";
 
   // Fetch event — only call notFound() for genuine 404s.
   // For any other error (429, 500, network), show an error message instead
@@ -96,7 +98,7 @@ export default async function EventPage({ params }: EventPageProps) {
         <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}`}>
           <div className="space-y-4">
             {fightCards.map(({ fight, mlPrediction, communityVote }) => (
-              <PredictionCard key={fight.id} fight={fight} mlPrediction={mlPrediction} communityVote={communityVote} isEventStarted={isEventStarted} />
+              <PredictionCard key={fight.id} fight={fight} mlPrediction={mlPrediction} communityVote={communityVote} isEventStarted={isEventStarted} isArchived={isArchived} />
             ))}
           </div>
         </SectionCard>

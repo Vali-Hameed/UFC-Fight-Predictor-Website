@@ -8,15 +8,16 @@ import { useRouter } from "next/navigation";
 type AdminModerationMenuProps = {
   postId: number;
   postUserId: number;
+  isArchived?: boolean;
 };
 
-export function AdminModerationMenu({ postId, postUserId }: AdminModerationMenuProps) {
+export function AdminModerationMenu({ postId, postUserId, isArchived }: AdminModerationMenuProps) {
   const { token, user } = useAuth();
   const router = useRouter();
 
   if (!token || user?.role !== "ROLE_ADMIN") {
     // Post authors can also delete their own posts, we check this logic here:
-    if (user?.id === postUserId) {
+    if (user?.id === postUserId && !isArchived) {
         return (
             <button 
                 onClick={async () => {

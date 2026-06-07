@@ -1,6 +1,6 @@
 import { SectionCard } from "@/components/section-card";
 import { ForumReplyForm } from "@/components/forum-reply-form";
-import { apiFetch, ForumPostDto, ForumThreadDto, MlPredictionDto, FightDto, CommunityVoteDto } from "@/lib/api";
+import { apiFetch, ForumPostDto, ForumThreadDto, MlPredictionDto, FightDto, CommunityVoteDto, EventDto } from "@/lib/api";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { AdminModerationMenu } from "@/components/admin-moderation-menu";
 import Link from "next/link";
@@ -32,6 +32,12 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
   if (thread && thread.fightId) {
     mlPrediction = await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${thread.fightId}`).catch(() => null);
   }
+
+  let event: EventDto | null = null;
+  if (thread && thread.eventId) {
+    event = await apiFetch<EventDto>(`/api/v1/events/${thread.eventId}`).catch(() => null);
+  }
+  const isArchived = event?.status === "ARCHIVED";
 
   const isEventThread = thread && thread.eventId && !thread.fightId;
   let fights: FightDto[] = [];
@@ -103,7 +109,7 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
                   {post.isDeleted ? <p className="mt-3 text-xs uppercase tracking-[0.3em] text-white/35">Deleted</p> : null}
                   
                   {post.userId && !post.isDeleted && (
-                    <AdminModerationMenu postId={post.id} postUserId={post.userId} />
+                    <AdminModerationMenu postId={post.id} postUserId={post.userId} isArchived={isArchived} />
                   )}
                 </article>
               );
@@ -112,7 +118,12 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
           </div>
         </SectionCard>
 
-        {thread ? <ForumReplyForm threadId={thread.id} /> : null}
+        {thread && !isArchived ? <ForumReplyForm threadId={thread.id} /> : null}
+        {isArchived ? (
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+            This event is archived. New replies cannot be posted.
+          </div>
+        ) : null}
 
         {isEventThread && fights.length > 0 && (
           <SectionCard eyebrow="Event Fights" title="Fight Card" description="Discuss individual fights by visiting their specific threads.">

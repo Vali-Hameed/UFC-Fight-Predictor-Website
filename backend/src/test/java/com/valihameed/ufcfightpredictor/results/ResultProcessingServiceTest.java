@@ -2,6 +2,7 @@ package com.valihameed.ufcfightpredictor.results;
 
 import com.valihameed.ufcfightpredictor.models.*;
 import com.valihameed.ufcfightpredictor.repository.*;
+import com.valihameed.ufcfightpredictor.repository.EventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,7 @@ public class ResultProcessingServiceTest {
     @Mock private LeaderboardRepository leaderboardRepository;
     @Mock private NotificationRepository notificationRepository;
     @Mock private com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
+    @Mock private EventRepository eventRepository;
 
     private ResultProcessingService underTest;
 
@@ -39,7 +41,8 @@ public class ResultProcessingServiceTest {
                 predictionResultRepository,
                 leaderboardRepository,
                 notificationRepository,
-                notificationService
+                notificationService,
+                eventRepository
         );
     }
 

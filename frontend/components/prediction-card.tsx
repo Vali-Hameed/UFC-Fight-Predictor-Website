@@ -11,6 +11,7 @@ type PredictionCardProps = {
   mlPrediction: MlPredictionDto | null;
   communityVote: CommunityVoteDto | null;
   isEventStarted?: boolean;
+  isArchived?: boolean;
 };
 
 const methodOptions = ["Any Method", "KO/TKO", "Submission", "Decision"];
@@ -18,7 +19,7 @@ const methodOptions = ["Any Method", "KO/TKO", "Submission", "Decision"];
 /** Minimum ms between actual network submissions */
 const SUBMIT_COOLDOWN_MS = 2000;
 
-export function PredictionCard({ fight, mlPrediction, communityVote, isEventStarted = false }: PredictionCardProps) {
+export function PredictionCard({ fight, mlPrediction, communityVote, isEventStarted = false, isArchived = false }: PredictionCardProps) {
   const { token } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -124,43 +125,45 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
         </div>
       </div>
 
-      <form className="mt-5 grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
-        <select name="predictedWinner" disabled={locked} defaultValue={fight.fighter1Name ?? ""} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
-          <option value={fight.fighter1Name ?? ""}>{fight.fighter1Name}</option>
-          <option value={fight.fighter2Name ?? ""}>{fight.fighter2Name}</option>
-          <option value="Draw">Draw</option>
-          <option value="Canceled/No Contest">Canceled / No Contest</option>
-        </select>
-        <select name="predictedMethod" disabled={locked} defaultValue={methodOptions[0]} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
-          {methodOptions.map((method) => (
-            <option key={method} value={method}>
-              {method}
-            </option>
-          ))}
-        </select>
-        <select name="predictedRound" disabled={locked} defaultValue={0} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
-          <option value={0}>Any Round</option>
-          {Array.from({ length: maxRounds }, (_, i) => (
-            <option key={i + 1} value={i + 1}>
-              Round {i + 1}
-            </option>
-          ))}
-        </select>
-        <div className="md:col-span-3 flex items-center gap-2 mt-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              name="optOutResultNotification"
-              disabled={locked}
-              className="h-4 w-4 rounded border-white/10 bg-bg/70 accent-accent cursor-pointer disabled:opacity-60"
-            />
-            <span className="text-sm text-white/70">Opt-out of result notification for this fight</span>
-          </label>
-        </div>
-        <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3 mt-2">
-          {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
-        </button>
-      </form>
+      {!isArchived && (
+        <form className="mt-5 grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
+          <select name="predictedWinner" disabled={locked} defaultValue={fight.fighter1Name ?? ""} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+            <option value={fight.fighter1Name ?? ""}>{fight.fighter1Name}</option>
+            <option value={fight.fighter2Name ?? ""}>{fight.fighter2Name}</option>
+            <option value="Draw">Draw</option>
+            <option value="Canceled/No Contest">Canceled / No Contest</option>
+          </select>
+          <select name="predictedMethod" disabled={locked} defaultValue={methodOptions[0]} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+            {methodOptions.map((method) => (
+              <option key={method} value={method}>
+                {method}
+              </option>
+            ))}
+          </select>
+          <select name="predictedRound" disabled={locked} defaultValue={0} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+            <option value={0}>Any Round</option>
+            {Array.from({ length: maxRounds }, (_, i) => (
+              <option key={i + 1} value={i + 1}>
+                Round {i + 1}
+              </option>
+            ))}
+          </select>
+          <div className="md:col-span-3 flex items-center gap-2 mt-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="optOutResultNotification"
+                disabled={locked}
+                className="h-4 w-4 rounded border-white/10 bg-bg/70 accent-accent cursor-pointer disabled:opacity-60"
+              />
+              <span className="text-sm text-white/70">Opt-out of result notification for this fight</span>
+            </label>
+          </div>
+          <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3 mt-2">
+            {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

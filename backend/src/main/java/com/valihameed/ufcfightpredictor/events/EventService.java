@@ -16,14 +16,7 @@ public class EventService {
     private final EventRepository eventRepository;
 
     public List<Event> listAll() {
-        List<Event> completedEvents = eventRepository.findByStatusOrderByEventDateDesc("COMPLETED", PageRequest.of(0, 1));
-        List<Event> upcomingEvents = eventRepository.findByStatusOrderByEventDateAsc("UPCOMING", PageRequest.of(0, 5));
-        
-        List<Event> combined = new ArrayList<>();
-        combined.addAll(completedEvents);
-        combined.addAll(upcomingEvents);
-        
-        return combined;
+        return eventRepository.findAll();
     }
 
     public Optional<Event> findById(Long id) { return eventRepository.findById(id); }

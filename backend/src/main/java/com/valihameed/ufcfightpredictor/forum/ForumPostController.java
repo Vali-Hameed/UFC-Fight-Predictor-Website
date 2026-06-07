@@ -9,6 +9,10 @@ import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
 import com.valihameed.ufcfightpredictor.notifications.NotificationService;
 import com.valihameed.ufcfightpredictor.repository.ThreadSubscriptionRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
+import com.valihameed.ufcfightpredictor.repository.ForumThreadRepository;
+import com.valihameed.ufcfightpredictor.repository.EventRepository;
+import com.valihameed.ufcfightpredictor.models.ForumThread;
+import com.valihameed.ufcfightpredictor.models.Event;
 import com.valihameed.ufcfightpredictor.util.InputSanitizer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,6 +38,8 @@ public class ForumPostController {
     private final NotificationRepository notificationRepository;
     private final NotificationService notificationService;
     private final InputSanitizer inputSanitizer;
+    private final ForumThreadRepository forumThreadRepository;
+    private final EventRepository eventRepository;
 
     private ForumPost populateUsername(ForumPost post) {
         if (post.getUserId() != null) {
@@ -66,6 +72,14 @@ public class ForumPostController {
         
         if (currentUser.getBannedFromForumUntil() != null && currentUser.getBannedFromForumUntil().isAfter(OffsetDateTime.now())) {
             return ResponseEntity.status(403).body("You are banned from the forum until " + currentUser.getBannedFromForumUntil());
+        }
+
+        ForumThread thread = forumThreadRepository.findById(request.getThreadId()).orElse(null);
+        if (thread != null && thread.getEventId() != null) {
+            Event event = eventRepository.findById(thread.getEventId()).orElse(null);
+            if (event != null && "ARCHIVED".equals(event.getStatus())) {
+                return ResponseEntity.status(403).body("Cannot post in an archived event thread.");
+            }
         }
 
         ForumPost post = ForumPost.builder()
@@ -121,7 +135,20 @@ public class ForumPostController {
     public ResponseEntity<ForumPost> softDelete(@PathVariable Long id, Authentication authentication) {
         user currentUser = (user) authentication.getPrincipal();
         return forumPostRepository.findById(id)
-            .filter(post -> post.getUserId().equals(currentUser.getId()) || currentUser.getRole().getName().equals("ROLE_ADMIN"))
+            .filter(post -> {
+                boolean isAdmin = currentUser.getRole().getName().equals("ROLE_ADMIN");
+                if (isAdmin) return true;
+                if (!post.getUserId().equals(currentUser.getId())) return false;
+                
+                ForumThread thread = forumThreadRepository.findById(post.getThreadId()).orElse(null);
+                if (thread != null && thread.getEventId() != null) {
+                    Event event = eventRepository.findById(thread.getEventId()).orElse(null);
+                    if (event != null && "ARCHIVED".equals(event.getStatus())) {
+                        return false;
+                    }
+                }
+                return true;
+            })
             .map(post -> {
                 post.setIsDeleted(true);
                 post.setContent("[deleted]");

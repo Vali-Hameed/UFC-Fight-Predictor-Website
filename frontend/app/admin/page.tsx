@@ -33,6 +33,12 @@ export default function AdminPage() {
 
     void loadUsers().catch(() => toast.error("Could not load users."));
     void loadLogs().catch(() => toast.error("Could not load scraper logs."));
+
+    const interval = setInterval(() => {
+      void loadLogs().catch(() => {});
+    }, 5000);
+
+    return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
