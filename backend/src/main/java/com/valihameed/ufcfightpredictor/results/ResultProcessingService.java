@@ -22,6 +22,7 @@ public class ResultProcessingService {
     private final LeaderboardRepository leaderboardRepository;
     private final NotificationRepository notificationRepository;
     private final com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
+    private final EventRepository eventRepository;
 
     @Transactional
     public void processFightResult(Long fightId) {
@@ -114,10 +115,20 @@ public class ResultProcessingService {
 
             // notification
             if (up.getOptOutResultNotification() == null || !up.getOptOutResultNotification()) {
+                String eventName = "Unknown Event";
+                if (fight.getEventId() != null) {
+                    eventName = eventRepository.findById(fight.getEventId())
+                            .map(Event::getName)
+                            .orElse("Unknown Event");
+                }
+                
+                String fightName = fight.getFighter1Name() + " vs " + fight.getFighter2Name();
+                String message = String.format("Your prediction for %s : %s scored %d points.", eventName, fightName, points);
+
                 Notification note = Notification.builder()
                         .userId(userId)
                         .type("RESULT")
-                        .message(String.format("Your prediction for fight %d scored %d points.", fightId, points))
+                        .message(message)
                         .build();
                 notificationService.createNotification(note);
             }
