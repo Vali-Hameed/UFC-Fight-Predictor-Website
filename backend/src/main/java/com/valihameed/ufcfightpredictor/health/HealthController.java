@@ -18,7 +18,7 @@ public class HealthController {
     private final EventRepository eventRepository;
     private final FightRepository fightRepository;
 
-    @GetMapping
+    @org.springframework.web.bind.annotation.RequestMapping(method = {org.springframework.web.bind.annotation.RequestMethod.GET, org.springframework.web.bind.annotation.RequestMethod.HEAD})
     public ResponseEntity<Map<String, Object>> health() {
         return ResponseEntity.ok(Map.of(
             "status", "UP",
