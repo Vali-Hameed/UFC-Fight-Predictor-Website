@@ -51,7 +51,7 @@ export default function VerifyEmailPage() {
     }
     setResending(true);
     try {
-      const response = await fetch("http://localhost:8080/api/v1/registration/resend-verification", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/v1/registration/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: emailToResend })
