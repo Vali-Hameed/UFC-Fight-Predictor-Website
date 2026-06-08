@@ -1,39 +1,46 @@
 package com.valihameed.ufcfightpredictor.email;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-
-
 @Service
-@AllArgsConstructor
 public class EmailService implements EmailSender {
     private final static Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
-    private final JavaMailSender mailSender;
+    
+    private final Resend resend;
+    private final String fromAddress;
+
+    public EmailService(
+            @Value("${resend.api-key}") String apiKey,
+            @Value("${resend.from-address}") String fromAddress) {
+        this.resend = new Resend(apiKey);
+        this.fromAddress = fromAddress;
+    }
+
     @Override
     @Async
-    public void sendEmail(String to, String email, String subject) {
-        try{
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-            helper.setText(email, true);
-            helper.setTo(to);
-            helper.setFrom("UFFightPredictor@UFCFightPredictor.com");
-            helper.setSubject(subject);
-            mailSender.send(mimeMessage);
+    public void sendEmail(String to, String emailContent, String subject) {
+        try {
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from(this.fromAddress)
+                    .to(to)
+                    .subject(subject)
+                    .html(emailContent)
+                    .build();
 
-        }catch (MessagingException e){
-            LOGGER.error("failed to send email");
-            throw new IllegalStateException("failed to send email");
+            CreateEmailResponse response = resend.emails().send(params);
+            LOGGER.info("Successfully sent email to {} via Resend. ID: {}", to, response.getId());
+
+        } catch (ResendException e) {
+            LOGGER.error("Failed to send email via Resend to {}. Error: {}", to, e.getMessage(), e);
+            throw new IllegalStateException("Failed to send email", e);
         }
-
     }
 }

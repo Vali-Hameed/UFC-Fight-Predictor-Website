@@ -32,6 +32,10 @@ spring:
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000
+
+resend:
+  api-key: ${RESEND_API_KEY:re_default1234567890}
+  from-address: ${RESEND_FROM_ADDRESS:onboarding@resend.dev}
   mvc:
     problemdetails:
       enabled: true
