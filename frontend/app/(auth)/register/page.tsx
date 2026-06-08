@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { apiFetch } from "@/lib/api";
 import { PasswordInput } from "@/components/password-input";
@@ -80,12 +81,29 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
       <SectionCard eyebrow="Auth" title="Create account" description="Email verification is required before predictions become active.">
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          <input name="firstName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="First name" />
-          <input name="lastName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Last name" />
-          <input name="username" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Username" />
-          <input name="email" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Email" />
+          <input name="firstName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="First name" required />
+          <input name="lastName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Last name" required />
+          <input name="username" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Username" required />
+          <input name="email" type="email" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Email" required />
           <PasswordInput name="password" placeholder="Password" />
           <PasswordInput name="confirmPassword" placeholder="Confirm password" />
+          
+          <div className="flex items-start gap-3 px-1 py-2">
+            <input 
+              type="checkbox" 
+              id="terms" 
+              name="terms" 
+              required 
+              className="mt-1 h-4 w-4 shrink-0 rounded border-white/10 bg-white/5 text-accent focus:ring-accent focus:ring-offset-bg"
+            />
+            <label htmlFor="terms" className="text-sm text-white/60">
+              I agree to the{" "}
+              <Link href="/terms" className="text-white hover:underline">Terms of Service</Link>
+              {" "}and{" "}
+              <Link href="/privacy" className="text-white hover:underline">Privacy Policy</Link>
+            </label>
+          </div>
+
           <button disabled={loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-60">{loading ? "Creating account..." : "Register"}</button>
           
           {unverifiedEmail && (
