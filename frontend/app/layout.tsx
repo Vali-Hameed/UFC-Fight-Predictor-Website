@@ -10,7 +10,7 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-sans"
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-alt" });
 
 export const metadata: Metadata = {
-  title: "MMA Fight Predictor",
+  title: "FightPicks",
   description: "Premium MMA prediction, leaderboard, and community platform"
 };
 

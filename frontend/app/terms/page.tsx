@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Terms of Service | MMA Fight Predictor",
-  description: "Terms of Service for MMA Fight Predictor",
+  title: "Terms of Service | FightPicks",
+  description: "Terms of Service for FightPicks",
 };
 
 export default function TermsOfService() {
@@ -13,8 +13,8 @@ export default function TermsOfService() {
           <section>
             <p className="mb-4">Last updated: {new Date().toLocaleDateString()}</p>
             <p>
-              Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the MMA Fight Predictor 
-              website (the "Service") operated by MMA Fight Predictor ("us", "we", or "our").
+              Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the FightPicks 
+              website (the "Service") operated by FightPicks ("us", "we", or "our").
             </p>
             <p className="mt-4">
               Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms. 
@@ -53,8 +53,8 @@ export default function TermsOfService() {
             <h2 className="mb-4 text-xl font-semibold text-white">3. Intellectual Property</h2>
             <p>
               The Service and its original content, features and functionality are and will remain the exclusive property of 
-              MMA Fight Predictor and its licensors. The Service is protected by copyright, trademark, and other laws.
-              MMA Fight Predictor is not affiliated with the Ultimate Fighting Championship (UFC). All UFC trademarks, 
+              FightPicks and its licensors. The Service is protected by copyright, trademark, and other laws.
+              FightPicks is not affiliated with the Ultimate Fighting Championship (UFC). All UFC trademarks, 
               logos, and brand names are the property of their respective owners.
             </p>
           </section>
@@ -62,7 +62,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="mb-4 text-xl font-semibold text-white">4. Limitation of Liability</h2>
             <p>
-              In no event shall MMA Fight Predictor, nor its directors, employees, partners, agents, suppliers, or affiliates, 
+              In no event shall FightPicks, nor its directors, employees, partners, agents, suppliers, or affiliates, 
               be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, 
               loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or 
               inability to access or use the Service.
