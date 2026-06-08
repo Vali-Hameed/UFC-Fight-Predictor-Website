@@ -19,7 +19,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <body>
         <Providers>
           <SiteHeader />
-          <main>{children}</main>
+          <main className="min-h-[calc(100vh-100px)]">{children}</main>
+          <footer className="border-t border-white/10 py-6 text-center text-sm text-white/40">
+            <p>&copy; {new Date().getFullYear()} Vali Hameed</p>
+          </footer>
         </Providers>
       </body>
     </html>
