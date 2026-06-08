@@ -136,7 +136,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-gold">Your profile</p>
           <h3 className="mt-2 text-xl font-semibold text-white">Edit account details</h3>
-          <p className="mt-2 max-w-2xl text-sm text-white/60">Update the name and avatar URL shown on your public profile.</p>
+          <p className="mt-2 max-w-2xl text-sm text-white/60">Update the name shown on your public profile.</p>
         </div>
       </div>
 
@@ -159,16 +159,6 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             onChange={(event) => setLastName(event.target.value)}
             className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35"
             placeholder="Last name"
-          />
-        </label>
-        <label className="space-y-2 text-sm text-white/70">
-          <span>Profile image URL</span>
-          <input
-            name="profileImageUrl"
-            value={profileImageUrl}
-            onChange={(event) => setProfileImageUrl(event.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35"
-            placeholder="https://..."
           />
         </label>
         <div className="md:col-span-3">
