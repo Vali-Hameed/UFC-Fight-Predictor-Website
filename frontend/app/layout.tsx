@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import type { ReactNode } from "react";
 import { Providers } from "@/app/providers";
 import Link from "next/link";
-
+import { CookieBanner } from "@/components/cookie-banner";
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-sans" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-alt" });
 
@@ -28,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </div>
             <p>&copy; {new Date().getFullYear()} Vali Hameed</p>
           </footer>
+          <CookieBanner />
         </Providers>
       </body>
     </html>
