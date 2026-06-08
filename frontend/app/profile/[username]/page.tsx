@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { SectionCard } from "@/components/section-card";
 import { apiFetch, ProfileDto } from "@/lib/api";
 import { ProfileView } from "@/components/profile-view";

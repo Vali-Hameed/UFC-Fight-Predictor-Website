@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard, getEventDisplayStatus, getGlobalAccuracy } from "@/lib/api";

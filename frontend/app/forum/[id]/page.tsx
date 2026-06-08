@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { SectionCard } from "@/components/section-card";
 import { ForumReplyForm } from "@/components/forum-reply-form";
 import { apiFetch, ForumPostDto, ForumThreadDto, MlPredictionDto, FightDto, CommunityVoteDto, EventDto } from "@/lib/api";
