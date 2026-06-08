@@ -94,7 +94,7 @@ export default function RegisterPage() {
               id="terms" 
               name="terms" 
               required 
-              className="mt-1 h-4 w-4 shrink-0 rounded border-white/10 bg-white/5 text-accent focus:ring-accent focus:ring-offset-bg"
+              className="mt-1 h-4 w-4 shrink-0 rounded border-white/10 bg-white/5 accent-accent cursor-pointer"
             />
             <label htmlFor="terms" className="text-sm text-white/60">
               I agree to the{" "}
