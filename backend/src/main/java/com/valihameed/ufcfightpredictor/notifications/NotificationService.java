@@ -7,6 +7,7 @@ import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -20,6 +21,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final EmailSender emailSender;
     private final userRepository userRepository;
+
+    @Value("${frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     public Notification createNotification(Notification notification) {
         notification.setCreatedAt(OffsetDateTime.now());
@@ -59,7 +63,7 @@ public class NotificationService {
         if (notification.getLink() != null && !notification.getLink().isEmpty()) {
             String fullLink = notification.getLink();
             if (fullLink.startsWith("/")) {
-                fullLink = "http://localhost:3000" + fullLink;
+                fullLink = frontendUrl + fullLink;
             }
             linkSection = "<div style=\"margin-top: 30px; text-align: center;\">\n" +
                           "  <a href=\"" + fullLink + "\" style=\"background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block;\">View Details</a>\n" +

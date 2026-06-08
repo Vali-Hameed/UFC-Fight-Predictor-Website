@@ -5,7 +5,8 @@ import com.valihameed.ufcfightpredictor.models.PasswordResetToken;
 import com.valihameed.ufcfightpredictor.repository.PasswordResetTokenRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +17,16 @@ import java.util.UUID;
 import com.valihameed.ufcfightpredictor.security.RefreshTokenService;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PasswordResetService {
     private final PasswordResetTokenRepository tokenRepository;
     private final userRepository userRepository;
     private final EmailSender emailSender;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+
+    @Value("${frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     public String createPasswordReset(String email) {
         user u = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -37,7 +41,7 @@ public class PasswordResetService {
         String hash = hash(raw);
         PasswordResetToken token = PasswordResetToken.builder().userId(u.getId()).tokenHash(hash).expiresAt(OffsetDateTime.now().plusMinutes(15)).used(false).createdAt(OffsetDateTime.now()).build();
         tokenRepository.save(token);
-        String link = String.format("http://localhost:3000/reset-password?token=%s", raw);
+        String link = String.format("%s/reset-password?token=%s", frontendUrl, raw);
         emailSender.sendEmail(u.getEmail(), buildEmail(u.getFirstName() != null ? u.getFirstName() : u.getUsername(), link), "Reset your password");
         return raw;
     }

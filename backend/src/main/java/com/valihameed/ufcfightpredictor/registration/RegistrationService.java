@@ -8,15 +8,16 @@ import com.valihameed.ufcfightpredictor.users.role;
 import com.valihameed.ufcfightpredictor.users.user;
 import com.valihameed.ufcfightpredictor.users.userService;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import com.valihameed.ufcfightpredictor.util.InputSanitizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RegistrationService {
     private final userService userService;
     private final emailValidator emailValidator;
@@ -24,6 +25,9 @@ public class RegistrationService {
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
     private final InputSanitizer inputSanitizer;
+
+    @Value("${frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Transactional
     public String register(RegistrationRequest request) {
@@ -39,7 +43,7 @@ public class RegistrationService {
         role userRole = roleRepository.findByName("ROLE_USER")
             .orElseGet(() -> roleRepository.save(new role(null, "ROLE_USER")));
         String token = userService.signUpUser(new user(firstName, lastName, userName, email, request.getPassword(), userRole));
-        String link = "http://localhost:3000/verify-email?token=" + token;
+        String link = frontendUrl + "/verify-email?token=" + token;
         emailSender.sendEmail(request.getEmail(), buildEmail(request.getFirstName(), link), "Confirm your email");
         return token;
     }
@@ -73,7 +77,7 @@ public class RegistrationService {
             throw new IllegalStateException("Account is already verified");
         }
         String token = userService.generateNewVerificationToken(u);
-        String link = "http://localhost:3000/verify-email?token=" + token;
+        String link = frontendUrl + "/verify-email?token=" + token;
         emailSender.sendEmail(u.getEmail(), buildEmail(u.getFirstName(), link), "Confirm your email");
         return "Verification email sent";
     }
