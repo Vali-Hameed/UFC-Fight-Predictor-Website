@@ -50,7 +50,7 @@ public class PasswordResetService {
         return "<div style=\"font-family: Arial, sans-serif; background-color: #09090b; color: #ffffff; padding: 40px 20px; text-align: center;\">\n" +
                "  <div style=\"max-width: 600px; margin: 0 auto; background-color: #121212; border: 1px solid #333; border-radius: 8px; overflow: hidden;\">\n" +
                "    <div style=\"background-color: #dc2626; padding: 20px;\">\n" +
-               "      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px;\">UFC Fight Predictor</h1>\n" +
+               "      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px;\">FightPicks</h1>\n" +
                "    </div>\n" +
                "    <div style=\"padding: 30px 20px;\">\n" +
                "      <h2 style=\"color: #d4af37; margin-top: 0;\">Reset Your Password</h2>\n" +

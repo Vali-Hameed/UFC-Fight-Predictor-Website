@@ -85,11 +85,11 @@ public class RegistrationService {
         return "<div style=\"font-family: Arial, sans-serif; background-color: #09090b; color: #ffffff; padding: 40px 20px; text-align: center;\">\n" +
                "  <div style=\"max-width: 600px; margin: 0 auto; background-color: #121212; border: 1px solid #333; border-radius: 8px; overflow: hidden;\">\n" +
                "    <div style=\"background-color: #dc2626; padding: 20px;\">\n" +
-               "      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px;\">UFC Fight Predictor</h1>\n" +
+               "      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px;\">FightPicks</h1>\n" +
                "    </div>\n" +
                "    <div style=\"padding: 30px 20px;\">\n" +
                "      <h2 style=\"color: #d4af37; margin-top: 0;\">Confirm Your Email</h2>\n" +
-               "      <p style=\"font-size: 16px; line-height: 1.5; margin-bottom: 25px;\">Hi " + name + ",<br><br>Welcome to UFC Fight Predictor! Please confirm your email address to activate your account and start making predictions.</p>\n" +
+               "      <p style=\"font-size: 16px; line-height: 1.5; margin-bottom: 25px;\">Hi " + name + ",<br><br>Welcome to FightPicks! Please confirm your email address to activate your account and start making predictions.</p>\n" +
                "      <a href=\"" + link + "\" style=\"background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block;\">Activate Account</a>\n" +
                "      <p style=\"font-size: 14px; color: #888; margin-top: 30px;\">This link will expire in 15 minutes.<br>If you did not create an account, please ignore this email.</p>\n" +
                "    </div>\n" +
