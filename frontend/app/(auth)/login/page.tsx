@@ -66,7 +66,7 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
-      <SectionCard eyebrow="Auth" title="Sign in" description="JWT access tokens stay in memory and refresh tokens are stored in HttpOnly cookies.">
+      <SectionCard eyebrow="Auth" title="Sign in" description="Welcome back. Please enter your credentials to access your account.">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input name="username" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Username or email" />
           <PasswordInput name="password" />

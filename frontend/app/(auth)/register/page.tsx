@@ -79,7 +79,7 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
-      <SectionCard eyebrow="Auth" title="Create account" description="Email verification is required before predictions become active.">
+      <SectionCard eyebrow="Auth" title="Create account" description="Email verification is required before your account becomes active.">
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <input name="firstName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="First name" required />
           <input name="lastName" className="w-full rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35" placeholder="Last name" required />
