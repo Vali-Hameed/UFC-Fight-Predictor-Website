@@ -40,12 +40,13 @@ public class AuthController {
         user u = (user) auth.getPrincipal();
         String accessToken = jwtService.generateToken(u.getUsername(), u.getTokenVersion());
         String refreshRaw = refreshTokenService.createRefreshToken(u.getId());
+        String sameSiteStr = cookieSecure ? "None" : "Lax";
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshRaw)
             .httpOnly(true)
             .secure(cookieSecure)
             .path("/")
             .maxAge(Duration.ofDays(7))
-            .sameSite("Lax")
+            .sameSite(sameSiteStr)
             .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new AuthResponse(accessToken, 15 * 60));
     }
@@ -55,7 +56,8 @@ public class AuthController {
         if (refreshToken != null) {
             refreshTokenService.findByRaw(refreshToken).ifPresent(refreshTokenObj -> refreshTokenService.revoke(refreshTokenObj));
         }
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", "").httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite("Lax").build();
+        String sameSiteStr = cookieSecure ? "None" : "Lax";
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", "").httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite(sameSiteStr).build();
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
@@ -79,12 +81,13 @@ public class AuthController {
         refreshTokenService.revoke(refreshTokenEntity);
         String newRaw = refreshTokenService.createRefreshToken(userId);
         long maxAgeSecs = Duration.ofDays(7).getSeconds();
+        String sameSiteStr = cookieSecure ? "None" : "Lax";
         ResponseCookie cookie = ResponseCookie.from("refresh_token", newRaw)
             .httpOnly(true)
             .secure(cookieSecure)
             .path("/")
             .maxAge(maxAgeSecs)
-            .sameSite("Lax")
+            .sameSite(sameSiteStr)
             .build();
         AuthResponse response = new AuthResponse(accessToken, 15 * 60);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
