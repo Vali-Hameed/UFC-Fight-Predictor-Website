@@ -27,6 +27,8 @@ services:
       SCRAPER_API_KEY: ${SCRAPER_API_KEY:-change-me}
       MAIL_HOST: ${MAIL_HOST:-mailhog}
       MAIL_PORT: ${MAIL_PORT:-1025}
+      RESEND_API_KEY: ${RESEND_API_KEY:-re_default1234567890}
+      RESEND_FROM_ADDRESS: ${RESEND_FROM_ADDRESS:-onboarding@resend.dev}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     volumes:
