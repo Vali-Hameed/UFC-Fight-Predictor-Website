@@ -24,6 +24,11 @@ jobs:
             git reset --hard origin/main
             git pull origin main
             
+            echo "--- DEBUG INFO ---"
+            git remote -v
+            git log -1
+            echo "------------------"
+            
             # Rebuild the docker images and recreate the containers (forcing it to read .env from root)
             docker-compose --env-file .env -f docker/docker-compose.yml up -d --build
             
