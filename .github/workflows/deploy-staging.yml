@@ -33,11 +33,13 @@ jobs:
             git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
             git checkout -qf FETCH_HEAD
             
-            # Copy production .env to staging if it doesn't exist (you may want to customize this later)
+            # Copy production .env to staging if it doesn't exist
             if [ ! -f .env ] && [ -f /home/ubuntu/UFC-Fight-Predictor-Website/.env ]; then
               cp /home/ubuntu/UFC-Fight-Predictor-Website/.env .env
-              
-              # Safely disconnect from the Production Supabase database and use the empty local Docker DB instead
+            fi
+            
+            # ALWAYS safely disconnect from the Production Supabase database and use the empty local Docker DB instead
+            if [ -f .env ]; then
               sed -i '/DATABASE_URL/d' .env
               echo "DATABASE_URL=jdbc:postgresql://db:5432/ufc" >> .env
             fi

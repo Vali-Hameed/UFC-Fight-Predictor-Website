@@ -70,7 +70,11 @@ public class securityConfig{
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontendUrl));
+        configuration.setAllowedOriginPatterns(List.of(
+            frontendUrl,
+            "https://*.vercel.app",
+            "http://localhost:3000"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Scraper-Key", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Set-Cookie", "Retry-After"));
