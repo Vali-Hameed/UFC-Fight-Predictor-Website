@@ -41,6 +41,8 @@ jobs:
             # ALWAYS safely disconnect from the Production Supabase database and use the empty local Docker DB instead
             if [ -f .env ]; then
               sed -i '/DATABASE_URL/d' .env
+              sed -i '/DATABASE_USERNAME/d' .env
+              sed -i '/DATABASE_PASSWORD/d' .env
               echo "DATABASE_URL=jdbc:postgresql://db:5432/ufc" >> .env
             fi
             
