@@ -20,6 +20,7 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:-ufc_pass}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-and-set-env}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-refresh-in-prod}
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-false}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
       FASTAPI_BASE_URL: ${FASTAPI_BASE_URL:-http://ufc-ml:8000}
