@@ -28,6 +28,10 @@ services:
       MAIL_PORT: ${MAIL_PORT:-1025}
     ports:
       - "8080:8080"
+    volumes:
+      - ../backend/data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - db
     deploy:
