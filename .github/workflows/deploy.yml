@@ -1,0 +1,31 @@
+name: Deploy to Oracle VPS
+
+on:
+  push:
+    branches:
+      - main
+      - master # Triggers on master or main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/UFC-Fight-Predictor-Website
+            
+            # Fetch latest changes and reset to match the remote branch exactly
+            git fetch --all
+            git reset --hard origin/main
+            git pull origin main
+            
+            # Rebuild the docker images and recreate the containers
+            docker-compose -f docker/docker-compose.yml up -d --build
+            
+            # Remove dangling images to save space
+            docker image prune -f

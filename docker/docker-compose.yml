@@ -30,6 +30,12 @@ services:
       - "8080:8080"
     depends_on:
       - db
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+        reservations:
+          memory: 6g
 
   frontend:
     build:
