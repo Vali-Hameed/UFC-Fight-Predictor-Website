@@ -24,8 +24,8 @@ jobs:
             git reset --hard origin/main
             git pull origin main
             
-            # Rebuild the docker images and recreate the containers
-            docker-compose -f docker/docker-compose.yml up -d --build
+            # Rebuild the docker images and recreate the containers (forcing it to read .env from root)
+            docker-compose --env-file .env -f docker/docker-compose.yml up -d --build
             
             # Remove dangling images to save space
             docker image prune -f

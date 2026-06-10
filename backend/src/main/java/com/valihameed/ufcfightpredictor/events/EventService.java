@@ -21,10 +21,11 @@ public class EventService {
     }
 
     public Page<Event> getArchivedEvents(Pageable pageable, Long excludeId) {
+        java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
         if (excludeId != null) {
-            return eventRepository.findAllByStatusAndIdNotOrderByEventDateDesc("COMPLETED", excludeId, pageable);
+            return eventRepository.findAllByEventDateBeforeAndIdNotOrderByEventDateDesc(now, excludeId, pageable);
         }
-        return eventRepository.findAllByStatusOrderByEventDateDesc("COMPLETED", pageable);
+        return eventRepository.findAllByEventDateBeforeOrderByEventDateDesc(now, pageable);
     }
 
     public Optional<Event> findById(Long id) { return eventRepository.findById(id); }
