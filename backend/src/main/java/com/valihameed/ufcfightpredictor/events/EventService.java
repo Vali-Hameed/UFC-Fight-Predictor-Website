@@ -3,7 +3,8 @@ package com.valihameed.ufcfightpredictor.events;
 import com.valihameed.ufcfightpredictor.models.Event;
 import com.valihameed.ufcfightpredictor.repository.EventRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +18,13 @@ public class EventService {
 
     public List<Event> listAll() {
         return eventRepository.findAll();
+    }
+
+    public Page<Event> getArchivedEvents(Pageable pageable, Long excludeId) {
+        if (excludeId != null) {
+            return eventRepository.findAllByStatusAndIdNotOrderByEventDateDesc("COMPLETED", excludeId, pageable);
+        }
+        return eventRepository.findAllByStatusOrderByEventDateDesc("COMPLETED", pageable);
     }
 
     public Optional<Event> findById(Long id) { return eventRepository.findById(id); }

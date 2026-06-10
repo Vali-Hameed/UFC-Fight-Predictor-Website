@@ -1,6 +1,7 @@
 package com.valihameed.ufcfightpredictor.repository;
 
 import com.valihameed.ufcfightpredictor.models.Event;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 	List<Event> findByEventDateBetweenAndStatus(java.time.OffsetDateTime start, java.time.OffsetDateTime end, String status);
 	Optional<Event> findByName(String name);
 	List<Event> findByStatusOrderByEventDateDesc(String status, Pageable pageable);
+	Page<Event> findAllByStatusOrderByEventDateDesc(String status, Pageable pageable);
+	Page<Event> findAllByStatusAndIdNotOrderByEventDateDesc(String status, Long id, Pageable pageable);
 	List<Event> findByStatusOrderByEventDateAsc(String status, Pageable pageable);
 	List<Event> findByStatus(String status);
 }
