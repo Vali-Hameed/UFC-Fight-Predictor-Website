@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
-import { apiFetch, EventDto, FightDto, MlPredictionDto, getEventDisplayStatus } from "@/lib/api";
+import { apiFetch, EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, getArchivedEvents } from "@/lib/api";
 import { ArchivedEventsDropdown } from "./archived-events-dropdown";
 
 export default async function EventsPage() {
@@ -26,7 +26,16 @@ export default async function EventsPage() {
   completedEventsRaw.sort((a, b) => new Date(b.eventDate || 0).getTime() - new Date(a.eventDate || 0).getTime());
 
   const scheduleEventsRaw = [...completedEventsRaw.slice(0, 1), ...upcomingEventsRaw];
-  const archivedEvents = completedEventsRaw.slice(1);
+
+  const excludeId = completedEventsRaw.length > 0 ? completedEventsRaw[0].id : undefined;
+
+  const firstArchivedPage = await getArchivedEvents(0, 20, excludeId).catch(() => ({ 
+    content: [] as EventDto[], 
+    last: true, 
+    totalPages: 0, 
+    totalElements: 0, 
+    pageable: { pageNumber: 0, pageSize: 20 } 
+  }));
 
   // Fetch predictions ONLY for schedule events
   const scheduleEvents = await Promise.all(
@@ -72,7 +81,7 @@ export default async function EventsPage() {
         </div>
       </SectionCard>
 
-      <ArchivedEventsDropdown archivedEvents={archivedEvents} />
+      <ArchivedEventsDropdown initialPage={firstArchivedPage} excludeId={excludeId} />
     </div>
   );
 }

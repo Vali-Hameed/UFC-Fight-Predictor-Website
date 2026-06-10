@@ -1,52 +1,105 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
-import { EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, apiFetch } from "@/lib/api";
+import { EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, apiFetch, PageResponse, getArchivedEvents } from "@/lib/api";
 
 type EventWithPrediction = EventDto & {
   mainPrediction: MlPredictionDto | null;
   displayStatus: string;
 };
 
-export function ArchivedEventsDropdown({ archivedEvents }: { archivedEvents: EventDto[] }) {
+export function ArchivedEventsDropdown({ initialPage, excludeId }: { initialPage: PageResponse<EventDto>; excludeId?: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [eventsData, setEventsData] = useState<EventWithPrediction[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(initialPage && !initialPage.last);
+  const [isFetchingPage, setIsFetchingPage] = useState(false);
+  const isFetchingRef = useRef(false);
 
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const enrichEvents = async (events: EventDto[]) => {
+    return await Promise.all(
+      events.map(async (event) => {
+        let mainPrediction: MlPredictionDto | null = null;
+        let mainFightStatus: string | null = null;
+        try {
+          const fights = await apiFetch<FightDto[]>(`/api/v1/events/${event.id}/fights`);
+          const mainFight = fights.find((f) => f.isMainEvent) || fights[0];
+          if (mainFight) {
+            mainFightStatus = mainFight.status;
+            mainPrediction = await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${mainFight.id}`).catch(() => null);
+          }
+        } catch {
+          // Ignore
+        }
+        const displayStatus = getEventDisplayStatus(event, mainFightStatus);
+        return { ...event, mainPrediction, displayStatus };
+      })
+    );
+  };
+
+  // Initial load when opened
   useEffect(() => {
-    if (isOpen && eventsData.length === 0) {
-      setLoading(true);
-      
-      const fetchPredictions = async () => {
-        const enriched = await Promise.all(
-          archivedEvents.map(async (event) => {
-            let mainPrediction: MlPredictionDto | null = null;
-            let mainFightStatus: string | null = null;
-            try {
-              const fights = await apiFetch<FightDto[]>(`/api/v1/events/${event.id}/fights`);
-              const mainFight = fights.find((f) => f.isMainEvent) || fights[0];
-              if (mainFight) {
-                mainFightStatus = mainFight.status;
-                mainPrediction = await apiFetch<MlPredictionDto>(`/api/v1/ml/fight/${mainFight.id}`).catch(() => null);
-              }
-            } catch {
-              // Ignore
-            }
-            const displayStatus = getEventDisplayStatus(event, mainFightStatus);
-            return { ...event, mainPrediction, displayStatus };
-          })
-        );
+    if (isOpen && eventsData.length === 0 && !loading && initialPage?.content) {
+      const loadInitial = async () => {
+        setLoading(true);
+        const enriched = await enrichEvents(initialPage.content);
         setEventsData(enriched);
+        setPage((initialPage.pageable?.pageNumber ?? 0) + 1);
+        setHasMore(!initialPage.last);
         setLoading(false);
       };
-
-      fetchPredictions();
+      loadInitial();
     }
-  }, [isOpen, archivedEvents, eventsData.length]);
+  }, [isOpen, eventsData.length, initialPage, loading]);
 
-  if (archivedEvents.length === 0) return null;
+  const loadMore = useCallback(async () => {
+    if (isFetchingRef.current || !hasMore) return;
+    
+    isFetchingRef.current = true;
+    setIsFetchingPage(true);
+    try {
+      const nextPage = await getArchivedEvents(page, 20, excludeId);
+      const enriched = await enrichEvents(nextPage.content);
+      setEventsData((prev) => {
+        const existingIds = new Set(prev.map(e => e.id));
+        const newEvents = enriched.filter(e => !existingIds.has(e.id));
+        return [...prev, ...newEvents];
+      });
+      setPage(nextPage.pageable.pageNumber + 1);
+      setHasMore(!nextPage.last);
+    } catch (e) {
+      console.error("Failed to load more archived events", e);
+    } finally {
+      isFetchingRef.current = false;
+      setIsFetchingPage(false);
+    }
+  }, [page, hasMore, excludeId]);
+
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target || !isOpen || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(target);
+    return () => observer.unobserve(target);
+  }, [isOpen, loading, hasMore, loadMore]);
+
+  if (!initialPage || initialPage.totalElements === 0) return null;
 
   return (
     <SectionCard
@@ -70,11 +123,9 @@ export function ArchivedEventsDropdown({ archivedEvents }: { archivedEvents: Eve
       </button>
 
       {isOpen && (
-        <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          {loading ? (
-            <div className="col-span-2 text-center text-white/50 py-8">Loading archived events...</div>
-          ) : (
-            eventsData.map((event) => (
+        <div className="mt-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {eventsData.map((event) => (
               <Link key={event.id} href={`/events/${event.id}?archived=true`} className="rounded-3xl border border-white/10 bg-white/5 p-5 transition hover:-translate-y-0.5 hover:bg-white/8 opacity-80 hover:opacity-100">
                 <p className="text-xs uppercase tracking-[0.3em] text-white/45">{event.displayStatus}</p>
                 <h3 className="mt-3 text-xl font-semibold text-white">{event.name}</h3>
@@ -85,7 +136,15 @@ export function ArchivedEventsDropdown({ archivedEvents }: { archivedEvents: Eve
                   </div>
                 ) : null}
               </Link>
-            ))
+            ))}
+          </div>
+          
+          {(loading || isFetchingPage) && (
+            <div className="text-center text-white/50 py-8">Loading archived events...</div>
+          )}
+          
+          {hasMore && !loading && (
+            <div ref={observerTarget} className="h-10 w-full" />
           )}
         </div>
       )}

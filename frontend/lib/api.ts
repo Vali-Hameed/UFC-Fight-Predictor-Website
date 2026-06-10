@@ -121,6 +121,17 @@ export type AuthResponse = {
   expiresInSeconds: number;
 };
 
+export type PageResponse<T> = {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+};
+
 export type EventDto = {
   id: number;
   name: string;
@@ -129,6 +140,14 @@ export type EventDto = {
   status: string | null;
   scrapedAt: string | null;
 };
+
+export async function getArchivedEvents(page: number, size: number = 20, excludeId?: number): Promise<PageResponse<EventDto>> {
+  let url = `/api/v1/events/archived?page=${page}&size=${size}`;
+  if (excludeId !== undefined) {
+    url += `&excludeId=${excludeId}`;
+  }
+  return apiFetch<PageResponse<EventDto>>(url);
+}
 
 export type FightDto = {
   id: number;
