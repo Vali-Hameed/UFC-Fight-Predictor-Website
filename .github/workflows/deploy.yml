@@ -30,8 +30,14 @@ jobs:
             git log -1
             echo "------------------"
             
-            # Rebuild the docker images and recreate the containers (forcing it to read .env from root)
-            docker compose --env-file .env -f docker/docker-compose.yml up -d --build backend
+            # Force kill the old rogue container if it ever respawns
+            docker rm -f ufc-backend || true
+            
+            # Force rebuild the docker images from scratch to prevent aggressive caching bugs
+            docker compose --env-file .env -f docker/docker-compose.yml build --no-cache backend
+            
+            # Recreate and start the containers
+            docker compose --env-file .env -f docker/docker-compose.yml up -d backend
             
             # Remove dangling images to save space
             docker image prune -f
