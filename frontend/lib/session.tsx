@@ -74,6 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await apiFetch<void>("/api/v1/auth/logout", { method: "POST" }, token);
+    } catch (err) {
+      // Ignore server logout errors (e.g. if the token is already invalid or account was deleted)
     } finally {
       setToken(null);
     }

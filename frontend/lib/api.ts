@@ -1,6 +1,6 @@
 export const API_BASE_URL = typeof window === 'undefined' 
   ? (process.env.INTERNAL_API_URL ?? "http://backend:8080")
-  : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080");
+  : (process.env.NEXT_PUBLIC_API_URL || "");
 
 export type ApiError = {
   error?: string;
@@ -110,6 +110,10 @@ export async function deletePost(postId: number, token: string): Promise<void> {
 
 export async function deleteUser(userId: number, token: string): Promise<void> {
   await apiFetch(`/api/v1/admin/users/${userId}`, { method: "DELETE" }, token);
+}
+
+export async function deleteMyAccount(token: string): Promise<void> {
+  await apiFetch(`/api/v1/users/me`, { method: "DELETE" }, token);
 }
 
 export async function deleteScrapeLog(logId: number, token: string): Promise<void> {

@@ -73,7 +73,7 @@ public class AuthController {
 
         Long userId = refreshTokenEntity.getUserId();
         user u = userRepository.findById(userId).orElse(null);
-        if (u == null) {
+        if (u == null || !u.isEnabled() || u.isLocked()) {
             return ResponseEntity.status(401).build();
         }
 
