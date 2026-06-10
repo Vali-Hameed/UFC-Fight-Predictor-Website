@@ -23,6 +23,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
       FASTAPI_BASE_URL: ${FASTAPI_BASE_URL:-http://ufc-ml:8000}
+      SCRAPER_URL: ${SCRAPER_URL:-http://localhost:8001}
       SCRAPER_API_KEY: ${SCRAPER_API_KEY:-change-me}
       MAIL_HOST: ${MAIL_HOST:-mailhog}
       MAIL_PORT: ${MAIL_PORT:-1025}
