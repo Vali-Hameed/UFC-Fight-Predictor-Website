@@ -17,6 +17,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
             cd /home/ubuntu/UFC-Fight-Predictor-Website
             
             # Fetch latest changes and reset to match the remote branch exactly
@@ -30,7 +31,7 @@ jobs:
             echo "------------------"
             
             # Rebuild the docker images and recreate the containers (forcing it to read .env from root)
-            docker-compose --env-file .env -f docker/docker-compose.yml up -d --build
+            docker compose --env-file .env -f docker/docker-compose.yml up -d --build backend
             
             # Remove dangling images to save space
             docker image prune -f
