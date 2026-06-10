@@ -1,0 +1,50 @@
+name: Deploy Staging to Oracle VPS
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Staging to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            
+            # Use an isolated folder for staging so it doesn't collide with the production repository
+            STAGING_DIR="/home/ubuntu/UFC-Fight-Predictor-Website-Staging"
+            
+            if [ ! -d "$STAGING_DIR" ]; then
+              echo "Setting up staging directory for the first time..."
+              git clone https://github.com/Vali-Hameed/UFC-Fight-Predictor-Website.git "$STAGING_DIR"
+            fi
+            
+            cd "$STAGING_DIR"
+            
+            # Fetch latest changes from the pull request commit
+            git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
+            git checkout -qf FETCH_HEAD
+            
+            # Copy production .env to staging if it doesn't exist (you may want to customize this later)
+            if [ ! -f .env ] && [ -f /home/ubuntu/UFC-Fight-Predictor-Website/.env ]; then
+              cp /home/ubuntu/UFC-Fight-Predictor-Website/.env .env
+            fi
+            
+            # Define isolated dynamic ports for the staging containers
+            export BACKEND_PORT=8081
+            export DB_PORT=5333
+            
+            # Force rebuild and start the staging containers under an isolated project name
+            docker compose -p ufc-staging --env-file .env -f docker/docker-compose.yml build --no-cache backend
+            docker compose -p ufc-staging --env-file .env -f docker/docker-compose.yml up -d backend
+            
+            # Remove dangling images
+            docker image prune -f

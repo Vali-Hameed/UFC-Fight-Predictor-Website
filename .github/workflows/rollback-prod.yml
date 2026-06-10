@@ -1,0 +1,46 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_hash:
+        description: 'The exact commit hash to roll back to (e.g. 930c860)'
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Force Rollback on VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /home/ubuntu/UFC-Fight-Predictor-Website
+            
+            echo "Initiating rollback to commit ${{ github.event.inputs.commit_hash }}..."
+            
+            # Fetch all history to ensure the commit exists
+            git fetch --all
+            
+            # Force reset the repository to the requested commit
+            git reset --hard ${{ github.event.inputs.commit_hash }}
+            
+            echo "--- VERIFICATION ---"
+            git log -1
+            echo "--------------------"
+            
+            # Force kill any rogue containers
+            docker rm -f ufc-backend || true
+            
+            # Rebuild without cache to ensure the rolled-back code is properly compiled
+            docker compose --env-file .env -f docker/docker-compose.yml build --no-cache backend
+            
+            # Start the rolled-back container
+            docker compose --env-file .env -f docker/docker-compose.yml up -d backend
+            
+            echo "Rollback completed successfully."

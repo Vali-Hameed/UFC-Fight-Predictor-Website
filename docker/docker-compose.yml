@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-ufc_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ufc_pass}
     ports:
-      - "5332:5432"
+      - "${DB_PORT:-5332}:5432"
     volumes:
       - ufc-db-data:/var/lib/postgresql/data
 
@@ -28,7 +28,7 @@ services:
       MAIL_HOST: ${MAIL_HOST:-mailhog}
       MAIL_PORT: ${MAIL_PORT:-1025}
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     volumes:
       - ../backend/data:/app/data
     extra_hosts:
