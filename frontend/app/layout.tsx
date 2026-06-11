@@ -11,7 +11,17 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-alt" });
 
 export const metadata: Metadata = {
   title: "FightPicks",
-  description: "Premium MMA prediction, leaderboard, and community platform"
+  description: "Premium MMA prediction, leaderboard, and community platform",
+  openGraph: {
+    images: [
+      {
+        url: "/icon.png",
+        width: 1200,
+        height: 630,
+        alt: "FightPicks",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
