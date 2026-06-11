@@ -2,6 +2,7 @@ package com.valihameed.ufcfightpredictor.users;
 
 import com.valihameed.ufcfightpredictor.registration.token.ConfirmationToken;
 import com.valihameed.ufcfightpredictor.registration.token.ConfirmationTokenService;
+import com.valihameed.ufcfightpredictor.repository.UsernameHistoryRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ public class UserServiceTest {
     @Mock private userRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Mock private UsernameHistoryRepository usernameHistoryRepository;
     @Mock private ConfirmationTokenService confirmationTokenService;
 
     private userService underTest;
@@ -40,6 +42,7 @@ public class UserServiceTest {
                 userRepository,
                 passwordEncoder,
                 bCryptPasswordEncoder,
+                usernameHistoryRepository,
                 confirmationTokenService
         );
 

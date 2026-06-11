@@ -40,6 +40,7 @@ public class UserControllerTest {
     @MockBean private FightRepository fightRepository;
     @MockBean private EventRepository eventRepository;
     @MockBean private PredictionResultRepository predictionResultRepository;
+    @MockBean private com.valihameed.ufcfightpredictor.users.userService userService;
     @MockBean private com.valihameed.ufcfightpredictor.security.JwtService jwtService;
     @MockBean private org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
 

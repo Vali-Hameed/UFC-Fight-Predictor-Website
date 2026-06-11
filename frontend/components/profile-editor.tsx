@@ -10,7 +10,7 @@ type ProfileEditorProps = {
 };
 
 export function ProfileEditor({ username }: ProfileEditorProps) {
-  const { token } = useAuth();
+  const { token, setToken } = useAuth();
   const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -20,6 +20,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -44,6 +46,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
         setProfile(currentUser);
         setFirstName(currentUser.firstName ?? "");
         setLastName(currentUser.lastName ?? "");
+        setNewUsername(currentUser.username ?? "");
         setProfileImageUrl(currentUser.profileImageUrl ?? "");
         setPublicProfile(currentUser.publicProfile ?? true);
         setOptOutEmailNotifications(currentUser.optOutEmailNotifications ?? false);
@@ -130,6 +133,30 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
     }
   };
 
+  const changeUsername = async () => {
+    if (!token || !newUsername.trim()) return;
+
+    setSavingUsername(true);
+    try {
+      const response = await apiFetch<{ token: string; profile: ProfileDto }>(
+        "/api/v1/users/me/username",
+        {
+          method: "PUT",
+          body: JSON.stringify({ newUsername })
+        },
+        token
+      );
+      setToken(response.token);
+      setProfile(response.profile);
+      setNewUsername(response.profile.username ?? "");
+      toast.success("Username changed successfully.");
+    } catch (error: any) {
+      toast.error(error?.message || "Could not change username.");
+    } finally {
+      setSavingUsername(false);
+    }
+  };
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -161,6 +188,30 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             placeholder="Last name"
           />
         </label>
+        <div className="md:col-span-3">
+          <p className="mb-2 text-sm text-white/70">Username</p>
+          <div className="flex items-start gap-3">
+            <input
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              className="w-full max-w-sm rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none placeholder:text-white/35"
+              placeholder="New username"
+              pattern="^\S+$"
+              title="Username cannot contain spaces"
+            />
+            <button
+              type="button"
+              onClick={changeUsername}
+              disabled={savingUsername || !newUsername.trim() || newUsername === profile?.username}
+              className="rounded-2xl border border-white/20 bg-transparent px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {savingUsername ? "Updating..." : "Update"}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-white/40">
+            You can change your username once every 90 days. Old usernames are reserved for 14 days before they become available to others.
+          </p>
+        </div>
         <div className="md:col-span-3">
           <p className="mb-2 text-sm text-white/70">Profile Visibility</p>
           <div className="flex items-center gap-3">
