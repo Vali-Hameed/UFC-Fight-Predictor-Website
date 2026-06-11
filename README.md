@@ -28,13 +28,14 @@ This repository (`UFC-Fight-Predictor-Website`) serves as the core monorepo, hou
 
 - 🤖 **AI Predictions Integration**: Connects to a dedicated ML microservice to provide confidence scores and predicted fight winners.
 - 🎮 **Fight Simulator**: Interactive simulator allowing users to pit any two fighters from across divisions against each other.
-- 🔐 **Robust Security**: Stateless JWT-based authentication featuring secure HttpOnly cookies, refresh token rotation, and BCrypt password hashing.
+- 🎨 **Modern & Dynamic UI**: Responsive, highly-interactive frontend leveraging **Framer Motion** for sleek animations and **Sonner** for real-time toast notifications.
+- 🔐 **Robust Security**: Stateless JWT-based authentication featuring secure HttpOnly cookies, refresh token rotation, BCrypt password hashing, and strict XSS input sanitization via **JSoup**.
 - 👤 **Advanced User Management**: Comprehensive profile editing, username changes with 90-day cooldowns, and full account deletion with automated data anonymization.
 - 📊 **Dynamic Leaderboards**: Tracks user prediction accuracy, win streaks, and total points in real-time.
 - 🗣️ **Interactive Forums**: Dedicated discussion threads and community polling for every fight card.
 - 🛡️ **Advanced Rate Limiting**: Token-bucket rate limiting implemented via `Bucket4j` and `Caffeine` caching to prevent abuse.
 - ⚙️ **Admin Dashboard**: Secure control panel for managing users, roles, fights, and triggering manual ML pre-warming tasks.
-- 📧 **Automated Emails**: Integrated MailHog/SMTP setup for registration confirmation and password resets.
+- 📧 **Automated Emails**: Integrated **Resend** API for production email delivery (registration confirmation, resending verification links, and password resets), with MailHog configured for local development.
 
 ---
 
@@ -123,6 +124,30 @@ docker-compose -f docker/docker-compose.dev.yml logs -f
 
 ---
 
+## 🧪 Testing
+
+The repository features comprehensive automated testing suites for both the frontend and backend.
+
+### Backend Tests
+The Spring Boot backend uses **JUnit 5**, **Mockito**, and **Spring Security Test**, running against an isolated **in-memory H2 database** to ensure a clean testing state.
+To run the backend test suite:
+```bash
+cd backend
+./mvnw test
+```
+
+### Frontend Tests
+The Next.js frontend uses **Jest** and **React Testing Library** to validate UI components, auth flows, and state interactions.
+To run the frontend test suite:
+```bash
+cd frontend
+npm run test
+# Or to generate a coverage report:
+npm run test:coverage
+```
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend
@@ -135,10 +160,14 @@ docker-compose -f docker/docker-compose.dev.yml logs -f
 - **Security**: Spring Security 6, JWT, Bucket4j
 - **Data Access**: Spring Data JPA, Hibernate
 - **Database Migrations**: Flyway
+- **Email Delivery**: Resend API
 
 ### Infrastructure
 - **Deployment**: Hosted on an **Oracle Virtual Private Server (VPS)**.
-- **CI/CD**: Fully automated deployment pipelines using **GitHub Actions** via SSH to pull, rebuild, and orchestrate containers.
+- **CI/CD**: Fully automated deployment pipelines using **GitHub Actions**. Includes:
+  - **Production Deployment**: Triggers on pushes to `main`, rebuilding containers on the VPS via SSH.
+  - **Staging Deployments**: Triggers on pull requests to `main`, spinning up an isolated staging environment with dynamic ports and a separate local database to prevent production collisions.
+  - **Manual Rollbacks**: A `workflow_dispatch` action allowing instant fallbacks to specific commit hashes.
 - **Database**: PostgreSQL 16
 - **Containerization**: Docker & Docker Compose
 - **Local Testing**: MailHog
