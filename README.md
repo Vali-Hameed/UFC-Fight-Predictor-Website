@@ -10,6 +10,23 @@
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Oracle](https://img.shields.io/badge/Oracle_VPS-F80000?style=flat-square&logo=oracle&logoColor=white)
+![Resend](https://img.shields.io/badge/Resend-0070F3?style=flat-square&logo=resend&logoColor=white)
+![JSoup](https://img.shields.io/badge/JSoup-FF4700?style=flat-square&logo=jsoup&logoColor=white)
+![MailHog](https://img.shields.io/badge/MailHog-FF4700?style=flat-square&logo=mailhog&logoColor=white)
+![JUnit](https://img.shields.io/badge/JUnit-25A2CD?style=flat-square&logo=junit&logoColor=white)
+![Mockito](https://img.shields.io/badge/Mockito-FF4081?style=flat-square&logo=mockito&logoColor=white)
+![Jest](https://img.shields.io/badge/Jest-323330?style=flat-square&logo=jest&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-D53F8C?style=flat-square&logo=framer&logoColor=white)
+![Sonner](https://img.shields.io/badge/Sonner-25A2CD?style=flat-square&logo=sonner&logoColor=white)
+![Bucket4j](https://img.shields.io/badge/Bucket4j-25A2CD?style=flat-square&logo=bucket4j&logoColor=white)
+![Caffeine](https://img.shields.io/badge/Caffeine-25A2CD?style=flat-square&logo=caffeine&logoColor=white)
+![Flyway](https://img.shields.io/badge/Flyway-25A2CD?style=flat-square&logo=flyway&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=flat-square&logo=springdatajpa&logoColor=white)
+![Hibernate](https://img.shields.io/badge/Hibernate-6DB33F?style=flat-square&logo=hibernate&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat-square&logo=apachemaven&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 </div>
 
 <hr />
