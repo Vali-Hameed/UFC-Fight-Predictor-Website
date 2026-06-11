@@ -10,6 +10,8 @@ import com.valihameed.ufcfightpredictor.repository.LeaderboardRepository;
 import com.valihameed.ufcfightpredictor.repository.UserPredictionRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
+import com.valihameed.ufcfightpredictor.users.userService;
+import com.valihameed.ufcfightpredictor.security.JwtService;
 import com.valihameed.ufcfightpredictor.util.InputSanitizer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +35,8 @@ public class userController {
 	private final FightRepository fightRepository;
 	private final EventRepository eventRepository;
 	private final com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository;
+	private final userService userService;
+	private final JwtService jwtService;
 
 	@GetMapping("/me")
 	public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
@@ -88,6 +92,27 @@ public class userController {
 		return ResponseEntity.ok(buildFullProfileResponse(currentUser));
 	}
 
+	@PutMapping("/me/username")
+	public ResponseEntity<UsernameChangeResponse> changeUsername(@RequestBody ChangeUsernameRequest request, Authentication authentication) {
+		user currentUser = (user) authentication.getPrincipal();
+		
+		String newUsername = inputSanitizer.sanitize(request.getNewUsername()).trim();
+		if (newUsername.isEmpty()) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		userService.changeUsername(currentUser, newUsername);
+		
+		// Generate new token because subject (username) changed
+		String newToken = jwtService.generateToken(currentUser.getUsername(), currentUser.getTokenVersion());
+		
+		UsernameChangeResponse response = new UsernameChangeResponse();
+		response.setToken(newToken);
+		response.setProfile(buildFullProfileResponse(currentUser));
+		
+		return ResponseEntity.ok(response);
+	}
+
 	@DeleteMapping("/me")
 	public ResponseEntity<?> deleteMe(Authentication authentication) {
 		if (authentication == null || !(authentication.getPrincipal() instanceof user)) {
@@ -105,7 +130,6 @@ public class userController {
 		currentUser.setProfileImageUrl(null);
 		currentUser.setPublicProfile(false);
 		currentUser.setOptOutEmailNotifications(true);
-		
 		userRepository.save(currentUser);
 		return ResponseEntity.ok(java.util.Map.of("message", "User deleted successfully"));
 	}
@@ -185,6 +209,17 @@ public class userController {
 		private String profileImageUrl;
 		private Boolean publicProfile;
 		private Boolean optOutEmailNotifications;
+	}
+
+	@Data
+	public static class ChangeUsernameRequest {
+		private String newUsername;
+	}
+
+	@Data
+	public static class UsernameChangeResponse {
+		private String token;
+		private UserProfileResponse profile;
 	}
 
 	@Data
