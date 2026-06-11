@@ -112,6 +112,10 @@ export async function deleteUser(userId: number, token: string): Promise<void> {
   await apiFetch(`/api/v1/admin/users/${userId}`, { method: "DELETE" }, token);
 }
 
+export async function deleteMyAccount(token: string): Promise<void> {
+  await apiFetch(`/api/v1/users/me`, { method: "DELETE" }, token);
+}
+
 export async function deleteScrapeLog(logId: number, token: string): Promise<void> {
   await apiFetch(`/api/v1/internal/scraper/logs/${logId}`, { method: "DELETE" }, token);
 }

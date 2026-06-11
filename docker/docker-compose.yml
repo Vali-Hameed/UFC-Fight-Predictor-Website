@@ -20,6 +20,7 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:-ufc_pass}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-and-set-env}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-refresh-in-prod}
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-false}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
       FASTAPI_BASE_URL: ${FASTAPI_BASE_URL:-http://ufc-ml:8000}
@@ -27,6 +28,8 @@ services:
       SCRAPER_API_KEY: ${SCRAPER_API_KEY:-change-me}
       MAIL_HOST: ${MAIL_HOST:-mailhog}
       MAIL_PORT: ${MAIL_PORT:-1025}
+      RESEND_API_KEY: ${RESEND_API_KEY:-re_default1234567890}
+      RESEND_FROM_ADDRESS: ${RESEND_FROM_ADDRESS:-onboarding@resend.dev}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     volumes:

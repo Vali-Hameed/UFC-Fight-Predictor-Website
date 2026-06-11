@@ -33,8 +33,8 @@ jobs:
             git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
             git checkout -qf FETCH_HEAD
             
-            # Copy production .env to staging if it doesn't exist
-            if [ ! -f .env ] && [ -f /home/ubuntu/UFC-Fight-Predictor-Website/.env ]; then
+            # ALWAYS copy production .env to staging to ensure we have the latest API keys (like Resend)
+            if [ -f /home/ubuntu/UFC-Fight-Predictor-Website/.env ]; then
               cp /home/ubuntu/UFC-Fight-Predictor-Website/.env .env
             fi
             

@@ -10,7 +10,7 @@ type ProfileEditorProps = {
 };
 
 export function ProfileEditor({ username }: ProfileEditorProps) {
-  const { token, setToken } = useAuth();
+  const { token, setToken, logout } = useAuth();
   const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -22,6 +22,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [resetting, setResetting] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -157,6 +158,28 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!token) return;
+    
+    const confirmDelete = window.confirm(
+      "WARNING: Are you absolutely sure you want to delete your account?\n\nThis action CANNOT be undone. All your personal data, predictions, and leaderboard stats will be permanently erased. Your forum posts will be anonymized."
+    );
+    
+    if (!confirmDelete) return;
+    
+    setDeleting(true);
+    try {
+      const { deleteMyAccount } = await import("@/lib/api");
+      await deleteMyAccount(token);
+      toast.success("Your account has been successfully deleted.");
+      await logout();
+      window.location.href = "/";
+    } catch {
+      toast.error("Failed to delete account. Please try again or contact support.");
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -274,6 +297,19 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             {resetting ? "Sending..." : "Reset password"}
           </button>
         </div>
+      </div>
+
+      <div className="mt-8 border-t border-red-500/20 pt-6">
+        <h4 className="mb-2 text-lg font-medium text-red-500">Danger Zone</h4>
+        <p className="mb-4 text-sm text-white/60">Permanently delete your account and all associated data. This action cannot be undone.</p>
+        <button
+          type="button"
+          onClick={handleDeleteAccount}
+          disabled={deleting}
+          className="rounded-2xl bg-red-600/20 border border-red-600/50 px-5 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-600/40 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {deleting ? "Deleting..." : "Delete Account"}
+        </button>
       </div>
     </div>
   );

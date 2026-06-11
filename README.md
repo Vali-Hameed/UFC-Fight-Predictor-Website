@@ -1,4 +1,4 @@
-![UFC Logo](https://upload.wikimedia.org/wikipedia/commons/9/92/UFC_Logo.svg)
+
 
 <div align="center">
   <h1>🏆 UFC Fight Predictor</h1>

@@ -112,6 +112,27 @@ public class userController {
 		
 		return ResponseEntity.ok(response);
 	}
+
+	@DeleteMapping("/me")
+	public ResponseEntity<?> deleteMe(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof user)) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		user currentUser = (user) authentication.getPrincipal();
+		
+		currentUser.setUsername("deleted_user_" + currentUser.getId());
+		currentUser.setEmail("deleted_" + currentUser.getId() + "@deleted.com");
+		currentUser.setPassword("");
+		currentUser.setFirstName("Deleted");
+		currentUser.setLastName("User");
+		currentUser.setLocked(true);
+		currentUser.setEnabled(false);
+		currentUser.setProfileImageUrl(null);
+		currentUser.setPublicProfile(false);
+		currentUser.setOptOutEmailNotifications(true);
+		userRepository.save(currentUser);
+		return ResponseEntity.ok(java.util.Map.of("message", "User deleted successfully"));
+	}
 	
 	private UserProfileResponse buildFullProfileResponse(user target) {
 	    UserProfileResponse response = UserProfileResponse.from(target);
