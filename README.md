@@ -27,7 +27,9 @@ This repository (`UFC-Fight-Predictor-Website`) serves as the core monorepo, hou
 ## ✨ Key Features
 
 - 🤖 **AI Predictions Integration**: Connects to a dedicated ML microservice to provide confidence scores and predicted fight winners.
+- 🎮 **Fight Simulator**: Interactive simulator allowing users to pit any two fighters from across divisions against each other.
 - 🔐 **Robust Security**: Stateless JWT-based authentication featuring secure HttpOnly cookies, refresh token rotation, and BCrypt password hashing.
+- 👤 **Advanced User Management**: Comprehensive profile editing, username changes with 90-day cooldowns, and full account deletion with automated data anonymization.
 - 📊 **Dynamic Leaderboards**: Tracks user prediction accuracy, win streaks, and total points in real-time.
 - 🗣️ **Interactive Forums**: Dedicated discussion threads and community polling for every fight card.
 - 🛡️ **Advanced Rate Limiting**: Token-bucket rate limiting implemented via `Bucket4j` and `Caffeine` caching to prevent abuse.
@@ -135,6 +137,8 @@ docker-compose -f docker/docker-compose.dev.yml logs -f
 - **Database Migrations**: Flyway
 
 ### Infrastructure
+- **Deployment**: Hosted on an **Oracle Virtual Private Server (VPS)**.
+- **CI/CD**: Fully automated deployment pipelines using **GitHub Actions** via SSH to pull, rebuild, and orchestrate containers.
 - **Database**: PostgreSQL 16
 - **Containerization**: Docker & Docker Compose
 - **Local Testing**: MailHog
