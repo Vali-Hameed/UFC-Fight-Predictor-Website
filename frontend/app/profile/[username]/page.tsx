@@ -1,6 +1,30 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { SectionCard } from "@/components/section-card";
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
+  const { username } = await params;
+  try {
+    const profile = await apiFetch<ProfileDto>(`/api/v1/users/${username}`);
+    if (profile) {
+      return {
+        title: `@${profile.username} Profile | FightPicks`,
+        description: `View @${profile.username}'s UFC fight prediction stats, ranking, and history on FightPicks.`,
+        openGraph: {
+          title: `@${profile.username} | FightPicks Predictor`,
+          description: `View @${profile.username}'s UFC fight prediction stats and ranking.`,
+        },
+      };
+    }
+  } catch (err) {
+    // Fallback
+  }
+  return {
+    title: `@${username} Profile | FightPicks`,
+    description: `View @${username}'s UFC fight prediction stats and history.`,
+  };
+}
 import { apiFetch, ProfileDto } from "@/lib/api";
 import { ProfileView } from "@/components/profile-view";
 

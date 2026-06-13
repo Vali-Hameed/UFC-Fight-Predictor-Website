@@ -3,8 +3,31 @@ import { SectionCard } from "@/components/section-card";
 import { PredictionCard } from "@/components/prediction-card";
 import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard, getEventDisplayStatus } from "@/lib/api";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const event = await apiFetch<EventDto>(`/api/v1/events/${id}`);
+    if (event) {
+      return {
+        title: `${event.name} Predictions & Odds | FightPicks`,
+        description: `Get AI and community predictions, stats, and odds for ${event.name} taking place in ${event.location ?? "TBD"}.`,
+        openGraph: {
+          title: `${event.name} Predictions | FightPicks`,
+          description: `Get AI and community predictions, stats, and odds for ${event.name}.`,
+        },
+      };
+    }
+  } catch (err) {
+    // Fallback if fetch fails
+  }
+  return {
+    title: "Event Predictions | FightPicks",
+  };
+}
 
 type EventPageProps = {
   params: Promise<{ id: string }>;

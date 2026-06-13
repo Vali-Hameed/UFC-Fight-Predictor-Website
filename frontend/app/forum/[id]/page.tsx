@@ -1,5 +1,28 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import { SectionCard } from "@/components/section-card";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const thread = await apiFetch<ForumThreadDto>(`/api/v1/forum/threads/${id}`);
+    if (thread) {
+      return {
+        title: `${thread.title} - Forum | FightPicks`,
+        description: `Join the discussion about ${thread.title} on the FightPicks forum.`,
+        openGraph: {
+          title: `${thread.title} | FightPicks Forum`,
+          description: `Join the discussion about ${thread.title} on the FightPicks forum.`,
+        },
+      };
+    }
+  } catch (err) {
+    // Fallback
+  }
+  return {
+    title: "Forum Thread | FightPicks",
+  };
+}
 import { ForumReplyForm } from "@/components/forum-reply-form";
 import { apiFetch, ForumPostDto, ForumThreadDto, MlPredictionDto, FightDto, CommunityVoteDto, EventDto } from "@/lib/api";
 import { SubscribeButton } from "@/components/subscribe-button";
