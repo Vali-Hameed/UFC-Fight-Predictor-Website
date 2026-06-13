@@ -110,8 +110,9 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <div className="rounded-2xl border border-white/10 bg-bg/70 p-4 text-sm text-white/70">
           Community split: {percent1}% {fight.fighter1Name} vs {percent2}% {fight.fighter2Name}
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+          <div className="mt-3 flex h-2 w-full overflow-hidden rounded-full bg-white/10">
             <div className="h-full bg-accent transition-all duration-500" style={{ width: `${percent1}%` }} />
+            <div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${percent2}%` }} />
           </div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-bg/70 p-4 text-sm text-white/70">
