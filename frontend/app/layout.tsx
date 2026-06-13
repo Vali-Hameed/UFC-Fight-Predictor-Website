@@ -12,15 +12,27 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-alt" });
 export const metadata: Metadata = {
   title: "FightPicks",
   description: "Premium MMA prediction, leaderboard, and community platform",
+  metadataBase: new URL('https://fightpicks.net'),
   openGraph: {
+    title: "FightPicks",
+    description: "Premium MMA prediction, leaderboard, and community platform",
+    url: 'https://fightpicks.net',
+    siteName: 'FightPicks',
+    type: 'website',
     images: [
       {
         url: "/icon.png",
         width: 1200,
         height: 630,
-        alt: "FightPicks",
+        alt: "FightPicks Logo",
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "FightPicks",
+    description: "Premium MMA prediction, leaderboard, and community platform",
+    images: ['/icon.png'],
   },
 };
 
