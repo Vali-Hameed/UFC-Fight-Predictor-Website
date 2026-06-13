@@ -1,5 +1,15 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Event Schedule & Results | FightPicks",
+  description: "Explore upcoming and past fights. Dive into detailed fight cards to submit your predictions and analyze community trends.",
+  openGraph: {
+    title: "Event Schedule | FightPicks",
+    description: "Explore upcoming and past fights and fight cards.",
+  },
+};
 import { SectionCard } from "@/components/section-card";
 import { apiFetch, EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, getArchivedEvents } from "@/lib/api";
 import { ArchivedEventsDropdown } from "./archived-events-dropdown";
@@ -21,7 +31,7 @@ export default async function EventsPage() {
 
   // Sort upcoming events ascending (soonest first)
   upcomingEventsRaw.sort((a, b) => new Date(a.eventDate || 0).getTime() - new Date(b.eventDate || 0).getTime());
-  
+
   // Sort completed events descending (most recent first)
   completedEventsRaw.sort((a, b) => new Date(b.eventDate || 0).getTime() - new Date(a.eventDate || 0).getTime());
 
@@ -29,12 +39,12 @@ export default async function EventsPage() {
 
   const excludeId = completedEventsRaw.length > 0 ? completedEventsRaw[0].id : undefined;
 
-  const firstArchivedPage = await getArchivedEvents(0, 20, excludeId).catch(() => ({ 
-    content: [] as EventDto[], 
-    last: true, 
-    totalPages: 0, 
-    totalElements: 0, 
-    pageable: { pageNumber: 0, pageSize: 20 } 
+  const firstArchivedPage = await getArchivedEvents(0, 20, excludeId).catch(() => ({
+    content: [] as EventDto[],
+    last: true,
+    totalPages: 0,
+    totalElements: 0,
+    pageable: { pageNumber: 0, pageSize: 20 }
   }));
 
   // Fetch predictions ONLY for schedule events

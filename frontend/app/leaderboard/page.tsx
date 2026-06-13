@@ -1,5 +1,15 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Global Leaderboard | FightPicks",
+  description: "View the global rankings of the best fight predictors. Track prediction accuracy, total points, and win streaks.",
+  openGraph: {
+    title: "Global Leaderboard | FightPicks",
+    description: "View the global rankings of the best fight predictors.",
+  },
+};
 import { SectionCard } from "@/components/section-card";
 import { apiFetch, LeaderboardDto } from "@/lib/api";
 

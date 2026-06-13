@@ -115,8 +115,30 @@ export default async function EventPage({ params, searchParams }: EventPageProps
   const mainFightStatus = fightCards.find(f => f.fight.isMainEvent)?.fight.status || fightCards[0]?.fight.status;
   const displayStatus = getEventDisplayStatus(event, mainFightStatus);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: event.name,
+    startDate: event.eventDate,
+    location: {
+      "@type": "Place",
+      name: event.location || "TBD",
+    },
+    sport: "Mixed Martial Arts",
+    competitor: fightCards
+      .map((f) => [
+        { "@type": "Person", name: f.fight.fighter1Name },
+        { "@type": "Person", name: f.fight.fighter2Name },
+      ])
+      .flat(),
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}`}>
           <div className="space-y-4">

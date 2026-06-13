@@ -10,10 +10,10 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     if (profile) {
       return {
         title: `@${profile.username} Profile | FightPicks`,
-        description: `View @${profile.username}'s UFC fight prediction stats, ranking, and history on FightPicks.`,
+        description: `View @${profile.username}'s fight prediction stats, ranking, and history on FightPicks.`,
         openGraph: {
-          title: `@${profile.username} | FightPicks Predictor`,
-          description: `View @${profile.username}'s UFC fight prediction stats and ranking.`,
+          title: `@${profile.username} | FightPicks`,
+          description: `View @${profile.username}'s fight prediction stats and ranking.`,
         },
       };
     }
