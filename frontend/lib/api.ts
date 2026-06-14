@@ -1,4 +1,4 @@
-export const API_BASE_URL = typeof window === 'undefined' 
+export const API_BASE_URL = typeof window === 'undefined'
   ? (process.env.INTERNAL_API_URL ?? "http://backend:8080")
   : (process.env.NEXT_PUBLIC_API_URL || "");
 
@@ -22,7 +22,7 @@ export class ApiResponseError extends Error {
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
-  
+
   if (!response.ok) {
     let errorMsg = "Request failed";
     let errorCode = undefined;
@@ -319,7 +319,6 @@ export type AdminUserDto = {
 
 export function getEventDisplayStatus(event: EventDto, mainFightStatus?: string | null): string {
   if (!event.eventDate) return event.status ?? "UNKNOWN";
-  
   const eventTime = new Date(event.eventDate).getTime();
   const now = Date.now();
   const hoursSinceStart = (now - eventTime) / (1000 * 60 * 60);

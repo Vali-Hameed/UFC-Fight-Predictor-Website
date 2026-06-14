@@ -7,7 +7,14 @@ export default async function HomePage() {
   const events = await apiFetch<EventDto[]>("/api/v1/events").catch(() => []);
   const leaderboard = await apiFetch<LeaderboardDto[]>("/api/v1/leaderboard").catch(() => []);
   const eventsWithStatus = events.map(e => ({ ...e, displayStatus: getEventDisplayStatus(e) }));
-  const featuredEvent = eventsWithStatus.find(e => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE") ?? eventsWithStatus[0] ?? null;
+  
+  const upcomingEventsRaw = eventsWithStatus.filter((e) => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE");
+  const completedEventsRaw = eventsWithStatus.filter((e) => e.displayStatus === "COMPLETED");
+
+  // Sort upcoming events ascending (soonest first)
+  upcomingEventsRaw.sort((a, b) => new Date(a.eventDate || 0).getTime() - new Date(b.eventDate || 0).getTime());
+
+  const featuredEvent = upcomingEventsRaw[0] ?? eventsWithStatus[0] ?? null;
 
   const globalStats = await getGlobalAccuracy().catch(() => ({ aiAccuracy: 0, communityAccuracy: 0, totalAiFights: 0, totalCommunityPredictions: 0 }));
   let communityAccuracy = globalStats.communityAccuracy;
@@ -74,7 +81,7 @@ export default async function HomePage() {
           description="Stay up to date with the latest UFC events, access detailed fight cards, and submit your predictions."
         >
           <div className="space-y-4">
-            {eventsWithStatus.filter(e => e.displayStatus === "UPCOMING" || e.displayStatus === "LIVE").map((event) => (
+            {upcomingEventsRaw.map((event) => (
               <Link key={event.id} href={`/events/${event.id}`} className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10">
                 <div className="flex items-center justify-between gap-4">
                   <div>
