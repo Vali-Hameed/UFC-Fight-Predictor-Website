@@ -14,7 +14,9 @@ export default async function HomePage() {
   // Sort upcoming events ascending (soonest first)
   upcomingEventsRaw.sort((a, b) => new Date(a.eventDate || 0).getTime() - new Date(b.eventDate || 0).getTime());
 
-  const featuredEvent = upcomingEventsRaw[0] ?? eventsWithStatus[0] ?? null;
+  const liveEvent = upcomingEventsRaw.find(e => e.displayStatus === "LIVE");
+  const nextUpcomingEvent = upcomingEventsRaw.find(e => e.displayStatus === "UPCOMING");
+  const featuredEvent = liveEvent ?? nextUpcomingEvent ?? eventsWithStatus[0] ?? null;
 
   const globalStats = await getGlobalAccuracy().catch(() => ({ aiAccuracy: 0, communityAccuracy: 0, totalAiFights: 0, totalCommunityPredictions: 0 }));
   let communityAccuracy = globalStats.communityAccuracy;
