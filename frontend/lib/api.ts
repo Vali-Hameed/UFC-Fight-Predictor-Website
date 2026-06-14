@@ -325,13 +325,15 @@ export function getEventDisplayStatus(event: EventDto, mainFightStatus?: string 
 
   if (hoursSinceStart < 0) return "UPCOMING";
 
-  if (mainFightStatus === "COMPLETED" || mainFightStatus === "CANCELED") {
+  const effectiveStatus = mainFightStatus || event.status;
+
+  if (effectiveStatus === "COMPLETED" || effectiveStatus === "CANCELED") {
     return "COMPLETED";
   }
 
   // If we definitively know the fights haven't started/finished, 
   // the event cannot be completed, even if the scheduled time has passed.
-  if (mainFightStatus === "UPCOMING") {
+  if (effectiveStatus === "UPCOMING") {
     return hoursSinceStart >= 0 ? "LIVE" : "UPCOMING";
   }
 
