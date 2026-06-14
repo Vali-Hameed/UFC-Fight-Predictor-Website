@@ -141,6 +141,9 @@ export default async function EventPage({ params, searchParams }: EventPageProps
       />
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}`}>
+          <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+            <strong>Pro Tip:</strong> Want to know how prediction scoring works? Check out the <Link href="/leaderboard" className="font-semibold text-gold hover:underline">Scoring Rules</Link> before you lock in your picks!
+          </div>
           <div className="space-y-4">
             {fightCards.map(({ fight, mlPrediction, communityVote }) => (
               <PredictionCard key={fight.id} fight={fight} mlPrediction={mlPrediction} communityVote={communityVote} isEventStarted={isEventStarted} isArchived={isArchived} />
