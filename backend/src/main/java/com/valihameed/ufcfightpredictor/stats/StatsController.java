@@ -34,10 +34,10 @@ public class StatsController {
         
         // Recalculate basic leaderboard stats (Points, Total Predictions, Correct Predictions)
         jdbcTemplate.update(
-            "UPDATE leaderboards lb SET " +
-            "total_points = COALESCE((SELECT SUM(pr.points_awarded) FROM prediction_results pr JOIN user_predictions up ON pr.user_prediction_id = up.id WHERE up.user_id = lb.user_id), 0), " +
-            "total_predictions = COALESCE((SELECT COUNT(pr.id) FROM prediction_results pr JOIN user_predictions up ON pr.user_prediction_id = up.id WHERE up.user_id = lb.user_id), 0), " +
-            "correct_predictions = COALESCE((SELECT COUNT(pr.id) FROM prediction_results pr JOIN user_predictions up ON pr.user_prediction_id = up.id WHERE up.user_id = lb.user_id AND pr.points_awarded > 0), 0)"
+            "UPDATE leaderboards SET " +
+            "total_points = COALESCE((SELECT SUM(pr.points_awarded) FROM prediction_results pr JOIN user_predictions up ON pr.user_prediction_id = up.id WHERE up.user_id = leaderboards.user_id), 0), " +
+            "total_predictions = COALESCE((SELECT COUNT(pr.id) FROM prediction_results pr JOIN user_predictions up ON pr.user_prediction_id = up.id WHERE up.user_id = leaderboards.user_id), 0), " +
+            "correct_predictions = COALESCE((SELECT COUNT(pr.id) FROM prediction_results pr JOIN user_predictions up ON pr.user_prediction_id = up.id WHERE up.user_id = leaderboards.user_id AND pr.points_awarded > 0), 0)"
         );
 
         return ResponseEntity.ok("Fixed database instantly! Deleted " + deleted + " bogus results and recomputed points/counts.");
