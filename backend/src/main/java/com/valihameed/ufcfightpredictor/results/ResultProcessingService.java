@@ -34,7 +34,15 @@ public class ResultProcessingService {
         for (UserPrediction up : predictions) {
             // avoid double-processing
             List<PredictionResult> existing = predictionResultRepository.findByUserPredictionId(up.getId());
-            if (!existing.isEmpty()) continue;
+            if (!existing.isEmpty()) {
+                PredictionResult old = existing.get(0);
+                if (old.getPointsAwarded() == 0 && !"Canceled".equalsIgnoreCase(fight.getResultWinner())) {
+                    // It was previously processed incorrectly as Canceled (giving 0 points). Re-process it.
+                    predictionResultRepository.delete(old);
+                } else {
+                    continue;
+                }
+            }
 
             boolean predictedMethodProvided = up.getPredictedMethod() != null && !up.getPredictedMethod().trim().isEmpty() && !up.getPredictedMethod().equalsIgnoreCase("Any Method");
             boolean predictedRoundProvided = up.getPredictedRound() != null && up.getPredictedRound() > 0;
