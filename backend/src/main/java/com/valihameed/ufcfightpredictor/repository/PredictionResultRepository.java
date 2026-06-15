@@ -18,7 +18,7 @@ public interface PredictionResultRepository extends JpaRepository<PredictionResu
             "JOIN UserPrediction up ON pr.userPredictionId = up.id " +
             "JOIN Fight f ON up.fightId = f.id " +
             "JOIN user u ON up.userId = u.id " +
-            "WHERE f.eventId = :eventId " +
+            "WHERE f.eventId = :eventId AND f.status IN ('COMPLETED', 'CANCELED') " +
             "GROUP BY up.userId, u.username " +
             "ORDER BY SUM(pr.pointsAwarded) DESC")
     List<Object[]> getEventLeaderboardData(@org.springframework.data.repository.query.Param("eventId") Long eventId);
