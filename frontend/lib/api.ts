@@ -331,14 +331,12 @@ export function getEventDisplayStatus(event: EventDto, mainFightStatus?: string 
     return "COMPLETED";
   }
 
-  // If we definitively know the fights haven't started/finished, 
-  // the event cannot be completed, even if the scheduled time has passed.
-  if (effectiveStatus === "UPCOMING") {
-    return hoursSinceStart >= 0 ? "LIVE" : "UPCOMING";
-  }
-
   if (hoursSinceStart >= 0 && hoursSinceStart <= 12) {
     return "LIVE";
+  }
+
+  if (effectiveStatus === "UPCOMING") {
+    return "UPCOMING";
   }
 
   return "COMPLETED";
