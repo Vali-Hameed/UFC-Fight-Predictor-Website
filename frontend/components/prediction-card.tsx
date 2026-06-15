@@ -107,7 +107,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
             {fight.fighter1Name} vs {fight.fighter2Name}
           </h3>
           <p className="mt-1 text-sm text-white/55">
-            Status: {fight.liveStatus && fight.status !== "COMPLETED" ? fight.liveStatus.replace("STATUS_", "").replace(/_/g, " ").replace("SCHEDULED", "UPCOMING") : (fight.status ?? "UNKNOWN")}
+            Status: {fight.liveStatus && fight.status !== "COMPLETED" ? fight.liveStatus.replace("STATUS_", "").replace(/_/g, " ").replace("SCHEDULED", "UPCOMING").replace(/ \d+$/, "") : (fight.status ?? "UNKNOWN")}
           </p>
         </div>
         {mlPrediction ? (
