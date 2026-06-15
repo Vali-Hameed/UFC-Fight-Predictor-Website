@@ -145,10 +145,10 @@ export type EventDto = {
   scrapedAt: string | null;
 };
 
-export async function getArchivedEvents(page: number, size: number = 20, excludeId?: number): Promise<PageResponse<EventDto>> {
+export async function getArchivedEvents(page: number, size: number = 20, excludeIds?: number[]): Promise<PageResponse<EventDto>> {
   let url = `/api/v1/events/archived?page=${page}&size=${size}`;
-  if (excludeId !== undefined) {
-    url += `&excludeId=${excludeId}`;
+  if (excludeIds && excludeIds.length > 0) {
+    url += `&excludeIds=${excludeIds.join(',')}`;
   }
   return apiFetch<PageResponse<EventDto>>(url);
 }

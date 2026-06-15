@@ -37,9 +37,9 @@ export default async function EventsPage() {
 
   const scheduleEventsRaw = [...completedEventsRaw.slice(0, 1), ...upcomingEventsRaw];
 
-  const excludeId = completedEventsRaw.length > 0 ? completedEventsRaw[0].id : undefined;
+  const excludeIds = scheduleEventsRaw.map(e => e.id);
 
-  const firstArchivedPage = await getArchivedEvents(0, 20, excludeId).catch(() => ({
+  const firstArchivedPage = await getArchivedEvents(0, 20, excludeIds).catch(() => ({
     content: [] as EventDto[],
     last: true,
     totalPages: 0,
@@ -91,7 +91,7 @@ export default async function EventsPage() {
         </div>
       </SectionCard>
 
-      <ArchivedEventsDropdown initialPage={firstArchivedPage} excludeId={excludeId} />
+      <ArchivedEventsDropdown initialPage={firstArchivedPage} excludeIds={excludeIds} />
     </div>
   );
 }

@@ -15,7 +15,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 	Optional<Event> findByName(String name);
 	List<Event> findByStatusOrderByEventDateDesc(String status, Pageable pageable);
 	Page<Event> findAllByEventDateBeforeOrderByEventDateDesc(java.time.OffsetDateTime date, Pageable pageable);
-	Page<Event> findAllByEventDateBeforeAndIdNotOrderByEventDateDesc(java.time.OffsetDateTime date, Long id, Pageable pageable);
+	Page<Event> findAllByEventDateBeforeAndIdNotInOrderByEventDateDesc(java.time.OffsetDateTime date, List<Long> ids, Pageable pageable);
 	List<Event> findByStatusOrderByEventDateAsc(String status, Pageable pageable);
 	List<Event> findByStatus(String status);
 }

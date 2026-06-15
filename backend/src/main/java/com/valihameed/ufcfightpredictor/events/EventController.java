@@ -24,9 +24,9 @@ public class EventController {
     public Page<Event> getArchived(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) Long excludeId
+            @RequestParam(required = false) List<Long> excludeIds
     ) {
-        return eventService.getArchivedEvents(PageRequest.of(page, size), excludeId);
+        return eventService.getArchivedEvents(PageRequest.of(page, size), excludeIds);
     }
 
     @GetMapping("/{id}")

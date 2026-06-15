@@ -20,10 +20,10 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public Page<Event> getArchivedEvents(Pageable pageable, Long excludeId) {
+    public Page<Event> getArchivedEvents(Pageable pageable, List<Long> excludeIds) {
         java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
-        if (excludeId != null) {
-            return eventRepository.findAllByEventDateBeforeAndIdNotOrderByEventDateDesc(now, excludeId, pageable);
+        if (excludeIds != null && !excludeIds.isEmpty()) {
+            return eventRepository.findAllByEventDateBeforeAndIdNotInOrderByEventDateDesc(now, excludeIds, pageable);
         }
         return eventRepository.findAllByEventDateBeforeOrderByEventDateDesc(now, pageable);
     }

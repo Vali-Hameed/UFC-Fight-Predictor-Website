@@ -10,7 +10,7 @@ type EventWithPrediction = EventDto & {
   displayStatus: string;
 };
 
-export function ArchivedEventsDropdown({ initialPage, excludeId }: { initialPage: PageResponse<EventDto>; excludeId?: number }) {
+export function ArchivedEventsDropdown({ initialPage, excludeIds }: { initialPage: PageResponse<EventDto>; excludeIds?: number[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [eventsData, setEventsData] = useState<EventWithPrediction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,7 +65,7 @@ export function ArchivedEventsDropdown({ initialPage, excludeId }: { initialPage
     isFetchingRef.current = true;
     setIsFetchingPage(true);
     try {
-      const nextPage = await getArchivedEvents(page, 20, excludeId);
+      const nextPage = await getArchivedEvents(page, 20, excludeIds);
       const enriched = await enrichEvents(nextPage.content);
       setEventsData((prev) => {
         const existingIds = new Set(prev.map(e => e.id));
@@ -80,7 +80,7 @@ export function ArchivedEventsDropdown({ initialPage, excludeId }: { initialPage
       isFetchingRef.current = false;
       setIsFetchingPage(false);
     }
-  }, [page, hasMore, excludeId]);
+  }, [page, hasMore, excludeIds]);
 
   useEffect(() => {
     const target = observerTarget.current;
