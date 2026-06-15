@@ -25,6 +25,18 @@ export function NotificationCenter() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const holdTimer = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectionMode && containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setSelectionMode(false);
+        setSelectedIds(new Set());
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectionMode]);
 
   useEffect(() => {
     if (!token) {
@@ -134,7 +146,7 @@ export function NotificationCenter() {
   const hasItems = items.length > 0;
 
   return (
-    <div className="space-y-4">
+    <div ref={containerRef} className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex gap-2 items-center">
           {selectionMode && (
