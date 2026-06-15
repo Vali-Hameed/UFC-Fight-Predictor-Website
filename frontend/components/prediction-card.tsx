@@ -96,7 +96,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
         <div>
           <div className="flex items-center gap-3">
             <p className="text-xs uppercase tracking-[0.3em] text-white/45">{fight.weightClass ?? "Fight"}</p>
-            {fight.liveStatus && fight.status !== "COMPLETED" && (
+            {fight.liveStatus && fight.liveStatus.includes("IN_PROGRESS") && fight.status !== "COMPLETED" && (
               <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-red-500 animate-pulse">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                 LIVE {fight.currentRound ? `- R${fight.currentRound}` : ''} {fight.currentClock ? `(${fight.currentClock})` : ''}
@@ -107,7 +107,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
             {fight.fighter1Name} vs {fight.fighter2Name}
           </h3>
           <p className="mt-1 text-sm text-white/55">
-            Status: {fight.liveStatus && fight.status !== "COMPLETED" ? fight.liveStatus.replace("STATUS_", "").replace("_", " ") : (fight.status ?? "UNKNOWN")}
+            Status: {fight.liveStatus && fight.status !== "COMPLETED" ? fight.liveStatus.replace("STATUS_", "").replace(/_/g, " ") : (fight.status ?? "UNKNOWN")}
           </p>
         </div>
         {mlPrediction ? (
