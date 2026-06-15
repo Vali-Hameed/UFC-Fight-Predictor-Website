@@ -27,7 +27,8 @@ public class ScraperTriggerService {
         this.restTemplate = new RestTemplate();
     }
 
-    @Scheduled(cron = "0 */5 * * * *") // Runs every 5 minutes
+    // Disabled in favor of the new EspnLiveScraperService
+    // @Scheduled(cron = "0 */5 * * * *") // Runs every 5 minutes
     public void checkAndTriggerScraper() {
         log.info("Checking if any events are ongoing to trigger the scraper...");
         List<Event> upcomingEvents = eventRepository.findByStatus("UPCOMING");
