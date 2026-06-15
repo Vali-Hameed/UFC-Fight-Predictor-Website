@@ -48,10 +48,13 @@ export function NotificationCenter() {
       .catch(() => toast.error("Could not load notifications."));
   }, [token]);
 
+  const dispatchUpdate = () => window.dispatchEvent(new Event("notificationsUpdated"));
+
   const markRead = async (id: number) => {
     if (!token) return;
     await apiFetch(`/api/v1/notifications/${id}/read`, { method: "PATCH" }, token);
     setItems((current) => current.map((item) => item.id === id ? { ...item, read: true } : item));
+    dispatchUpdate();
   };
 
   const markAllRead = async () => {
@@ -60,6 +63,7 @@ export function NotificationCenter() {
       await markAllNotificationsAsRead(token);
       setItems((current) => current.map((item) => ({ ...item, read: true })));
       toast.success("All notifications marked as read.");
+      dispatchUpdate();
     } catch {
       toast.error("Failed to mark all as read.");
     }
@@ -78,6 +82,7 @@ export function NotificationCenter() {
         return next;
       });
       toast.success("Notification deleted.");
+      dispatchUpdate();
     } catch {
       toast.error("Failed to delete notification.");
     }
@@ -91,6 +96,7 @@ export function NotificationCenter() {
       setSelectedIds(new Set());
       setSelectionMode(false);
       toast.success("All notifications deleted.");
+      dispatchUpdate();
     } catch {
       toast.error("Failed to delete all notifications.");
     }
@@ -104,6 +110,7 @@ export function NotificationCenter() {
       setSelectedIds(new Set());
       setSelectionMode(false);
       toast.success("Selected notifications deleted.");
+      dispatchUpdate();
     } catch {
       toast.error("Failed to delete selected notifications.");
     }

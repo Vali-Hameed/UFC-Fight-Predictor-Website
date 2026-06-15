@@ -27,11 +27,23 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (token) {
-      getUnreadNotificationCount(token).then(setUnreadCount).catch(() => {});
+      const fetchUnread = () => {
+        getUnreadNotificationCount(token).then(setUnreadCount).catch(() => {});
+      };
+      
+      fetchUnread();
+
+      window.addEventListener("notificationsUpdated", fetchUnread);
+      const interval = setInterval(fetchUnread, 30000); // Poll every 30s
+
+      return () => {
+        window.removeEventListener("notificationsUpdated", fetchUnread);
+        clearInterval(interval);
+      };
     } else {
       setUnreadCount(0);
     }
-  }, [token, pathname]);
+  }, [token]);
 
   const handleLogout = async () => {
     await logout();
