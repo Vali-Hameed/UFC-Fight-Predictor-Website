@@ -133,6 +133,47 @@ export async function deleteScrapeLog(logId: number, token: string): Promise<voi
   }
 }
 
+export async function markAllNotificationsRead(token: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/read-all`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to mark all notifications as read");
+  }
+}
+
+export async function deleteNotification(id: number, token: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to delete notification");
+}
+
+export async function deleteAllNotifications(token: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/all`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to delete all notifications");
+}
+
+export async function deleteBatchNotifications(ids: number[], token: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/batch-delete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(ids),
+  });
+  if (!res.ok) throw new Error("Failed to delete batch notifications");
+}
+
 export async function deleteAllScrapeLogs(token: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/v1/internal/scraper/logs`, {
     method: "DELETE",

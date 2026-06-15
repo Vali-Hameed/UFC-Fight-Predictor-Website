@@ -31,7 +31,7 @@ jest.mock("@/components/prediction-card", () => ({
 
 async function renderEventPage(id: string) {
   const EventPage = (await import("@/app/events/[id]/page")).default;
-  const jsx = await EventPage({ params: Promise.resolve({ id }) });
+  const jsx = await EventPage({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) });
   return render(jsx as any);
 }
 
