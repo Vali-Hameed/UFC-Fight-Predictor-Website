@@ -35,14 +35,16 @@ class EspnLiveScraperServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
+    private com.valihameed.ufcfightpredictor.results.ResultProcessingService resultProcessingService;
+
+    @Mock
     private ObjectMapper objectMapper;
 
     private EspnLiveScraperService espnLiveScraperService;
 
     @BeforeEach
     void setUp() {
-        // Use a real ObjectMapper for parsing the mocked JSON
-        espnLiveScraperService = new EspnLiveScraperService(eventRepository, fightRepository, restTemplate, new ObjectMapper());
+        espnLiveScraperService = new EspnLiveScraperService(eventRepository, fightRepository, restTemplate, new ObjectMapper(), resultProcessingService);
     }
 
     @Test
