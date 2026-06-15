@@ -91,20 +91,50 @@ public class EspnLiveScraperService {
                             matchedFight.setResultRound(period);
                             matchedFight.setResultTime(displayClock);
                             
-                            // Determine winner
+                            // Determine winner correctly by mapping ESPN names to our DB names
                             boolean f1Winner = competitors.get(0).path("winner").asBoolean(false);
                             boolean f2Winner = competitors.get(1).path("winner").asBoolean(false);
 
-                            if (f1Winner) {
-                                matchedFight.setResultWinner(matchedFight.getFighter1Name()); // use DB name for consistency
-                            } else if (f2Winner) {
-                                matchedFight.setResultWinner(matchedFight.getFighter2Name());
+                            String winningEspnName = null;
+                            if (f1Winner) winningEspnName = f1Name;
+                            else if (f2Winner) winningEspnName = f2Name;
+
+                            if (winningEspnName != null) {
+                                if (isMatch(matchedFight.getFighter1Name(), winningEspnName)) {
+                                    matchedFight.setResultWinner(matchedFight.getFighter1Name());
+                                } else if (isMatch(matchedFight.getFighter2Name(), winningEspnName)) {
+                                    matchedFight.setResultWinner(matchedFight.getFighter2Name());
+                                } else {
+                                    matchedFight.setResultWinner(winningEspnName); // fallback
+                                }
                             } else {
                                 matchedFight.setResultWinner("Draw/NC");
                             }
                             
-                            // Try to get method (often in 'competitions[0].status.type.detail' or 'notes')
+                            // Try to get method (avoid 'Final' string)
                             String detail = typeNode.path("detail").asText("");
+                            if (detail.equalsIgnoreCase("Final") || detail.contains("STATUS_")) {
+                                detail = ""; // Blank out 'Final' so frontend falls back cleanly or avoids it
+                            }
+
+                            // Try to find the exact method in ESPN's live 'details' array
+                            JsonNode detailsArray = comp.path("details");
+                            if (detailsArray.isArray()) {
+                                for (JsonNode dObj : detailsArray) {
+                                    String text = dObj.path("type").path("text").asText("").toLowerCase();
+                                    if (text.contains("kotko")) {
+                                        detail = "KO/TKO";
+                                        break;
+                                    } else if (text.contains("sub") && text.contains("winner")) {
+                                        detail = "Submission";
+                                        break;
+                                    } else if (text.contains("dec") && text.contains("winner")) {
+                                        detail = "Decision";
+                                        break;
+                                    }
+                                }
+                            }
+
                             matchedFight.setResultMethod(detail);
                             matchedFight.setStatus("COMPLETED");
 
