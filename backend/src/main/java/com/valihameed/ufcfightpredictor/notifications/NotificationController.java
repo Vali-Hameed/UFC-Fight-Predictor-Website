@@ -46,6 +46,19 @@ public class NotificationController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> markAllRead(Authentication authentication) {
+        user currentUser = (user) authentication.getPrincipal();
+        List<Notification> notifications = notificationRepository.findByUserId(currentUser.getId());
+        for (Notification n : notifications) {
+            if (Boolean.FALSE.equals(n.getRead()) || n.getRead() == null) {
+                n.setRead(true);
+            }
+        }
+        notificationRepository.saveAll(notifications);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping
     public ResponseEntity<Notification> create(@RequestBody Notification notification) {
         return ResponseEntity.ok(notificationService.createNotification(notification));

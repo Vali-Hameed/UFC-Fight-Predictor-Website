@@ -288,7 +288,7 @@ export default function AdminPage() {
                   type="checkbox"
                   checked={selectedLogs.has(log.id)}
                   onChange={() => toggleLogSelection(log.id)}
-                  className="w-5 h-5 rounded border-white/20 bg-white/5 text-accent focus:ring-accent focus:ring-offset-bg cursor-pointer"
+                  className="w-5 h-5 rounded border-white/20 bg-white/5 accent-accent cursor-pointer"
                 />
                 <div className="flex-1">
                   <div className="font-semibold text-white">{log.status}</div>

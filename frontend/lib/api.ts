@@ -75,8 +75,12 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}, token
   return parseResponse<T>(response);
 }
 
-export async function markNotificationAsRead(id: number, token: string): Promise<NotificationDto> {
-  return apiFetch<NotificationDto>(`/api/v1/notifications/${id}/read`, { method: "PATCH" }, token);
+export async function markNotificationAsRead(id: number, token: string): Promise<void> {
+  await apiFetch(`/api/v1/notifications/${id}/read`, { method: "PATCH" }, token);
+}
+
+export async function markAllNotificationsAsRead(token: string): Promise<void> {
+  await apiFetch("/api/v1/notifications/read-all", { method: "PATCH" }, token);
 }
 
 export async function getUnreadNotificationCount(token: string): Promise<number> {
