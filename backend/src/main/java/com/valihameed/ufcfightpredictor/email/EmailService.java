@@ -28,8 +28,10 @@ public class EmailService implements EmailSender {
     @Async
     public void sendEmail(String to, String emailContent, String subject) {
         try {
+            String formattedFrom = this.fromAddress.contains("<") ? this.fromAddress : "FightPicks <" + this.fromAddress + ">";
+            
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(this.fromAddress)
+                    .from(formattedFrom)
                     .to(to)
                     .subject(subject)
                     .html(emailContent)
