@@ -24,6 +24,7 @@ public class EspnLiveScraperService {
     private final FightRepository fightRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final com.valihameed.ufcfightpredictor.results.ResultProcessingService resultProcessingService;
 
     private static final String ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard";
 
@@ -84,8 +85,8 @@ public class EspnLiveScraperService {
                         matchedFight.setCurrentClock(displayClock);
                         matchedFight.setLiveStatus(statusName);
 
-                        if (completed && matchedFight.getResultWinner() == null) {
-                            // Fight just finished, update official results!
+                        if (completed && !"COMPLETED".equals(matchedFight.getStatus())) {
+                            // Fight just finished (or got stuck previously), update official results!
                             log.info("Fight completed on ESPN: {} vs {}", f1Name, f2Name);
                             matchedFight.setResultRound(period);
                             matchedFight.setResultTime(displayClock);
@@ -105,6 +106,17 @@ public class EspnLiveScraperService {
                             // Try to get method (often in 'competitions[0].status.type.detail' or 'notes')
                             String detail = typeNode.path("detail").asText("");
                             matchedFight.setResultMethod(detail);
+                            matchedFight.setStatus("COMPLETED");
+
+                            // Save the fight immediately so the processing service can read it
+                            fightRepository.save(matchedFight);
+
+                            // Trigger the point calculation and notifications!
+                            try {
+                                resultProcessingService.processFightResult(matchedFight.getId());
+                            } catch (Exception ex) {
+                                log.error("Failed to process results for fight {}: {}", matchedFight.getId(), ex.getMessage());
+                            }
                         }
 
                         anyFightUpdated = true;

@@ -96,7 +96,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
         <div>
           <div className="flex items-center gap-3">
             <p className="text-xs uppercase tracking-[0.3em] text-white/45">{fight.weightClass ?? "Fight"}</p>
-            {fight.liveStatus && fight.liveStatus.includes("IN_PROGRESS") && fight.status !== "COMPLETED" && (
+            {fight.liveStatus && (fight.liveStatus.includes("IN_PROGRESS") || fight.liveStatus.includes("END_PERIOD")) && fight.status !== "COMPLETED" && (
               <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-red-500 animate-pulse">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                 LIVE {fight.currentRound ? `- R${fight.currentRound}` : ''} {fight.currentClock ? `(${fight.currentClock})` : ''}
