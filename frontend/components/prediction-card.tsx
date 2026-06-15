@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch, FightDto, MlPredictionDto, CommunityVoteDto } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,42 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
   const { token } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [displayClock, setDisplayClock] = useState(fight.currentClock);
+
+
+
+  // Sync state when props change (scraper updates)
+  useEffect(() => {
+    setDisplayClock(fight.currentClock);
+  }, [fight.currentClock]);
+
+  // Visually tick down every 1 second if in progress
+  useEffect(() => {
+    if (!fight.liveStatus?.includes("IN_PROGRESS")) return;
+
+    const interval = setInterval(() => {
+      setDisplayClock(prev => {
+        if (!prev || !prev.includes(":")) return prev;
+        const [mStr, sStr] = prev.split(":");
+        let mins = parseInt(mStr, 10);
+        let secs = parseInt(sStr, 10);
+
+        if (isNaN(mins) || isNaN(secs)) return prev;
+
+        if (secs === 0) {
+          if (mins === 0) return prev;
+          mins -= 1;
+          secs = 59;
+        } else {
+          secs -= 1;
+        }
+
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [fight.liveStatus]);
 
   // Tracks whether a request is currently in-flight to prevent overlap
   const inflightRef = useRef(false);
@@ -99,7 +135,7 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
             {fight.liveStatus && !fight.liveStatus.includes("SCHEDULED") && !fight.liveStatus.includes("FINAL") && !fight.liveStatus.includes("CANCELED") && fight.status !== "COMPLETED" && (
               <span className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-red-500 animate-pulse">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                LIVE {fight.currentRound ? `- R${fight.currentRound}` : ''} {fight.currentClock ? `(${fight.currentClock})` : ''}
+                LIVE {fight.currentRound ? `- R${fight.currentRound}` : ''} {displayClock ? `(${displayClock})` : ''}
               </span>
             )}
           </div>
