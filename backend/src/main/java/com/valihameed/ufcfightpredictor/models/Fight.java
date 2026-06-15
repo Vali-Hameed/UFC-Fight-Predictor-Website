@@ -47,4 +47,13 @@ public class Fight {
 
     @Column(name = "result_time")
     private String resultTime;
+
+    @Column(name = "current_round")
+    private Integer currentRound;
+
+    @Column(name = "current_clock")
+    private String currentClock;
+
+    @Column(name = "live_status")
+    private String liveStatus;
 }

@@ -247,6 +247,9 @@ export type FightDto = {
   resultMethod: string | null;
   resultRound: number | null;
   resultTime: string | null;
+  currentRound: number | null;
+  currentClock: string | null;
+  liveStatus: string | null;
 };
 
 export type LeaderboardDto = {
