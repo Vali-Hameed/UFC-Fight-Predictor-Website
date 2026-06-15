@@ -142,4 +142,31 @@ public class ResultProcessingService {
             }
         }
     }
+
+    @Transactional
+    public void rollbackEvent(Long eventId) {
+        List<Fight> fights = fightRepository.findByEventIdOrderByFightOrderAsc(eventId);
+        for (Fight fight : fights) {
+            List<UserPrediction> ups = userPredictionRepository.findByFightId(fight.getId());
+            for (UserPrediction up : ups) {
+                List<PredictionResult> prs = predictionResultRepository.findByUserPredictionId(up.getId());
+                for (PredictionResult pr : prs) {
+                    leaderboardRepository.findByUserId(up.getUserId()).ifPresent(lb -> {
+                        lb.setTotalPoints(Math.max(0, (lb.getTotalPoints() != null ? lb.getTotalPoints() : 0) - pr.getPointsAwarded()));
+                        lb.setTotalPredictions(Math.max(0, (lb.getTotalPredictions() != null ? lb.getTotalPredictions() : 0) - 1));
+                        if (pr.getPointsAwarded() > 0) {
+                            lb.setCorrectPredictions(Math.max(0, (lb.getCorrectPredictions() != null ? lb.getCorrectPredictions() : 0) - 1));
+                        }
+                        leaderboardRepository.save(lb);
+                    });
+                    predictionResultRepository.delete(pr);
+                }
+            }
+            fight.setStatus("UPCOMING");
+            fight.setResultWinner(null);
+            fight.setResultMethod(null);
+            fight.setLiveStatus(null);
+            fightRepository.save(fight);
+        }
+    }
 }

@@ -18,6 +18,13 @@ public class StatsController {
 
     private final FightRepository fightRepository;
     private final LeaderboardRepository leaderboardRepository;
+    private final com.valihameed.ufcfightpredictor.results.ResultProcessingService resultProcessingService;
+
+    @GetMapping("/reset-event/{eventId}")
+    public ResponseEntity<String> resetEvent(@PathVariable Long eventId) {
+        resultProcessingService.rollbackEvent(eventId);
+        return ResponseEntity.ok("Event " + eventId + " completely rolled back! The scraper will start re-evaluating its fights shortly.");
+    }
 
     @GetMapping("/reset-fight/{id}")
     @org.springframework.transaction.annotation.Transactional
