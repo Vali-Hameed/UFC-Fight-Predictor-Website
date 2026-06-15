@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { PredictionCard } from "@/components/prediction-card";
+import { LiveFightsList } from "./live-fights-list";
 import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard, getEventDisplayStatus } from "@/lib/api";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -145,9 +146,12 @@ export default async function EventPage({ params, searchParams }: EventPageProps
             <strong>Pro Tip:</strong> Want to know how prediction scoring works? Check out the <Link href="/leaderboard" className="font-semibold text-gold hover:underline">Scoring Rules</Link> before you lock in your picks!
           </div>
           <div className="space-y-4">
-            {fightCards.map(({ fight, mlPrediction, communityVote }) => (
-              <PredictionCard key={fight.id} fight={fight} mlPrediction={mlPrediction} communityVote={communityVote} isEventStarted={isEventStarted} isArchived={isArchived} />
-            ))}
+            <LiveFightsList 
+              eventId={id} 
+              initialFights={fightCards} 
+              isEventStarted={isEventStarted} 
+              isArchived={isArchived} 
+            />
           </div>
         </SectionCard>
 
