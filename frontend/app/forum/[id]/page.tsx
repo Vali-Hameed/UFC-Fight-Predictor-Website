@@ -87,7 +87,7 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
           <div>
             <h1 className="text-3xl font-bold text-white">{thread?.title ?? `Thread #${threadId}`}</h1>
             <p className="mt-1 text-sm text-white/60">
-              {thread ? `Discussion for ${event ? event.name : (thread.eventId ? `event #${thread.eventId}` : "the general forum")}${thread.fightId ? ` and the ${thread.title} fight` : ""}.` : "This thread could not be loaded."}
+              {thread ? (thread.fightId ? `Fight discussion for ${event ? event.name : `event #${thread.eventId}`}` : `Event discussion for ${event ? event.name : (thread.eventId ? `event #${thread.eventId}` : "the general forum")}`) : "This thread could not be loaded."}
             </p>
           </div>
           {thread && <SubscribeButton threadId={thread.id} />}

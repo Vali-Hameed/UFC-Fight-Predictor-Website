@@ -117,7 +117,43 @@ export async function deleteMyAccount(token: string): Promise<void> {
 }
 
 export async function deleteScrapeLog(logId: number, token: string): Promise<void> {
-  await apiFetch(`/api/v1/internal/scraper/logs/${logId}`, { method: "DELETE" }, token);
+  const res = await fetch(`${API_BASE_URL}/api/v1/internal/scraper/logs/${logId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete scrape log");
+  }
+}
+
+export async function deleteAllScrapeLogs(token: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/internal/scraper/logs`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete all scrape logs");
+  }
+}
+
+export async function deleteScrapeLogsBatch(logIds: number[], token: string): Promise<void> {
+  const query = logIds.map((id) => `ids=${id}`).join("&");
+  const res = await fetch(`${API_BASE_URL}/api/v1/internal/scraper/logs/batch?${query}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete selected scrape logs");
+  }
 }
 
 export type AuthResponse = {

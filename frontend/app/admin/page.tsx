@@ -2,7 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { SectionCard } from "@/components/section-card";
-import { AdminUserDto, apiFetch, ScrapeLogDto, warnUser, banUser, unbanUser, deleteUser, deleteScrapeLog } from "@/lib/api";
+import { AdminUserDto, apiFetch, ScrapeLogDto, warnUser, banUser, unbanUser, deleteUser, deleteScrapeLog, deleteScrapeLogsBatch, deleteAllScrapeLogs } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { notFound } from "next/navigation";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ export default function AdminPage() {
   const [logs, setLogs] = useState<ScrapeLogDto[]>([]);
   const [users, setUsers] = useState<AdminUserDto[]>([]);
   const [roleDrafts, setRoleDrafts] = useState<Record<number, string>>({});
+  const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set());
 
 
 
@@ -166,11 +167,63 @@ export default function AdminPage() {
       try {
         await deleteScrapeLog(logId, token);
         setLogs((current) => current.filter((l) => l.id !== logId));
+        setSelectedLogs((current) => {
+          const next = new Set(current);
+          next.delete(logId);
+          return next;
+        });
         toast.success("Scraper log deleted.");
-      } // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (error: any) {
+      } catch (error: any) {
         toast.error(error.message || "Failed to delete log.");
       }
+    }
+  };
+
+  const handleDeleteSelectedLogs = async () => {
+    if (!token || selectedLogs.size === 0) return;
+    if (confirm(`Delete ${selectedLogs.size} selected logs?`)) {
+      try {
+        await deleteScrapeLogsBatch(Array.from(selectedLogs), token);
+        setLogs((current) => current.filter((l) => !selectedLogs.has(l.id)));
+        setSelectedLogs(new Set());
+        toast.success("Selected logs deleted.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete selected logs.");
+      }
+    }
+  };
+
+  const handleDeleteAllLogs = async () => {
+    if (!token) return;
+    if (confirm("Permanently delete ALL scraper logs? This cannot be undone.")) {
+      try {
+        await deleteAllScrapeLogs(token);
+        setLogs([]);
+        setSelectedLogs(new Set());
+        toast.success("All scraper logs deleted.");
+      } catch (error: any) {
+        toast.error(error.message || "Failed to delete all logs.");
+      }
+    }
+  };
+
+  const toggleLogSelection = (logId: number) => {
+    setSelectedLogs((current) => {
+      const next = new Set(current);
+      if (next.has(logId)) {
+        next.delete(logId);
+      } else {
+        next.add(logId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAllLogs = () => {
+    if (selectedLogs.size === logs.length) {
+      setSelectedLogs(new Set());
+    } else {
+      setSelectedLogs(new Set(logs.map((l) => l.id)));
     }
   };
 
@@ -194,18 +247,50 @@ export default function AdminPage() {
       <div className="space-y-6">
         <SectionCard eyebrow="Admin" title="Operations panel" description="Manage events, fights, scrape runs, predictions, and moderation.">
           {!token ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">Sign in as an admin to use this panel.</div> : null}
-          <div className="mb-6 flex flex-wrap gap-4">
+          <div className="mb-6 flex flex-wrap gap-4 items-center">
             <form onSubmit={triggerPrewarm}>
               <button className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white">Trigger ML prewarm</button>
             </form>
             <form onSubmit={triggerScraper}>
               <button className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white">Trigger Scraper</button>
             </form>
+            {logs.length > 0 && (
+              <div className="flex gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={toggleSelectAllLogs}
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  {selectedLogs.size === logs.length ? "Deselect All" : "Select All"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteSelectedLogs}
+                  disabled={selectedLogs.size === 0}
+                  className="rounded-xl bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/40 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Delete Selected ({selectedLogs.size})
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteAllLogs}
+                  className="rounded-xl bg-red-900/40 px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-900/60"
+                >
+                  Delete All
+                </button>
+              </div>
+            )}
           </div>
           <div className="space-y-3">
             {logs.map((log) => (
-              <div key={log.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/75 flex justify-between items-center">
-                <div>
+              <div key={log.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/75 flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  checked={selectedLogs.has(log.id)}
+                  onChange={() => toggleLogSelection(log.id)}
+                  className="w-5 h-5 rounded border-white/20 bg-white/5 text-accent focus:ring-accent focus:ring-offset-bg cursor-pointer"
+                />
+                <div className="flex-1">
                   <div className="font-semibold text-white">{log.status}</div>
                   {log.startedAt && <div className="text-xs text-white/50 mt-0.5">Started: {new Date(log.startedAt).toLocaleString()}</div>}
                   {log.completedAt && <div className="text-xs text-white/50">Completed: {new Date(log.completedAt).toLocaleString()}</div>}
@@ -214,7 +299,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => handleDeleteLog(log.id)}
-                  className="rounded bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/40 transition"
+                  className="rounded bg-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/40 transition shrink-0"
                 >
                   Delete
                 </button>

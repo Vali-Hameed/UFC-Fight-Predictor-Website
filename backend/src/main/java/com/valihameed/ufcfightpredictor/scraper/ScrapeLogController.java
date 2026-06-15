@@ -44,6 +44,20 @@ public class ScrapeLogController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteAll() {
+        scrapeLogRepository.deleteAll();
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/batch")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteBatch(@RequestParam List<Long> ids) {
+        scrapeLogRepository.deleteAllById(ids);
+        return ResponseEntity.noContent().build();
+    }
+
     @Data
     public static class ScrapeLogRequest {
         private OffsetDateTime startedAt;
