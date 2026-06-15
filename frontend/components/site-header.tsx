@@ -34,7 +34,7 @@ export function SiteHeader() {
       fetchUnread();
 
       window.addEventListener("notificationsUpdated", fetchUnread);
-      const interval = setInterval(fetchUnread, 30000); // Poll every 30s
+      const interval = setInterval(fetchUnread, 5000); // Poll every 5s
 
       return () => {
         window.removeEventListener("notificationsUpdated", fetchUnread);
