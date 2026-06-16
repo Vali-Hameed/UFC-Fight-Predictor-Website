@@ -428,13 +428,16 @@ export function getEventDisplayStatus(event: EventDto, mainFightStatus?: string 
 
 export function formatEventDate(dateString: string | null): string | null {
   if (!dateString) return null;
-  const isDateOnly = dateString.endsWith("T00:00:00Z") || dateString.endsWith("T00:00:00.000+00:00") || dateString.endsWith("T00:00Z") || dateString.endsWith("T00:00:00") || dateString.length === 10;
-  const d = new Date(dateString);
-  if (isNaN(d.getTime())) return dateString;
-
-  if (isDateOnly) {
-    return d.toLocaleDateString(undefined, { timeZone: "UTC", dateStyle: "medium" });
+  
+  let normalizedDateString = dateString;
+  if (normalizedDateString.length === 10) {
+    normalizedDateString += "T00:00:00Z";
+  } else if (!normalizedDateString.includes("Z") && !normalizedDateString.includes("+") && !normalizedDateString.match(/-\d\d:\d\d$/)) {
+    normalizedDateString += "Z";
   }
+
+  const d = new Date(normalizedDateString);
+  if (isNaN(d.getTime())) return dateString;
 
   return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }

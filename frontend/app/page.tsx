@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
+import { LocalTime } from "@/components/local-time";
 import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard, getEventDisplayStatus, getGlobalAccuracy, formatEventDate } from "@/lib/api";
 
 export default async function HomePage() {
@@ -55,7 +56,7 @@ export default async function HomePage() {
               <p className="text-xs uppercase tracking-[0.3em] text-white/45">Featured event</p>
               <p className="mt-3 text-2xl font-semibold text-white">{featuredEvent.name}</p>
               <p className="mt-2 text-sm text-white/60">{featuredEvent.location}</p>
-              {featuredEvent.eventDate && <p className="mt-1 text-sm text-white/60">{formatEventDate(featuredEvent.eventDate)}</p>}
+              {featuredEvent.eventDate && <p className="mt-1 text-sm text-white/60"><LocalTime dateStr={featuredEvent.eventDate} /></p>}
             </Link>
           ) : (
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
@@ -90,7 +91,7 @@ export default async function HomePage() {
                   <div>
                     <p className="font-semibold text-white">{event.name}</p>
                     <p className="text-sm text-white/55">{event.location}</p>
-                    {event.eventDate && <p className="mt-1 text-sm text-white/55">{formatEventDate(event.eventDate)}</p>}
+                    {event.eventDate && <p className="mt-1 text-sm text-white/55"><LocalTime dateStr={event.eventDate} /></p>}
                   </div>
                   <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
                     {event.displayStatus}

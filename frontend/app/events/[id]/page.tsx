@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { PredictionCard } from "@/components/prediction-card";
+import { LocalTime } from "@/components/local-time";
 import { LiveFightsList } from "./live-fights-list";
 import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard, getEventDisplayStatus, formatEventDate } from "@/lib/api";
 import { notFound } from "next/navigation";
@@ -141,7 +142,7 @@ export default async function EventPage({ params, searchParams }: EventPageProps
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}${event.eventDate ? ` • ${formatEventDate(event.eventDate)}` : ""}`}>
+        <SectionCard eyebrow="Event detail" title={event.name} description={<>{event.location ?? "Unknown location"} • {displayStatus}{event.eventDate ? <> • <LocalTime dateStr={event.eventDate} /></> : ""}</>}>
           <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
             <strong>Pro Tip:</strong> Want to know how prediction scoring works? Check out the <Link href="/leaderboard" className="font-semibold text-gold hover:underline">Scoring Rules</Link> before you lock in your picks!
           </div>
