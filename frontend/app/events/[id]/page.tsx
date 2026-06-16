@@ -141,7 +141,7 @@ export default async function EventPage({ params, searchParams }: EventPageProps
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}`}>
+        <SectionCard eyebrow="Event detail" title={event.name} description={`${event.location ?? "Unknown location"} • ${displayStatus}${event.eventDate ? ` • ${new Date(event.eventDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}` : ""}`}>
           <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
             <strong>Pro Tip:</strong> Want to know how prediction scoring works? Check out the <Link href="/leaderboard" className="font-semibold text-gold hover:underline">Scoring Rules</Link> before you lock in your picks!
           </div>

@@ -55,6 +55,7 @@ export default async function HomePage() {
               <p className="text-xs uppercase tracking-[0.3em] text-white/45">Featured event</p>
               <p className="mt-3 text-2xl font-semibold text-white">{featuredEvent.name}</p>
               <p className="mt-2 text-sm text-white/60">{featuredEvent.location}</p>
+              {featuredEvent.eventDate && <p className="mt-1 text-sm text-white/60">{new Date(featuredEvent.eventDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</p>}
             </Link>
           ) : (
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
@@ -89,6 +90,7 @@ export default async function HomePage() {
                   <div>
                     <p className="font-semibold text-white">{event.name}</p>
                     <p className="text-sm text-white/55">{event.location}</p>
+                    {event.eventDate && <p className="mt-1 text-sm text-white/55">{new Date(event.eventDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</p>}
                   </div>
                   <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
                     {event.displayStatus}
