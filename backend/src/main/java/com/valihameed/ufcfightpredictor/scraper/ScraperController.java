@@ -80,6 +80,9 @@ public class ScraperController {
             }
             if (existing.isPresent()) {
                 Fight ft = existing.get();
+                String oldStatus = ft.getStatus();
+                String oldWinner = ft.getResultWinner();
+
                 ft.setWeightClass(f.getWeightClass());
                 ft.setIsMainEvent(f.getIsMainEvent());
                 ft.setFightOrder(f.getFightOrder());
@@ -91,7 +94,12 @@ public class ScraperController {
                 Fight savedFight = fightRepository.save(ft);
                 savedFights.add(savedFight);
                 
-                if (("COMPLETED".equals(savedFight.getStatus()) || "CANCELED".equals(savedFight.getStatus())) && savedFight.getResultWinner() != null) {
+                boolean isNewlyCompleted = ("COMPLETED".equals(savedFight.getStatus()) || "CANCELED".equals(savedFight.getStatus())) &&
+                        (!"COMPLETED".equals(oldStatus) && !"CANCELED".equals(oldStatus));
+                        
+                boolean resultChanged = savedFight.getResultWinner() != null && !savedFight.getResultWinner().equals(oldWinner);
+
+                if ((isNewlyCompleted || resultChanged) && savedFight.getResultWinner() != null) {
                     try {
                         resultProcessingService.processFightResult(savedFight.getId());
                     } catch (Exception ex) {

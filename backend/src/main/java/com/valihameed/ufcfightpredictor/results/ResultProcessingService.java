@@ -36,12 +36,18 @@ public class ResultProcessingService {
             List<PredictionResult> existing = predictionResultRepository.findByUserPredictionId(up.getId());
             if (!existing.isEmpty()) {
                 PredictionResult old = existing.get(0);
-                if (old.getPointsAwarded() == 0 && !"Canceled".equalsIgnoreCase(fight.getResultWinner())) {
-                    // It was previously processed incorrectly as Canceled (giving 0 points). Re-process it.
-                    predictionResultRepository.delete(old);
-                } else {
-                    continue;
-                }
+                
+                // Rollback leaderboard
+                leaderboardRepository.findByUserId(up.getUserId()).ifPresent(lb -> {
+                    lb.setTotalPredictions(Math.max(0, (lb.getTotalPredictions() != null ? lb.getTotalPredictions() : 0) - 1));
+                    if (old.getPointsAwarded() > 0) {
+                        lb.setTotalPoints(Math.max(0, (lb.getTotalPoints() != null ? lb.getTotalPoints() : 0) - old.getPointsAwarded()));
+                        lb.setCorrectPredictions(Math.max(0, (lb.getCorrectPredictions() != null ? lb.getCorrectPredictions() : 0) - 1));
+                    }
+                    leaderboardRepository.save(lb);
+                });
+                
+                predictionResultRepository.delete(old);
             }
 
             boolean predictedMethodProvided = up.getPredictedMethod() != null && !up.getPredictedMethod().trim().isEmpty() && !up.getPredictedMethod().equalsIgnoreCase("Any Method");

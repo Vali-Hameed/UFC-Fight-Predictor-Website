@@ -99,18 +99,6 @@ public class EspnLiveScraperService {
                             if (f1Winner) winningEspnName = f1Name;
                             else if (f2Winner) winningEspnName = f2Name;
 
-                            if (winningEspnName != null) {
-                                if (isMatch(matchedFight.getFighter1Name(), winningEspnName)) {
-                                    matchedFight.setResultWinner(matchedFight.getFighter1Name());
-                                } else if (isMatch(matchedFight.getFighter2Name(), winningEspnName)) {
-                                    matchedFight.setResultWinner(matchedFight.getFighter2Name());
-                                } else {
-                                    matchedFight.setResultWinner(winningEspnName); // fallback
-                                }
-                            } else {
-                                matchedFight.setResultWinner("Draw/NC");
-                            }
-                            
                             // Try to get method (avoid 'Final' string)
                             String detail = typeNode.path("detail").asText("");
                             if (detail.equalsIgnoreCase("Final") || detail.contains("STATUS_")) {
@@ -131,21 +119,40 @@ public class EspnLiveScraperService {
                                     } else if (text.contains("dec") && text.contains("winner")) {
                                         detail = "Decision";
                                         break;
+                                    } else if (text.contains("draw")) {
+                                        detail = "Draw";
+                                        break;
                                     }
                                 }
                             }
 
-                            matchedFight.setResultMethod(detail);
-                            matchedFight.setStatus("COMPLETED");
+                            if (winningEspnName != null || "Draw".equalsIgnoreCase(detail)) {
+                                if (winningEspnName != null) {
+                                    if (isMatch(matchedFight.getFighter1Name(), winningEspnName)) {
+                                        matchedFight.setResultWinner(matchedFight.getFighter1Name());
+                                    } else if (isMatch(matchedFight.getFighter2Name(), winningEspnName)) {
+                                        matchedFight.setResultWinner(matchedFight.getFighter2Name());
+                                    } else {
+                                        matchedFight.setResultWinner(winningEspnName); // fallback
+                                    }
+                                } else {
+                                    matchedFight.setResultWinner("Draw/NC");
+                                }
+                                
+                                matchedFight.setResultMethod(detail);
+                                matchedFight.setStatus("COMPLETED");
 
-                            // Save the fight immediately so the processing service can read it
-                            fightRepository.save(matchedFight);
+                                // Save the fight immediately so the processing service can read it
+                                fightRepository.save(matchedFight);
 
-                            // Trigger the point calculation and notifications!
-                            try {
-                                resultProcessingService.processFightResult(matchedFight.getId());
-                            } catch (Exception ex) {
-                                log.error("Failed to process results for fight {}: {}", matchedFight.getId(), ex.getMessage());
+                                // Trigger the point calculation and notifications!
+                                try {
+                                    resultProcessingService.processFightResult(matchedFight.getId());
+                                } catch (Exception ex) {
+                                    log.error("Failed to process results for fight {}: {}", matchedFight.getId(), ex.getMessage());
+                                }
+                            } else {
+                                log.info("ESPN marked completed but no winner yet. Waiting for update.");
                             }
                         }
 
