@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   },
 };
 import { SectionCard } from "@/components/section-card";
-import { apiFetch, EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, getArchivedEvents } from "@/lib/api";
+import { apiFetch, EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, getArchivedEvents, formatEventDate } from "@/lib/api";
 import { ArchivedEventsDropdown } from "./archived-events-dropdown";
 
 export default async function EventsPage() {
@@ -80,7 +80,7 @@ export default async function EventsPage() {
               <p className="text-xs uppercase tracking-[0.3em] text-gold">{event.displayStatus}</p>
               <h3 className="mt-3 text-xl font-semibold text-white">{event.name}</h3>
               <p className="mt-2 text-sm text-white/58">{event.location}</p>
-              {event.eventDate && <p className="mt-1 text-sm text-white/58">{new Date(event.eventDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</p>}
+              {event.eventDate && <p className="mt-1 text-sm text-white/58">{formatEventDate(event.eventDate)}</p>}
               {event.mainPrediction ? (
                 <div className="mt-4 inline-block rounded-xl border border-gold/20 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold">
                   Main Event ML: {event.mainPrediction.predictedWinner} • {Math.round((event.mainPrediction.confidenceScore ?? 0) * 100)}%

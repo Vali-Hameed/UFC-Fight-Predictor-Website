@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
-import { EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, apiFetch, PageResponse, getArchivedEvents } from "@/lib/api";
+import { EventDto, FightDto, MlPredictionDto, getEventDisplayStatus, apiFetch, PageResponse, getArchivedEvents, formatEventDate } from "@/lib/api";
 
 type EventWithPrediction = EventDto & {
   mainPrediction: MlPredictionDto | null;
@@ -130,7 +130,7 @@ export function ArchivedEventsDropdown({ initialPage, excludeIds }: { initialPag
                 <p className="text-xs uppercase tracking-[0.3em] text-white/45">{event.displayStatus}</p>
                 <h3 className="mt-3 text-xl font-semibold text-white">{event.name}</h3>
                 <p className="mt-2 text-sm text-white/58">{event.location}</p>
-                {event.eventDate && <p className="mt-1 text-sm text-white/58">{new Date(event.eventDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</p>}
+                {event.eventDate && <p className="mt-1 text-sm text-white/58">{formatEventDate(event.eventDate)}</p>}
                 {event.mainPrediction ? (
                   <div className="mt-4 inline-block rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70">
                     Main Event ML: {event.mainPrediction.predictedWinner} • {Math.round((event.mainPrediction.confidenceScore ?? 0) * 100)}%

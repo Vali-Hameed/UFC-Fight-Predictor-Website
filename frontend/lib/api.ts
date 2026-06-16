@@ -425,3 +425,16 @@ export function getEventDisplayStatus(event: EventDto, mainFightStatus?: string 
 
   return "COMPLETED";
 }
+
+export function formatEventDate(dateString: string | null): string | null {
+  if (!dateString) return null;
+  const isDateOnly = dateString.endsWith("T00:00:00Z") || dateString.endsWith("T00:00:00.000+00:00") || dateString.endsWith("T00:00Z") || dateString.endsWith("T00:00:00") || dateString.length === 10;
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return dateString;
+
+  if (isDateOnly) {
+    return d.toLocaleDateString(undefined, { timeZone: "UTC", dateStyle: "medium" });
+  }
+
+  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
