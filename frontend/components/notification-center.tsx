@@ -216,7 +216,17 @@ export function NotificationCenter() {
                 </div>
               )}
               <div className="flex-1">
-                <p className="text-xs uppercase tracking-[0.3em] text-gold">{item.type ?? "Notification"}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs uppercase tracking-[0.3em] text-gold">{item.type ?? "Notification"}</p>
+                  {item.createdAt && (
+                    <span className="text-[10px] text-white/40">
+                      {new Date(item.createdAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  )}
+                </div>
                 {item.link ? (
                   <Link href={item.link as any} onClick={(e) => { 
                       if (selectionMode) { e.preventDefault(); return; }
