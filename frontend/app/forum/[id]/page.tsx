@@ -118,7 +118,12 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
               // Highlight @mentions in post content
               const renderedContent = post.content ? post.content.split(/(@[a-zA-Z0-9_]+)/g).map((part, i) => {
                 if (part.startsWith("@")) {
-                  return <span key={i} className="text-accent font-semibold">{part}</span>;
+                  const username = part.slice(1);
+                  return (
+                    <Link key={i} href={`/profile/${username}`} className="text-accent font-semibold hover:underline">
+                      {part}
+                    </Link>
+                  );
                 }
                 return part;
               }) : "";
@@ -126,7 +131,13 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
               return (
                 <article key={post.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-gold">{post.username ?? `User #${post.userId ?? "N/A"}`}</p>
+                    {post.username ? (
+                      <Link href={`/profile/${post.username}`} className="text-xs uppercase tracking-[0.3em] text-gold hover:underline">
+                        {post.username}
+                      </Link>
+                    ) : (
+                      <p className="text-xs uppercase tracking-[0.3em] text-gold">User #{post.userId ?? "N/A"}</p>
+                    )}
                     <p className="text-xs text-white/40">{post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</p>
                   </div>
                   <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-white/75">{renderedContent}</p>
