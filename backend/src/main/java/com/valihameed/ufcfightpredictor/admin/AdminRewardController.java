@@ -34,4 +34,15 @@ public class AdminRewardController {
         rewardService.distributeSeasonRewards(seasonId);
         return ResponseEntity.ok(Map.of("message", "Season rewards distributed for season " + seasonId));
     }
+
+    /**
+     * Backfill all event and season leaderboards based on existing prediction results,
+     * and distribute rewards for all past events.
+     */
+    @PostMapping("/backfill")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Map<String, String>> backfillAllRewards() {
+        rewardService.backfillAllRewards();
+        return ResponseEntity.ok(Map.of("message", "Successfully backfilled all leaderboards and distributed past rewards."));
+    }
 }
