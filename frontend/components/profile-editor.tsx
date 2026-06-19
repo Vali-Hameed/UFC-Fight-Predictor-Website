@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { apiFetch, ProfileDto } from "@/lib/api";
+import { apiFetch, ProfileDto, AvailableTitleDto, getAvailableTitles } from "@/lib/api";
 import { useAuth } from "@/lib/session";
 import { toast } from "sonner";
 
@@ -23,6 +23,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
   const [newUsername, setNewUsername] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [cosmeticTitle, setCosmeticTitle] = useState("");
+  const [availableTitles, setAvailableTitles] = useState<AvailableTitleDto[] | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -51,6 +53,13 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
         setProfileImageUrl(currentUser.profileImageUrl ?? "");
         setPublicProfile(currentUser.publicProfile ?? true);
         setOptOutEmailNotifications(currentUser.optOutEmailNotifications ?? false);
+        setCosmeticTitle(currentUser.cosmeticTitle ?? "");
+        
+        getAvailableTitles(token)
+          .then(titles => {
+            if (active) setAvailableTitles(titles);
+          })
+          .catch(() => {});
       })
       .catch(() => {
         if (active) {
@@ -102,7 +111,8 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             lastName,
             profileImageUrl,
             publicProfile,
-            optOutEmailNotifications
+            optOutEmailNotifications,
+            cosmeticTitle
           })
         },
         token
@@ -113,6 +123,7 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
       setProfileImageUrl(updatedProfile.profileImageUrl ?? "");
       setPublicProfile(updatedProfile.publicProfile ?? true);
       setOptOutEmailNotifications(updatedProfile.optOutEmailNotifications ?? false);
+      setCosmeticTitle(updatedProfile.cosmeticTitle ?? "");
       toast.success("Profile updated.");
     } catch {
       toast.error("Could not update your profile.");
@@ -260,6 +271,28 @@ export function ProfileEditor({ username }: ProfileEditorProps) {
             Public profiles are visible on the leaderboard and allow others to see your stats and predictions.
           </p>
         </div>
+        
+        {availableTitles !== null && (
+          <div className="md:col-span-3 mt-2">
+            <p className="mb-2 text-sm text-white/70">Cosmetic Title</p>
+            <select
+              value={cosmeticTitle}
+              onChange={(e) => setCosmeticTitle(e.target.value)}
+              className="w-full max-w-sm rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white outline-none focus:border-accent"
+            >
+              <option value="">No Title</option>
+              {availableTitles.map((title) => (
+                <option key={title.id} value={title.id}>
+                  {title.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-2 text-xs text-white/40">
+              Titles are permanently unlocked by earning badges.
+            </p>
+          </div>
+        )}
+
         <div className="md:col-span-3 mt-2">
           <p className="mb-2 text-sm text-white/70">Notification Preferences</p>
           <label className="flex items-center gap-3 cursor-pointer">

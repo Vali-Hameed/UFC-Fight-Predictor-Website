@@ -37,3 +37,45 @@ a {
 ::selection {
   background: rgba(210, 10, 10, 0.32);
 }
+
+/* Champion glow animation for Season Champion usernames */
+@keyframes champion-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.7)) drop-shadow(0 0 24px rgba(255, 165, 0, 0.3));
+  }
+}
+
+.animate-champion-glow {
+  animation: champion-glow 3s ease-in-out infinite;
+}
+
+/* Silver glow animation for Season 2nd place usernames */
+@keyframes silver-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(192, 192, 192, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(192, 192, 192, 0.7)) drop-shadow(0 0 24px rgba(169, 169, 169, 0.3));
+  }
+}
+
+.animate-silver-glow {
+  animation: silver-glow 3s ease-in-out infinite;
+}
+
+/* Bronze glow animation for Season 3rd place usernames */
+@keyframes bronze-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(205, 127, 50, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(205, 127, 50, 0.7)) drop-shadow(0 0 24px rgba(139, 69, 19, 0.3));
+  }
+}
+
+.animate-bronze-glow {
+  animation: bronze-glow 3s ease-in-out infinite;
+}

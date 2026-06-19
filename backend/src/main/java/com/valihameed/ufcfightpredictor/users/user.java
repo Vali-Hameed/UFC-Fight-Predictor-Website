@@ -63,6 +63,18 @@ public class user implements UserDetails {
     @Column(name = "opt_out_email_notifications", nullable = false, columnDefinition = "boolean default false")
     private boolean optOutEmailNotifications = false;
 
+    @Column(name = "cosmetic_glow_color")
+    private String cosmeticGlowColor; // hex or gradient CSS value, e.g. "#FFD700" or "linear-gradient(90deg, #FFD700, #FF6B35)"
+
+    @Column(name = "cosmetic_title")
+    private String cosmeticTitle; // e.g. "SS25 Champion", "3x Event Winner"
+
+    @Column(name = "cosmetic_glow_source_event_id")
+    private Long cosmeticGlowSourceEventId; // tracks which event granted the current glow
+
+    @Column(name = "cosmetic_glow_source_season_id")
+    private Long cosmeticGlowSourceSeasonId; // tracks which season granted the current glow
+
     public user(String firstName, String lastName, String username, String email, String password,role role) {
         this.firstName = firstName;
         this.lastName = lastName;

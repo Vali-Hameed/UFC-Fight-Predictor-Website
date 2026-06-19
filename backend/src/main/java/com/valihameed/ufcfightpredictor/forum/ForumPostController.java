@@ -49,6 +49,8 @@ public class ForumPostController {
                         post.setUsername("deleted user");
                     } else {
                         post.setUsername(u.getUsername());
+                        post.setCosmeticGlowColor(u.getCosmeticGlowColor());
+                        post.setCosmeticTitle(u.getCosmeticTitle());
                     }
                 },
                 () -> post.setUsername("deleted user")

@@ -206,6 +206,16 @@ export type AuthResponse = {
   expiresInSeconds: number;
 };
 
+export type AvailableTitleDto = {
+  id: string;
+  label: string;
+  type: string;
+};
+
+export async function getAvailableTitles(token: string): Promise<AvailableTitleDto[]> {
+  return apiFetch<AvailableTitleDto[]>("/api/v1/users/me/available-titles", {}, token);
+}
+
 export type PageResponse<T> = {
   content: T[];
   pageable: {
@@ -262,10 +272,52 @@ export type LeaderboardDto = {
   currentStreak: number | null;
   bestStreak: number | null;
   lastUpdated: string | null;
+  cosmeticGlowColor: string | null;
+  cosmeticTitle: string | null;
+  badges: BadgeDto[] | null;
+};
+
+export type BadgeDto = {
+  id: number;
+  badgeType: string;
+  badgeLabel: string;
+  awardedAt: string | null;
 };
 
 export async function getEventLeaderboard(eventId: number | string): Promise<LeaderboardDto[]> {
   return apiFetch<LeaderboardDto[]>(`/api/v1/leaderboard/event/${eventId}`);
+}
+
+export async function getSeasonLeaderboard(seasonId: number | string, page: number = 0): Promise<LeaderboardDto[]> {
+  return apiFetch<LeaderboardDto[]>(`/api/v1/leaderboard/season/${seasonId}?page=${page}`);
+}
+
+export async function getSeasonLeaderboardByName(seasonName: string, page: number = 0): Promise<LeaderboardDto[]> {
+  return apiFetch<LeaderboardDto[]>(`/api/v1/leaderboard/season/name/${seasonName}?page=${page}`);
+}
+
+export type SeasonFilterDto = {
+  id: number;
+  name: string;
+  active: boolean;
+  championUserId: number | null;
+  championUsername: string | null;
+};
+
+export type EventFilterDto = {
+  id: number;
+  name: string;
+  eventDate: string | null;
+  status: string | null;
+};
+
+export type LeaderboardFiltersDto = {
+  seasons: SeasonFilterDto[];
+  recentEvents: EventFilterDto[];
+};
+
+export async function getLeaderboardFilters(): Promise<LeaderboardFiltersDto> {
+  return apiFetch<LeaderboardFiltersDto>('/api/v1/leaderboard/filters');
 }
 
 export type NotificationDto = {
@@ -296,6 +348,8 @@ export type ForumPostDto = {
   createdAt: string | null;
   updatedAt: string | null;
   isDeleted: boolean | null;
+  cosmeticGlowColor?: string | null;
+  cosmeticTitle?: string | null;
 };
 
 export type PredictionHistoryItemDto = {
@@ -345,6 +399,18 @@ export type ProfileDto = {
   optOutEmailNotifications?: boolean;
   leaderboardStats?: LeaderboardStatsDto | null;
   predictionHistory?: PredictionHistoryItemDto[] | null;
+  cosmeticGlowColor?: string | null;
+  cosmeticTitle?: string | null;
+  badges?: BadgeDto[] | null;
+};
+
+export type UpdateProfileRequest = {
+  firstName?: string;
+  lastName?: string;
+  profileImageUrl?: string;
+  publicProfile?: boolean;
+  optOutEmailNotifications?: boolean;
+  cosmeticTitle?: string | null;
 };
 
 export type UserPredictionRequest = {

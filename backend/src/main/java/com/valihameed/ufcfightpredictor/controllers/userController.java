@@ -37,6 +37,7 @@ public class userController {
 	private final com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository;
 	private final userService userService;
 	private final JwtService jwtService;
+	private final com.valihameed.ufcfightpredictor.repository.UserBadgeRepository userBadgeRepository;
 
 	@GetMapping("/me")
 	public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
@@ -88,8 +89,61 @@ public class userController {
 		if (request.optOutEmailNotifications != null) {
 		    currentUser.setOptOutEmailNotifications(request.optOutEmailNotifications);
 		}
+		if (request.cosmeticTitle != null) {
+		    if (!request.cosmeticTitle.isEmpty()) {
+		        List<com.valihameed.ufcfightpredictor.models.UserBadge> badges = userBadgeRepository.findByUserId(currentUser.getId());
+		        boolean valid = false;
+		        if (request.cosmeticTitle.contains("Event Winner")) {
+		            long eventWins = badges.stream().filter(b -> "EVENT_WINNER".equals(b.getBadgeType())).count();
+		            if (request.cosmeticTitle.equals(eventWins + "x Event Winner")) {
+		                valid = true;
+		            }
+		        } else {
+		            valid = badges.stream().anyMatch(b -> b.getBadgeLabel() != null && b.getBadgeLabel().equals(request.cosmeticTitle));
+		        }
+		        if (valid) {
+		            currentUser.setCosmeticTitle(request.cosmeticTitle);
+		        } else {
+		            return ResponseEntity.badRequest().build();
+		        }
+		    } else {
+		        currentUser.setCosmeticTitle(null);
+		    }
+		}
 		userRepository.save(currentUser);
 		return ResponseEntity.ok(buildFullProfileResponse(currentUser));
+	}
+
+	@GetMapping("/me/available-titles")
+	public ResponseEntity<List<AvailableTitleDto>> getAvailableTitles(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof user)) {
+			return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+		}
+		user currentUser = (user) authentication.getPrincipal();
+		
+		List<com.valihameed.ufcfightpredictor.models.UserBadge> badges = userBadgeRepository.findByUserId(currentUser.getId());
+		List<AvailableTitleDto> titles = new java.util.ArrayList<>();
+		
+		long eventWins = badges.stream().filter(b -> "EVENT_WINNER".equals(b.getBadgeType())).count();
+		if (eventWins > 0) {
+		    AvailableTitleDto dto = new AvailableTitleDto();
+		    dto.setId(eventWins + "x Event Winner");
+		    dto.setLabel(eventWins + "x Event Winner");
+		    dto.setType("EVENT_WINNER");
+		    titles.add(dto);
+		}
+		
+		badges.stream()
+		    .filter(b -> b.getBadgeType().startsWith("SEASON_"))
+		    .forEach(b -> {
+		        AvailableTitleDto dto = new AvailableTitleDto();
+		        dto.setId(b.getBadgeLabel());
+		        dto.setLabel(b.getBadgeLabel());
+		        dto.setType(b.getBadgeType());
+		        titles.add(dto);
+		    });
+		    
+		return ResponseEntity.ok(titles);
 	}
 
 	@PutMapping("/me/username")
@@ -198,6 +252,17 @@ public class userController {
 	    }).collect(Collectors.toList());
 	    
 	    response.setPredictionHistory(history);
+
+	    // Populate badges
+	    List<com.valihameed.ufcfightpredictor.models.UserBadge> badges = userBadgeRepository.findByUserId(target.getId());
+	    response.setBadges(badges.stream().map(b -> {
+	        BadgeDto bd = new BadgeDto();
+	        bd.setId(b.getId());
+	        bd.setBadgeType(b.getBadgeType());
+	        bd.setBadgeLabel(b.getBadgeLabel());
+	        bd.setAwardedAt(b.getAwardedAt());
+	        return bd;
+	    }).collect(Collectors.toList()));
 	    
 	    return response;
 	}
@@ -209,6 +274,7 @@ public class userController {
 		private String profileImageUrl;
 		private Boolean publicProfile;
 		private Boolean optOutEmailNotifications;
+		private String cosmeticTitle;
 	}
 
 	@Data
@@ -220,6 +286,13 @@ public class userController {
 	public static class UsernameChangeResponse {
 		private String token;
 		private UserProfileResponse profile;
+	}
+
+	@Data
+	public static class AvailableTitleDto {
+	    private String id;
+	    private String label;
+	    private String type;
 	}
 
 	@Data
@@ -249,6 +322,14 @@ public class userController {
 	}
 
 	@Data
+	public static class BadgeDto {
+	    private Long id;
+	    private String badgeType;
+	    private String badgeLabel;
+	    private OffsetDateTime awardedAt;
+	}
+
+	@Data
 	public static class UserProfileResponse {
 		private Long id;
 		private String username;
@@ -262,6 +343,9 @@ public class userController {
 		private OffsetDateTime updatedAt;
 		private LeaderboardStatsDto leaderboardStats;
 		private List<PredictionHistoryDto> predictionHistory;
+		private String cosmeticGlowColor;
+		private String cosmeticTitle;
+		private List<BadgeDto> badges;
 
 		public static UserProfileResponse from(user source) {
 			UserProfileResponse response = new UserProfileResponse();
@@ -274,6 +358,8 @@ public class userController {
 			response.enabled = source.isEnabled();
 			response.publicProfile = source.isPublicProfile();
 			response.optOutEmailNotifications = source.isOptOutEmailNotifications();
+			response.cosmeticGlowColor = source.getCosmeticGlowColor();
+			response.cosmeticTitle = source.getCosmeticTitle();
 			return response;
 		}
 

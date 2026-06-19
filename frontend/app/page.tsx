@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { SectionCard } from "@/components/section-card";
 import { LocalTime } from "@/components/local-time";
+import { CosmeticUsername } from "@/components/cosmetic-username";
 import { apiFetch, EventDto, LeaderboardDto, FightDto, MlPredictionDto, CommunityVoteDto, getEventLeaderboard, getEventDisplayStatus, getGlobalAccuracy, formatEventDate } from "@/lib/api";
 
 export default async function HomePage() {
@@ -111,7 +112,16 @@ export default async function HomePage() {
             {leaderboard.map((row, index) => (
               <div key={row.userId} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
                 <div>
-                  <div className="font-semibold text-white">#{index + 1} <Link href={`/profile/${row.username ?? row.userId}`} className="hover:underline">@{row.username ?? `User #${row.userId}`}</Link></div>
+                  <div className="font-semibold text-white flex items-center gap-2">
+                    <span>#{index + 1}</span>
+                    <CosmeticUsername 
+                      username={row.username ?? `User #${row.userId}`}
+                      cosmeticGlowColor={row.cosmeticGlowColor}
+                      cosmeticTitle={row.cosmeticTitle}
+                      size="sm"
+                      showTitle={index < 3}
+                    />
+                  </div>
                   <div className="text-white/50">{row.correctPredictions ?? 0} correct • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
                 </div>
                 <div className="text-right text-white/75">

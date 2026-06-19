@@ -19,4 +19,8 @@ public interface userRepository extends JpaRepository<user, Long> {
     @Query("UPDATE user a " +
             "SET a.enabled = TRUE WHERE a.email = ?1")
     int enableAppUser(String email);
+
+    java.util.List<user> findByCosmeticGlowSourceEventIdNotNull();
+    
+    java.util.List<user> findByCosmeticGlowSourceSeasonIdNotNull();
 }

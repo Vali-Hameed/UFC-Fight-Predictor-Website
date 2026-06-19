@@ -1,8 +1,7 @@
 package com.valihameed.ufcfightpredictor.leaderboard;
 
-import com.valihameed.ufcfightpredictor.models.Leaderboard;
-import com.valihameed.ufcfightpredictor.repository.LeaderboardRepository;
-import com.valihameed.ufcfightpredictor.repository.userRepository;
+import com.valihameed.ufcfightpredictor.models.*;
+import com.valihameed.ufcfightpredictor.repository.*;
 import com.valihameed.ufcfightpredictor.users.user;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +20,12 @@ import java.util.stream.Collectors;
 public class LeaderboardController {
     private final LeaderboardRepository leaderboardRepository;
     private final userRepository userRepository;
-    private final com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository;
+    private final PredictionResultRepository predictionResultRepository;
+    private final SeasonLeaderboardRepository seasonLeaderboardRepository;
+    private final EventLeaderboardRepository eventLeaderboardRepository;
+    private final SeasonRepository seasonRepository;
+    private final EventRepository eventRepository;
+    private final UserBadgeRepository userBadgeRepository;
 
     @GetMapping
     public ResponseEntity<List<LeaderboardResponseDto>> global(@RequestParam(defaultValue = "0") int page) {
@@ -39,9 +43,7 @@ public class LeaderboardController {
             dto.setBestStreak(lb.getBestStreak());
             dto.setLastUpdated(lb.getLastUpdated());
             
-            userRepository.findById(lb.getUserId()).ifPresent(u -> {
-                dto.setUsername(u.getUsername());
-            });
+            enrichWithUserCosmetics(dto, lb.getUserId());
             return dto;
         }).collect(Collectors.toList());
         
@@ -57,20 +59,112 @@ public class LeaderboardController {
     public ResponseEntity<List<LeaderboardResponseDto>> byEvent(
             @PathVariable Long eventId) {
         
-        List<Object[]> data = predictionResultRepository.getEventLeaderboardData(eventId);
-        List<LeaderboardResponseDto> dtos = data.stream().map(row -> {
+        var topEntries = eventLeaderboardRepository.findPublicByEventId(eventId, PageRequest.of(0, 50));
+        List<LeaderboardResponseDto> dtos = topEntries.getContent().stream().map(elb -> {
             LeaderboardResponseDto dto = new LeaderboardResponseDto();
-            dto.setUserId(row[0] != null ? ((Number) row[0]).longValue() : null);
-            dto.setUsername((String) row[1]);
-            dto.setTotalPoints(row[2] != null ? ((Number) row[2]).intValue() : 0);
-            dto.setCorrectPredictions(row[3] != null ? ((Number) row[3]).intValue() : 0);
-            dto.setTotalPredictions(row[4] != null ? ((Number) row[4]).intValue() : 0);
+            dto.setUserId(elb.getUserId());
+            dto.setTotalPoints(elb.getTotalPoints());
+            dto.setCorrectPredictions(elb.getCorrectPredictions());
+            dto.setTotalPredictions(elb.getTotalPredictions());
             dto.setCurrentStreak(0);
             dto.setBestStreak(0);
+            
+            enrichWithUserCosmetics(dto, elb.getUserId());
             return dto;
         }).collect(Collectors.toList());
         
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/season/{seasonId}")
+    public ResponseEntity<List<LeaderboardResponseDto>> bySeason(
+            @PathVariable Long seasonId,
+            @RequestParam(defaultValue = "0") int page) {
+        var pageReq = PageRequest.of(page, 25);
+        Page<SeasonLeaderboard> p = seasonLeaderboardRepository.findPublicBySeasonId(seasonId, pageReq);
+
+        List<LeaderboardResponseDto> dtos = p.getContent().stream().map(slb -> {
+            LeaderboardResponseDto dto = new LeaderboardResponseDto();
+            dto.setUserId(slb.getUserId());
+            dto.setTotalPoints(slb.getTotalPoints());
+            dto.setCorrectPredictions(slb.getCorrectPredictions());
+            dto.setTotalPredictions(slb.getTotalPredictions());
+            dto.setCurrentStreak(slb.getCurrentStreak());
+            dto.setBestStreak(slb.getBestStreak());
+            dto.setLastUpdated(slb.getLastUpdated());
+
+            enrichWithUserCosmetics(dto, slb.getUserId());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/season/name/{seasonName}")
+    public ResponseEntity<List<LeaderboardResponseDto>> bySeasonName(
+            @PathVariable String seasonName,
+            @RequestParam(defaultValue = "0") int page) {
+        return seasonRepository.findByName(seasonName)
+                .map(season -> bySeason(season.getId(), page))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Returns available filters for the leaderboard UI: seasons and recent completed events.
+     */
+    @GetMapping("/filters")
+    public ResponseEntity<LeaderboardFiltersDto> filters() {
+        LeaderboardFiltersDto dto = new LeaderboardFiltersDto();
+
+        // All seasons
+        List<SeasonFilterDto> seasons = seasonRepository.findAllByOrderByStartDateDesc()
+                .stream().map(s -> {
+                    SeasonFilterDto sf = new SeasonFilterDto();
+                    sf.setId(s.getId());
+                    sf.setName(s.getName());
+                    sf.setActive(s.isActive());
+                    sf.setChampionUserId(s.getChampionUserId());
+                    if (s.getChampionUserId() != null) {
+                        userRepository.findById(s.getChampionUserId())
+                                .ifPresent(u -> sf.setChampionUsername(u.getUsername()));
+                    }
+                    return sf;
+                }).collect(Collectors.toList());
+        dto.setSeasons(seasons);
+
+        // Recent completed events (last 10)
+        var recentEvents = eventRepository.findAllByEventDateBeforeOrderByEventDateDesc(
+                OffsetDateTime.now(), PageRequest.of(0, 10));
+        List<EventFilterDto> events = recentEvents.getContent().stream().map(e -> {
+            EventFilterDto ef = new EventFilterDto();
+            ef.setId(e.getId());
+            ef.setName(e.getName());
+            ef.setEventDate(e.getEventDate());
+            ef.setStatus(e.getStatus());
+            return ef;
+        }).collect(Collectors.toList());
+        dto.setRecentEvents(events);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    private void enrichWithUserCosmetics(LeaderboardResponseDto dto, Long userId) {
+        userRepository.findById(userId).ifPresent(u -> {
+            dto.setUsername(u.getUsername());
+            dto.setCosmeticGlowColor(u.getCosmeticGlowColor());
+            dto.setCosmeticTitle(u.getCosmeticTitle());
+        });
+        List<UserBadge> badges = userBadgeRepository.findByUserId(userId);
+        if (!badges.isEmpty()) {
+            dto.setBadges(badges.stream().map(b -> {
+                BadgeDto bd = new BadgeDto();
+                bd.setId(b.getId());
+                bd.setBadgeType(b.getBadgeType());
+                bd.setBadgeLabel(b.getBadgeLabel());
+                bd.setAwardedAt(b.getAwardedAt());
+                return bd;
+            }).collect(Collectors.toList()));
+        }
     }
 
     @Data
@@ -84,5 +178,40 @@ public class LeaderboardController {
         private Integer currentStreak;
         private Integer bestStreak;
         private OffsetDateTime lastUpdated;
+        // Cosmetics
+        private String cosmeticGlowColor;
+        private String cosmeticTitle;
+        private List<BadgeDto> badges;
+    }
+
+    @Data
+    public static class BadgeDto {
+        private Long id;
+        private String badgeType;
+        private String badgeLabel;
+        private OffsetDateTime awardedAt;
+    }
+
+    @Data
+    public static class LeaderboardFiltersDto {
+        private List<SeasonFilterDto> seasons;
+        private List<EventFilterDto> recentEvents;
+    }
+
+    @Data
+    public static class SeasonFilterDto {
+        private Long id;
+        private String name;
+        private boolean active;
+        private Long championUserId;
+        private String championUsername;
+    }
+
+    @Data
+    public static class EventFilterDto {
+        private Long id;
+        private String name;
+        private OffsetDateTime eventDate;
+        private String status;
     }
 }

@@ -27,6 +27,7 @@ import { ForumReplyForm } from "@/components/forum-reply-form";
 import { apiFetch, ForumPostDto, ForumThreadDto, MlPredictionDto, FightDto, CommunityVoteDto, EventDto } from "@/lib/api";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { AdminModerationMenu } from "@/components/admin-moderation-menu";
+import { CosmeticUsername } from "@/components/cosmetic-username";
 import Link from "next/link";
 
 type ForumThreadPageProps = {
@@ -132,9 +133,13 @@ export default async function ForumThreadPage({ params }: ForumThreadPageProps) 
                 <article key={post.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     {post.username ? (
-                      <Link href={`/profile/${post.username}`} className="text-xs uppercase tracking-[0.3em] text-gold hover:underline">
-                        {post.username}
-                      </Link>
+                      <CosmeticUsername
+                        username={post.username}
+                        cosmeticGlowColor={post.cosmeticGlowColor}
+                        cosmeticTitle={post.cosmeticTitle}
+                        size="sm"
+                        showTitle={true}
+                      />
                     ) : (
                       <p className="text-xs uppercase tracking-[0.3em] text-gold">User #{post.userId ?? "N/A"}</p>
                     )}
