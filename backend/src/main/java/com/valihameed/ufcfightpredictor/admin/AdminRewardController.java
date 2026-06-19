@@ -19,7 +19,7 @@ public class AdminRewardController {
      * Manually distribute rewards for a completed event.
      */
     @PostMapping("/event/{eventId}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> distributeEventRewards(@PathVariable Long eventId) {
         rewardService.distributeEventRewards(eventId);
         return ResponseEntity.ok(Map.of("message", "Event rewards distributed for event " + eventId));
@@ -29,7 +29,7 @@ public class AdminRewardController {
      * Manually distribute rewards for a completed season.
      */
     @PostMapping("/season/{seasonId}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> distributeSeasonRewards(@PathVariable Long seasonId) {
         rewardService.distributeSeasonRewards(seasonId);
         return ResponseEntity.ok(Map.of("message", "Season rewards distributed for season " + seasonId));
@@ -40,7 +40,7 @@ public class AdminRewardController {
      * and distribute rewards for all past events.
      */
     @PostMapping("/backfill")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> backfillAllRewards() {
         rewardService.backfillAllRewards();
         return ResponseEntity.ok(Map.of("message", "Successfully backfilled all leaderboards and distributed past rewards."));
