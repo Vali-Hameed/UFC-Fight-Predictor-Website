@@ -36,4 +36,10 @@ public class ForumPost {
 
     @Transient
     private String username;
+
+    @Transient
+    private String cosmeticGlowColor;
+
+    @Transient
+    private String cosmeticTitle;
 }
