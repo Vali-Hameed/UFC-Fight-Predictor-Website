@@ -313,11 +313,11 @@ public class RewardService {
         log.info("Starting backfill of leaderboards and rewards...");
 
         // 1. Clear existing
-        entityManager.createNativeQuery("TRUNCATE TABLE event_leaderboards, season_leaderboards RESTART IDENTITY").executeUpdate();
+        entityManager.createNativeQuery("TRUNCATE TABLE event_leaderboard, season_leaderboard RESTART IDENTITY CASCADE").executeUpdate();
         log.info("Cleared existing event and season leaderboards.");
 
         // 2. Populate Event Leaderboards
-        String eventSql = "INSERT INTO event_leaderboards (event_id, user_id, total_points, correct_predictions, total_predictions, last_updated) " +
+        String eventSql = "INSERT INTO event_leaderboard (event_id, user_id, total_points, correct_predictions, total_predictions, last_updated) " +
             "SELECT f.event_id, up.user_id, SUM(pr.points_awarded), SUM(CASE WHEN pr.points_awarded > 0 THEN 1 ELSE 0 END), COUNT(up.id), NOW() " +
             "FROM prediction_results pr " +
             "JOIN user_predictions up ON pr.user_prediction_id = up.id " +
@@ -325,21 +325,21 @@ public class RewardService {
             "WHERE f.event_id IS NOT NULL " +
             "GROUP BY f.event_id, up.user_id";
         int eventRows = entityManager.createNativeQuery(eventSql).executeUpdate();
-        log.info("Inserted {} rows into event_leaderboards.", eventRows);
+        log.info("Inserted {} rows into event_leaderboard.", eventRows);
 
         // 3. Populate Season Leaderboards
         Season season = getOrCreateCurrentSeason();
-        String seasonSql = "INSERT INTO season_leaderboards (season_id, user_id, total_points, correct_predictions, total_predictions, current_streak, best_streak) " +
+        String seasonSql = "INSERT INTO season_leaderboard (season_id, user_id, total_points, correct_predictions, total_predictions, current_streak, best_streak) " +
             "SELECT :seasonId, user_id, SUM(total_points), SUM(correct_predictions), SUM(total_predictions), 0, 0 " +
-            "FROM event_leaderboards " +
+            "FROM event_leaderboard " +
             "GROUP BY user_id";
         int seasonRows = entityManager.createNativeQuery(seasonSql)
             .setParameter("seasonId", season.getId())
             .executeUpdate();
-        log.info("Inserted {} rows into season_leaderboards for season {}.", seasonRows, season.getName());
+        log.info("Inserted {} rows into season_leaderboard for season {}.", seasonRows, season.getName());
 
         // 4. Distribute Rewards for all events
-        List<?> eventIds = entityManager.createNativeQuery("SELECT DISTINCT event_id FROM event_leaderboards").getResultList();
+        List<?> eventIds = entityManager.createNativeQuery("SELECT DISTINCT event_id FROM event_leaderboard").getResultList();
         for (Object idObj : eventIds) {
             Long eventId = ((Number) idObj).longValue();
             try {
