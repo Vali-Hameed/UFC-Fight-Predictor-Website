@@ -30,6 +30,9 @@ public class ResultProcessingServiceTest {
     @Mock private NotificationRepository notificationRepository;
     @Mock private com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
     @Mock private EventRepository eventRepository;
+    @Mock private EventLeaderboardRepository eventLeaderboardRepository;
+    @Mock private SeasonLeaderboardRepository seasonLeaderboardRepository;
+    @Mock private com.valihameed.ufcfightpredictor.rewards.RewardService rewardService;
 
     private ResultProcessingService underTest;
 
@@ -42,7 +45,10 @@ public class ResultProcessingServiceTest {
                 leaderboardRepository,
                 notificationRepository,
                 notificationService,
-                eventRepository
+                eventRepository,
+                eventLeaderboardRepository,
+                seasonLeaderboardRepository,
+                rewardService
         );
     }
 
