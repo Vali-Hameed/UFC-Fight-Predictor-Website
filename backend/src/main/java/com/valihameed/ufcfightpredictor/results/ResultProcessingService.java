@@ -2,6 +2,7 @@ package com.valihameed.ufcfightpredictor.results;
 
 import com.valihameed.ufcfightpredictor.models.*;
 import com.valihameed.ufcfightpredictor.repository.*;
+import com.valihameed.ufcfightpredictor.rewards.RewardService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,9 @@ public class ResultProcessingService {
     private final NotificationRepository notificationRepository;
     private final com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
     private final EventRepository eventRepository;
+    private final EventLeaderboardRepository eventLeaderboardRepository;
+    private final SeasonLeaderboardRepository seasonLeaderboardRepository;
+    private final RewardService rewardService;
 
     @Transactional
     public void processFightResult(Long fightId) {
@@ -122,6 +126,51 @@ public class ResultProcessingService {
                 } else {
                     lb.setCurrentStreak(0);
                 }
+
+                // --- Update Event Leaderboard ---
+                if (fight.getEventId() != null) {
+                    EventLeaderboard elb = eventLeaderboardRepository
+                            .findByEventIdAndUserId(fight.getEventId(), userId)
+                            .orElseGet(() -> EventLeaderboard.builder()
+                                    .eventId(fight.getEventId()).userId(userId)
+                                    .totalPoints(0).correctPredictions(0).totalPredictions(0)
+                                    .build());
+                    elb.setTotalPoints(elb.getTotalPoints() + points);
+                    elb.setTotalPredictions(elb.getTotalPredictions() + 1);
+                    if (points > 0) {
+                        elb.setCorrectPredictions(elb.getCorrectPredictions() + 1);
+                    }
+                    elb.setLastUpdated(OffsetDateTime.now());
+                    eventLeaderboardRepository.save(elb);
+                }
+
+                // --- Update Season Leaderboard ---
+                try {
+                    Season season = rewardService.getOrCreateCurrentSeason();
+                    SeasonLeaderboard slb = seasonLeaderboardRepository
+                            .findBySeasonIdAndUserId(season.getId(), userId)
+                            .orElseGet(() -> SeasonLeaderboard.builder()
+                                    .seasonId(season.getId()).userId(userId)
+                                    .totalPoints(0).correctPredictions(0).totalPredictions(0)
+                                    .currentStreak(0).bestStreak(0)
+                                    .build());
+                    slb.setTotalPoints(slb.getTotalPoints() + points);
+                    slb.setTotalPredictions(slb.getTotalPredictions() + 1);
+                    if (points > 0) {
+                        slb.setCorrectPredictions(slb.getCorrectPredictions() + 1);
+                        slb.setCurrentStreak(slb.getCurrentStreak() + 1);
+                        slb.setBestStreak(Math.max(slb.getBestStreak(), slb.getCurrentStreak()));
+                    } else {
+                        slb.setCurrentStreak(0);
+                    }
+                    slb.setLastUpdated(OffsetDateTime.now());
+                    seasonLeaderboardRepository.save(slb);
+                } catch (Exception e) {
+                    log.warn("Failed to update season leaderboard for user {}: {}", userId, e.getMessage());
+                }
+
+                // --- Check streak badges ---
+                rewardService.checkStreakBadges(userId, lb.getCurrentStreak());
             }
             
             lb.setLastUpdated(OffsetDateTime.now());
@@ -145,6 +194,21 @@ public class ResultProcessingService {
                         .message(message)
                         .build();
                 notificationService.createNotification(note);
+            }
+        }
+
+        // --- Check if all fights in the event are completed, then distribute event rewards ---
+        if (fight.getEventId() != null) {
+            List<Fight> eventFights = fightRepository.findByEventIdOrderByFightOrderAsc(fight.getEventId());
+            boolean allCompleted = eventFights.stream()
+                    .allMatch(f -> "COMPLETED".equalsIgnoreCase(f.getStatus()) || "CANCELED".equalsIgnoreCase(f.getStatus()));
+            if (allCompleted && !eventFights.isEmpty()) {
+                try {
+                    rewardService.distributeEventRewards(fight.getEventId());
+                    log.info("Auto-distributed event rewards for event {}", fight.getEventId());
+                } catch (Exception e) {
+                    log.warn("Failed to auto-distribute event rewards for event {}: {}", fight.getEventId(), e.getMessage());
+                }
             }
         }
     }
