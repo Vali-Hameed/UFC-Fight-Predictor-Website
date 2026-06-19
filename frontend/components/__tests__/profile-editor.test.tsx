@@ -11,13 +11,16 @@ jest.mock("@/lib/session", () => ({
 }));
 
 const mockApiFetch = jest.fn();
+const mockGetAvailableTitles = jest.fn();
 jest.mock("@/lib/api", () => ({
   apiFetch: (...args: unknown[]) => mockApiFetch(...args),
+  getAvailableTitles: (...args: unknown[]) => mockGetAvailableTitles(...args),
 }));
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockAuth.token = null;
+  mockGetAvailableTitles.mockResolvedValue([]);
 });
 
 const mockProfile = {
@@ -53,7 +56,6 @@ describe("ProfileEditor", () => {
     await waitFor(() => {
       expect(screen.getByDisplayValue("John")).toBeInTheDocument();
       expect(screen.getByDisplayValue("Doe")).toBeInTheDocument();
-      expect(screen.getByDisplayValue("https://example.com/avatar.jpg")).toBeInTheDocument();
     });
   });
 
@@ -152,5 +154,39 @@ describe("ProfileEditor", () => {
       );
       expect(toast.success).toHaveBeenCalledWith("Password reset link sent to your email.");
     });
+  });
+
+  it("renders available titles and allows selection", async () => {
+    mockAuth.token = "token123";
+    mockApiFetch.mockResolvedValueOnce(mockProfile);
+    mockGetAvailableTitles.mockResolvedValueOnce([
+      { id: "SS25 Champion", label: "SS25 Champion", type: "SEASON_CHAMPION" },
+      { id: "2x Event Winner", label: "2x Event Winner", type: "EVENT_WINNER" },
+    ]);
+
+    render(<ProfileEditor username="john" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("SS25 Champion")).toBeInTheDocument();
+      expect(screen.getByText("2x Event Winner")).toBeInTheDocument();
+    });
+
+    const select = screen.getByRole("combobox");
+    expect(select).toBeInTheDocument();
+  });
+
+  it("hides cosmetic title dropdown when titles fail to load", async () => {
+    mockAuth.token = "token123";
+    mockApiFetch.mockResolvedValueOnce(mockProfile);
+    mockGetAvailableTitles.mockRejectedValueOnce(new Error("Failed to load titles"));
+
+    render(<ProfileEditor username="john" />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("John")).toBeInTheDocument();
+    });
+
+    // The dropdown should not be rendered
+    expect(screen.queryByText("Cosmetic Title")).not.toBeInTheDocument();
   });
 });

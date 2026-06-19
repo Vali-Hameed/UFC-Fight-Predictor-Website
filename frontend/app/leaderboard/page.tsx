@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Global Leaderboard | FightPicks",
@@ -11,30 +10,19 @@ export const metadata: Metadata = {
   },
 };
 import { SectionCard } from "@/components/section-card";
-import { apiFetch, LeaderboardDto } from "@/lib/api";
+import { apiFetch, LeaderboardDto, LeaderboardFiltersDto } from "@/lib/api";
+import { LeaderboardView } from "@/components/leaderboard-view";
 
 export default async function LeaderboardPage() {
-  const leaderboard = await apiFetch<LeaderboardDto[]>("/api/v1/leaderboard").catch(() => []);
+  const [leaderboard, filters] = await Promise.all([
+    apiFetch<LeaderboardDto[]>("/api/v1/leaderboard").catch(() => []),
+    apiFetch<LeaderboardFiltersDto>("/api/v1/leaderboard/filters").catch(() => null),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <SectionCard eyebrow="Ranks" title="Global leaderboard" description="See who holds the crown. Rankings are based on total prediction points, accuracy, and current win streaks.">
-        <div className="space-y-3">
-          {leaderboard.map((row, index) => (
-            <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-              <div className="text-lg font-semibold text-gold">#{index + 1}</div>
-              <div>
-                <Link href={`/profile/${row.username ?? row.userId}`} className="font-semibold text-white hover:underline">@{row.username ?? `User #${row.userId}`}</Link>
-                <div className="text-sm text-white/50">{row.correctPredictions ?? 0} correct predictions • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-white">{row.totalPoints ?? 0} pts</div>
-                <div className="text-sm text-white/50">{row.currentStreak ?? 0} streak</div>
-              </div>
-            </div>
-          ))}
-          {leaderboard.length === 0 ? <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">Leaderboard has not been populated yet.</div> : null}
-        </div>
+        <LeaderboardView initialLeaderboard={leaderboard} initialFilters={filters} />
       </SectionCard>
 
       <div className="mt-10">

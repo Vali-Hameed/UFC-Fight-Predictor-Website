@@ -3,6 +3,7 @@ import { SectionCard } from "@/components/section-card";
 import { PredictionCard } from "@/components/prediction-card";
 import { LocalTime } from "@/components/local-time";
 import { LiveFightsList } from "./live-fights-list";
+import { CosmeticUsername } from "@/components/cosmetic-username";
 import { apiFetch, ApiResponseError, CommunityVoteDto, EventDto, FightDto, ForumThreadDto, MlPredictionDto, getEventLeaderboard, getEventDisplayStatus, formatEventDate } from "@/lib/api";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -186,7 +187,13 @@ export default async function EventPage({ params, searchParams }: EventPageProps
                 <div key={row.userId} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                   <div className="text-lg font-semibold text-gold">#{index + 1}</div>
                   <div>
-                    <Link href={`/profile/${row.username ?? row.userId}`} className="font-semibold text-white hover:underline">@{row.username ?? `User #${row.userId}`}</Link>
+                    <CosmeticUsername 
+                      username={row.username ?? `User #${row.userId}`}
+                      cosmeticGlowColor={row.cosmeticGlowColor}
+                      cosmeticTitle={row.cosmeticTitle}
+                      size="sm"
+                      showTitle={index < 3}
+                    />
                     <div className="text-sm text-white/50">{row.correctPredictions ?? 0} correct predictions • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
                   </div>
                   <div className="text-right">
