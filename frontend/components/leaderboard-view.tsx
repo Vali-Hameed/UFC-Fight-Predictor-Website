@@ -97,12 +97,12 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
 
       {/* Season/Event Selector */}
       {mode === "season" && filters?.seasons && filters.seasons.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-white/50">Season:</label>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <label className="shrink-0 text-sm text-white/50">Season:</label>
           <select
             value={selectedSeason?.id ?? ""}
             onChange={(e) => handleSeasonChange(Number(e.target.value))}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-accent"
+            className="w-full truncate rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-accent sm:w-auto sm:max-w-xs md:max-w-md"
           >
             {filters.seasons.map((s) => (
               <option key={s.id} value={s.id} className="bg-panel">
@@ -114,12 +114,12 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
       )}
 
       {mode === "event" && filters?.recentEvents && filters.recentEvents.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-white/50">Event:</label>
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <label className="shrink-0 text-sm text-white/50">Event:</label>
           <select
             value={selectedEvent?.id ?? ""}
             onChange={(e) => handleEventChange(Number(e.target.value))}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-accent"
+            className="w-full truncate rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-accent sm:w-auto sm:max-w-xs md:max-w-md"
           >
             {filters.recentEvents.map((e) => (
               <option key={e.id} value={e.id} className="bg-panel">
