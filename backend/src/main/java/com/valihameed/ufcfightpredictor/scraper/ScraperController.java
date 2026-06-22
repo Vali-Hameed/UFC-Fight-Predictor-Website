@@ -38,7 +38,46 @@ public class ScraperController {
     public ResponseEntity<List<Event>> upsertEvents(@RequestBody List<Event> events) {
         List<Event> savedEvents = new java.util.ArrayList<>();
         for (Event e : events) {
-            java.util.Optional<Event> existing = eventRepository.findByName(e.getName());
+            java.util.Optional<Event> existing = java.util.Optional.empty();
+            List<Event> upcomingEvents = eventRepository.findByStatus("UPCOMING");
+            
+            // 1. Try exact name match + within 48 hours
+            for (Event upc : upcomingEvents) {
+                if (e.getName().equals(upc.getName()) && e.getEventDate() != null && upc.getEventDate() != null) {
+                    long hoursDiff = Math.abs(java.time.Duration.between(e.getEventDate(), upc.getEventDate()).toHours());
+                    if (hoursDiff <= 48) {
+                        existing = java.util.Optional.of(upc);
+                        break;
+                    }
+                }
+            }
+
+            // 2. Try fuzzy name match (e.g. "UFC Fight Night" -> "UFC Fight Night: A vs B") + within 48 hours
+            if (existing.isEmpty()) {
+                for (Event upc : upcomingEvents) {
+                    if ((e.getName().startsWith(upc.getName()) || upc.getName().startsWith(e.getName())) 
+                        && e.getEventDate() != null && upc.getEventDate() != null) {
+                        long hoursDiff = Math.abs(java.time.Duration.between(e.getEventDate(), upc.getEventDate()).toHours());
+                        if (hoursDiff <= 48) {
+                            existing = java.util.Optional.of(upc);
+                            if (e.getName().length() > upc.getName().length()) {
+                                upc.setName(e.getName()); // Update to the more specific name
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3. Fallback to global find by name (for COMPLETED events or matching without date)
+            if (existing.isEmpty()) {
+                try {
+                    existing = eventRepository.findByName(e.getName());
+                } catch (Exception ex) {
+                    // Ignore NonUniqueResultException or others and just proceed
+                }
+            }
+
             if (existing.isPresent()) {
                 Event ev = existing.get();
                 ev.setEventDate(e.getEventDate());
