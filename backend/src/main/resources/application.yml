@@ -42,7 +42,7 @@ resend:
       enabled: true
 
 jwt:
-  secret: ${JWT_SECRET:change-me-in-prod-and-set-env}
+  secret: ${JWT_SECRET:change-me-in-prod-and-set-env-now}
   refresh-secret: ${JWT_REFRESH_SECRET:change-refresh-in-prod}
   access-token-expiry-minutes: 15
   refresh-token-expiry-days: 7

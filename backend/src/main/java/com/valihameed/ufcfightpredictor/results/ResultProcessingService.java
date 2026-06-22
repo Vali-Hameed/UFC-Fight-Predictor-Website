@@ -58,6 +58,9 @@ public class ResultProcessingService {
             boolean predictedRoundProvided = up.getPredictedRound() != null && up.getPredictedRound() > 0;
 
             boolean winnerCorrect = fight.getResultWinner().equalsIgnoreCase(up.getPredictedWinner());
+            if (!winnerCorrect && "Draw/NC".equalsIgnoreCase(fight.getResultWinner()) && "Draw".equalsIgnoreCase(up.getPredictedWinner())) {
+                winnerCorrect = true;
+            }
             
             boolean methodCorrect = false;
             if (predictedMethodProvided) {
@@ -206,6 +209,12 @@ public class ResultProcessingService {
                 try {
                     rewardService.distributeEventRewards(fight.getEventId());
                     log.info("Auto-distributed event rewards for event {}", fight.getEventId());
+                    
+                    eventRepository.findById(fight.getEventId()).ifPresent(e -> {
+                        e.setStatus("COMPLETED");
+                        eventRepository.save(e);
+                        log.info("Marked event {} as COMPLETED", e.getId());
+                    });
                 } catch (Exception e) {
                     log.warn("Failed to auto-distribute event rewards for event {}: {}", fight.getEventId(), e.getMessage());
                 }

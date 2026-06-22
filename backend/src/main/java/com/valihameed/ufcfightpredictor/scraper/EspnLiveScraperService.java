@@ -47,6 +47,24 @@ public class EspnLiveScraperService {
             }
 
             if (liveEvent == null) {
+                // Also do a quick cleanup of orphaned UPCOMING fights for events older than 24 hours
+                List<Fight> orphanedFights = fightRepository.findByStatus("UPCOMING");
+                for (Fight f : orphanedFights) {
+                    eventRepository.findById(f.getEventId()).ifPresent(event -> {
+                        if (event.getEventDate() != null && now.isAfter(event.getEventDate().plusHours(24))) {
+                            log.info("Fight {} vs {} is still UPCOMING 24h after event. Auto-cancelling.", f.getFighter1Name(), f.getFighter2Name());
+                            f.setStatus("CANCELED");
+                            f.setResultWinner("Canceled");
+                            f.setResultMethod("Canceled");
+                            fightRepository.save(f);
+                            try {
+                                resultProcessingService.processFightResult(f.getId());
+                            } catch (Exception ex) {
+                                log.error("Failed to process auto-cancelled fight {}: {}", f.getId(), ex.getMessage());
+                            }
+                        }
+                    });
+                }
                 return; // No live event to poll
             }
 
@@ -85,7 +103,25 @@ public class EspnLiveScraperService {
                         matchedFight.setCurrentClock(displayClock);
                         matchedFight.setLiveStatus(statusName);
 
-                        if (completed && !"COMPLETED".equals(matchedFight.getStatus())) {
+                        boolean isCanceledStatus = statusName != null && statusName.toLowerCase().contains("canceled");
+                        
+                        if (isCanceledStatus && !"CANCELED".equals(matchedFight.getStatus())) {
+                            log.info("Fight canceled on ESPN: {} vs {}", f1Name, f2Name);
+                            matchedFight.setStatus("CANCELED");
+                            matchedFight.setResultWinner("Canceled");
+                            matchedFight.setResultMethod("Canceled");
+                            fightRepository.save(matchedFight);
+
+                            try {
+                                resultProcessingService.processFightResult(matchedFight.getId());
+                            } catch (Exception ex) {
+                                log.error("Failed to process results for canceled fight {}: {}", matchedFight.getId(), ex.getMessage());
+                            }
+                            anyFightUpdated = true;
+                            continue;
+                        }
+
+                        if (completed && !"COMPLETED".equals(matchedFight.getStatus()) && !"CANCELED".equals(matchedFight.getStatus())) {
                             // Fight just finished (or got stuck previously), update official results!
                             log.info("Fight completed on ESPN: {} vs {}", f1Name, f2Name);
                             matchedFight.setResultRound(period);
@@ -122,11 +158,14 @@ public class EspnLiveScraperService {
                                     } else if (text.contains("draw")) {
                                         detail = "Draw";
                                         break;
+                                    } else if (text.contains("no contest")) {
+                                        detail = "No Contest";
+                                        break;
                                     }
                                 }
                             }
 
-                            if (winningEspnName != null || "Draw".equalsIgnoreCase(detail)) {
+                            if (winningEspnName != null || "Draw".equalsIgnoreCase(detail) || "No Contest".equalsIgnoreCase(detail)) {
                                 if (winningEspnName != null) {
                                     if (isMatch(matchedFight.getFighter1Name(), winningEspnName)) {
                                         matchedFight.setResultWinner(matchedFight.getFighter1Name());
@@ -135,8 +174,10 @@ public class EspnLiveScraperService {
                                     } else {
                                         matchedFight.setResultWinner(winningEspnName); // fallback
                                     }
+                                } else if ("No Contest".equalsIgnoreCase(detail)) {
+                                    matchedFight.setResultWinner("No Contest");
                                 } else {
-                                    matchedFight.setResultWinner("Draw/NC");
+                                    matchedFight.setResultWinner("Draw/NC"); // Legacy fallback for true draw
                                 }
                                 
                                 matchedFight.setResultMethod(detail);
@@ -171,11 +212,11 @@ public class EspnLiveScraperService {
     }
 
     private Fight fuzzyMatchFight(List<Fight> dbFights, String espnF1, String espnF2) {
+        // Strict match (both fighters) per user request
         for (Fight fight : dbFights) {
             String dbF1 = fight.getFighter1Name();
             String dbF2 = fight.getFighter2Name();
-            
-            if (isMatch(dbF1, espnF1) || isMatch(dbF1, espnF2) || isMatch(dbF2, espnF1) || isMatch(dbF2, espnF2)) {
+            if ((isMatch(dbF1, espnF1) && isMatch(dbF2, espnF2)) || (isMatch(dbF1, espnF2) && isMatch(dbF2, espnF1))) {
                 return fight;
             }
         }
