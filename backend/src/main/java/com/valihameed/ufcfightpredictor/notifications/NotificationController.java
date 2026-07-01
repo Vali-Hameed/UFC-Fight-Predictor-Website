@@ -21,7 +21,7 @@ public class NotificationController {
     @GetMapping
     public List<Notification> list(Authentication authentication) {
         user currentUser = (user) authentication.getPrincipal();
-        return notificationRepository.findByUserId(currentUser.getId());
+        return notificationRepository.findByUserIdOrderByReadAscCreatedAtDesc(currentUser.getId());
     }
 
     @GetMapping("/unread-count")
