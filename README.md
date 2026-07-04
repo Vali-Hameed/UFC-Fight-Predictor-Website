@@ -1,7 +1,7 @@
 
 
 <div align="center">
-  <h1>🏆 UFC Fight Predictor</h1>
+  <h1>🏆 FightPicks</h1>
   <p><strong>A Full-Stack, AI-Powered Web Application for UFC Fight Analysis, Community Predictions, and Live Leaderboards.</strong></p>
   
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
