@@ -69,7 +69,18 @@ public class ScraperController {
                 }
             }
 
-            // 3. Fallback to global find by name (for COMPLETED events or matching without date)
+            // 3. Try exact date match (for events that were renamed completely)
+            if (existing.isEmpty()) {
+                for (Event upc : upcomingEvents) {
+                    if (e.getEventDate() != null && upc.getEventDate() != null && e.getEventDate().isEqual(upc.getEventDate())) {
+                        existing = java.util.Optional.of(upc);
+                        upc.setName(e.getName()); // Update to the new name
+                        break;
+                    }
+                }
+            }
+
+            // 4. Fallback to global find by name (for COMPLETED events or matching without date)
             if (existing.isEmpty()) {
                 try {
                     existing = eventRepository.findByName(e.getName());
@@ -111,8 +122,14 @@ public class ScraperController {
 
     @PostMapping("/fights")
     public ResponseEntity<List<Fight>> upsertFights(@RequestBody List<Fight> fights) {
+        java.util.Set<Long> eventIds = new java.util.HashSet<>();
+        java.util.Set<Long> processedFightIds = new java.util.HashSet<>();
+        
         List<Fight> savedFights = new java.util.ArrayList<>();
         for (Fight f : fights) {
+            if (f.getEventId() != null) {
+                eventIds.add(f.getEventId());
+            }
             java.util.Optional<Fight> existing = fightRepository.findByEventIdAndFighter1NameAndFighter2Name(f.getEventId(), f.getFighter1Name(), f.getFighter2Name());
             if (existing.isEmpty()) {
                 existing = fightRepository.findByEventIdAndFighter1NameAndFighter2Name(f.getEventId(), f.getFighter2Name(), f.getFighter1Name());
@@ -132,6 +149,7 @@ public class ScraperController {
                 ft.setStatus(f.getStatus());
                 Fight savedFight = fightRepository.save(ft);
                 savedFights.add(savedFight);
+                processedFightIds.add(savedFight.getId());
                 
                 boolean isNewlyCompleted = ("COMPLETED".equals(savedFight.getStatus()) || "CANCELED".equals(savedFight.getStatus())) &&
                         (!"COMPLETED".equals(oldStatus) && !"CANCELED".equals(oldStatus));
@@ -159,6 +177,7 @@ public class ScraperController {
             } else {
                 Fight savedFight = fightRepository.save(f);
                 savedFights.add(savedFight);
+                processedFightIds.add(savedFight.getId());
                 // Auto-create thread for new fight
                 com.valihameed.ufcfightpredictor.models.ForumThread thread = com.valihameed.ufcfightpredictor.models.ForumThread.builder()
                         .eventId(savedFight.getEventId())
@@ -169,6 +188,18 @@ public class ScraperController {
                 forumThreadRepository.save(thread);
             }
         }
+
+        // Mark missing fights as CANCELED
+        for (Long eventId : eventIds) {
+            List<Fight> existingFightsForEvent = fightRepository.findByEventIdOrderByFightOrderAsc(eventId);
+            for (Fight dbFight : existingFightsForEvent) {
+                if (!processedFightIds.contains(dbFight.getId()) && !"CANCELED".equals(dbFight.getStatus()) && !"COMPLETED".equals(dbFight.getStatus())) {
+                    dbFight.setStatus("CANCELED");
+                    fightRepository.save(dbFight);
+                }
+            }
+        }
+        
         return ResponseEntity.ok().body(savedFights);
     }
 
