@@ -139,8 +139,9 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
               </span>
             )}
           </div>
-          <h3 className="mt-2 text-xl font-semibold text-white">
+          <h3 className={`mt-2 text-xl font-semibold ${fight.status === "CANCELED" ? "text-white/50 line-through" : "text-white"}`}>
             {fight.fighter1Name} vs {fight.fighter2Name}
+            {fight.status === "CANCELED" && <span className="ml-2 inline-block rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-red-400 no-underline align-middle">Canceled</span>}
           </h3>
           <p className="mt-1 text-sm text-white/55">
             Status: {fight.liveStatus && fight.status !== "COMPLETED" ? fight.liveStatus.replace("STATUS_", "").replace(/_/g, " ").replace("SCHEDULED", "UPCOMING").replace(/ \d+$/, "") : (fight.status ?? "UNKNOWN")}
