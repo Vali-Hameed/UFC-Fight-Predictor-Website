@@ -125,19 +125,29 @@ public class ScraperController {
         java.util.Set<Long> eventIds = new java.util.HashSet<>();
         java.util.Set<Long> processedFightIds = new java.util.HashSet<>();
         
+        java.util.Map<Long, List<Fight>> dbFightsByEvent = new java.util.HashMap<>();
+        
         List<Fight> savedFights = new java.util.ArrayList<>();
         for (Fight f : fights) {
             if (f.getEventId() != null) {
                 eventIds.add(f.getEventId());
+                if (!dbFightsByEvent.containsKey(f.getEventId())) {
+                    dbFightsByEvent.put(f.getEventId(), fightRepository.findByEventIdOrderByFightOrderAsc(f.getEventId()));
+                }
             }
-            java.util.Optional<Fight> existing = fightRepository.findByEventIdAndFighter1NameAndFighter2Name(f.getEventId(), f.getFighter1Name(), f.getFighter2Name());
-            if (existing.isEmpty()) {
-                existing = fightRepository.findByEventIdAndFighter1NameAndFighter2Name(f.getEventId(), f.getFighter2Name(), f.getFighter1Name());
+            
+            Fight matchedFight = null;
+            if (f.getEventId() != null) {
+                matchedFight = ScraperUtils.fuzzyMatchFight(dbFightsByEvent.get(f.getEventId()), f.getFighter1Name(), f.getFighter2Name());
             }
-            if (existing.isPresent()) {
-                Fight ft = existing.get();
+            
+            if (matchedFight != null) {
+                Fight ft = matchedFight;
                 String oldStatus = ft.getStatus();
                 String oldWinner = ft.getResultWinner();
+
+                ft.setFighter1Name(f.getFighter1Name());
+                ft.setFighter2Name(f.getFighter2Name());
 
                 ft.setWeightClass(f.getWeightClass());
                 ft.setIsMainEvent(f.getIsMainEvent());
@@ -249,5 +259,42 @@ public class ScraperController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error saving roster: " + e.getMessage());
         }
+    }
+    
+    @PostMapping("/events/cleanup-duplicates")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> cleanupDuplicates() {
+        List<Fight> allFights = fightRepository.findAll();
+        java.util.Map<Long, List<Fight>> fightsByEvent = new java.util.HashMap<>();
+        for (Fight f : allFights) {
+            if (f.getEventId() != null) {
+                fightsByEvent.computeIfAbsent(f.getEventId(), k -> new java.util.ArrayList<>()).add(f);
+            }
+        }
+
+        int deletedCount = 0;
+        for (List<Fight> eventFights : fightsByEvent.values()) {
+            List<Fight> canceledFights = new java.util.ArrayList<>();
+            List<Fight> activeFights = new java.util.ArrayList<>();
+            for (Fight f : eventFights) {
+                if ("CANCELED".equals(f.getStatus())) {
+                    canceledFights.add(f);
+                } else {
+                    activeFights.add(f);
+                }
+            }
+
+            for (Fight canceled : canceledFights) {
+                // Check if this canceled fight fuzzily matches any active fight
+                Fight matched = ScraperUtils.fuzzyMatchFight(activeFights, canceled.getFighter1Name(), canceled.getFighter2Name());
+                if (matched != null) {
+                    // It's a duplicate, delete the canceled one
+                    fightRepository.delete(canceled);
+                    deletedCount++;
+                }
+            }
+        }
+        
+        return ResponseEntity.ok().body("Deleted " + deletedCount + " duplicate canceled fights.");
     }
 }

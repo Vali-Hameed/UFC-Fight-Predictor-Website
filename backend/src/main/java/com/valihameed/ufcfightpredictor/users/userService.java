@@ -33,10 +33,10 @@ public class userService implements UserDetailsService {
     private final ConfirmationTokenService confirmationTokenService;
 
     public user createNewUser(String username, String email, String password, role role) {
-        if (userRepository.findByUsername(username).isPresent()) {
+        if (userRepository.findByUsernameIgnoreCase(username).isPresent()) {
             throw new IllegalStateException("Username already taken");
         }
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
             throw new IllegalStateException("Email already registered");
         }
         if (role == null) {
@@ -57,21 +57,21 @@ public class userService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        // FIX: Use regex to reliably check if the input is an email.
-        if (EMAIL_PATTERN.matcher(usernameOrEmail).matches()) {
-            return userRepository.findByEmail(usernameOrEmail)
-                    .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, usernameOrEmail)));
-        } else {
-            return userRepository.findByUsername(usernameOrEmail)
-                    .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, usernameOrEmail)));
+        if (usernameOrEmail == null || usernameOrEmail.trim().isEmpty()) {
+            throw new UsernameNotFoundException("Username or email cannot be empty");
         }
+        String cleanInput = usernameOrEmail.trim();
+        // Try username first (case-insensitive), then email (case-insensitive)
+        return userRepository.findByUsernameIgnoreCase(cleanInput)
+                .or(() -> userRepository.findByEmailIgnoreCase(cleanInput))
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, cleanInput)));
     }
 
     public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
     }
     public String signUpUser(user user){
-        com.valihameed.ufcfightpredictor.users.user existingUser = userRepository.findByEmail(user.getEmail()).orElse(null);
+        com.valihameed.ufcfightpredictor.users.user existingUser = userRepository.findByEmailIgnoreCase(user.getEmail()).orElse(null);
         if(existingUser != null){
             if (existingUser.isEnabled()) {
                 throw new IllegalStateException("Email is already registered");
@@ -79,7 +79,7 @@ public class userService implements UserDetailsService {
                 throw new IllegalStateException("Email is registered but not verified");
             }
         }
-        com.valihameed.ufcfightpredictor.users.user existingUsername = userRepository.findByUsername(user.getUsername()).orElse(null);
+        com.valihameed.ufcfightpredictor.users.user existingUsername = userRepository.findByUsernameIgnoreCase(user.getUsername()).orElse(null);
         if(existingUsername != null){
             if (existingUsername.isEnabled()) {
                 throw new IllegalStateException("Username is already taken");
@@ -123,7 +123,7 @@ public class userService implements UserDetailsService {
         }
 
         // 2. Check if the new username is currently in use in the 'user' table
-        Optional<user> existingUser = userRepository.findByUsername(newUsername);
+        Optional<user> existingUser = userRepository.findByUsernameIgnoreCase(newUsername);
         if (existingUser.isPresent()) {
             throw new IllegalStateException("Username is already taken.");
         }
