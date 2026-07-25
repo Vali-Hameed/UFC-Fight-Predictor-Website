@@ -68,7 +68,17 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         }
 
         // Path-specific tighter buckets for mutating endpoints
-        if (path.startsWith("/api/v1/auth/login")) {
+        if (path.startsWith("/api/v1/internal/scraper")) {
+            // Scraper gets its own bucket so it doesn't starve the global bucket
+            Bucket b = cache.get(ip + ":scraper", k -> newBucket(100, 100, 60));
+            if (!b.tryConsume(1)) {
+                sendRateLimit(response);
+                return;
+            }
+            // Scraper bypasses the global user bucket to avoid affecting users
+            filterChain.doFilter(request, response);
+            return;
+        } else if (path.startsWith("/api/v1/auth/login")) {
             Bucket b = cache.get(ip + ":login", k -> newBucket(loginCapacity, loginRefill, loginRefillPeriod));
             if (!b.tryConsume(1)) {
                 sendRateLimit(response);

@@ -60,6 +60,7 @@ public class NotificationController {
     }
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Notification> create(@RequestBody Notification notification) {
         return ResponseEntity.ok(notificationService.createNotification(notification));
     }
