@@ -29,7 +29,7 @@ public class PasswordResetService {
     private String frontendUrl;
 
     public String createPasswordReset(String email) {
-        java.util.Optional<user> opt = userRepository.findByEmailIgnoreCase(email);
+        java.util.Optional<user> opt = userRepository.findByEmail(email);
         if (opt.isEmpty()) {
             // Return dummy UUID to prevent user enumeration attacks
             return UUID.randomUUID().toString();
