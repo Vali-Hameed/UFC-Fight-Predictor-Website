@@ -88,7 +88,7 @@ public class EspnLiveScraperService {
                     String f2Name = competitors.get(1).path("athlete").path("fullName").asText();
 
                     // Find matching fight in DB
-                    Fight matchedFight = fuzzyMatchFight(dbFights, f1Name, f2Name);
+                    Fight matchedFight = ScraperUtils.fuzzyMatchFight(dbFights, f1Name, f2Name);
                     if (matchedFight != null) {
                         JsonNode statusNode = comp.path("status");
                         double clock = statusNode.path("clock").asDouble(0.0);
@@ -167,9 +167,9 @@ public class EspnLiveScraperService {
 
                             if (winningEspnName != null || "Draw".equalsIgnoreCase(detail) || "No Contest".equalsIgnoreCase(detail)) {
                                 if (winningEspnName != null) {
-                                    if (isMatch(matchedFight.getFighter1Name(), winningEspnName)) {
+                                    if (ScraperUtils.isMatch(matchedFight.getFighter1Name(), winningEspnName)) {
                                         matchedFight.setResultWinner(matchedFight.getFighter1Name());
-                                    } else if (isMatch(matchedFight.getFighter2Name(), winningEspnName)) {
+                                    } else if (ScraperUtils.isMatch(matchedFight.getFighter2Name(), winningEspnName)) {
                                         matchedFight.setResultWinner(matchedFight.getFighter2Name());
                                     } else {
                                         matchedFight.setResultWinner(winningEspnName); // fallback
@@ -209,35 +209,5 @@ public class EspnLiveScraperService {
         } catch (Exception e) {
             log.error("Error polling ESPN live events: {}", e.getMessage());
         }
-    }
-
-    private Fight fuzzyMatchFight(List<Fight> dbFights, String espnF1, String espnF2) {
-        // Strict match (both fighters) per user request
-        for (Fight fight : dbFights) {
-            String dbF1 = fight.getFighter1Name();
-            String dbF2 = fight.getFighter2Name();
-            if ((isMatch(dbF1, espnF1) && isMatch(dbF2, espnF2)) || (isMatch(dbF1, espnF2) && isMatch(dbF2, espnF1))) {
-                return fight;
-            }
-        }
-        return null;
-    }
-
-    private boolean isMatch(String dbName, String espnName) {
-        if (dbName == null || espnName == null) return false;
-        if (dbName.equalsIgnoreCase(espnName)) return true;
-        
-        // Match by last name
-        String[] dbParts = dbName.split(" ");
-        String[] espnParts = espnName.split(" ");
-        
-        if (dbParts.length > 0 && espnParts.length > 0) {
-            String dbLast = dbParts[dbParts.length - 1];
-            String espnLast = espnParts[espnParts.length - 1];
-            if (dbLast.equalsIgnoreCase(espnLast)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
