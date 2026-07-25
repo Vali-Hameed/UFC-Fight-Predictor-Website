@@ -29,7 +29,9 @@ public class ScraperAuthFilter extends OncePerRequestFilter {
             }
             
             String key = request.getHeader("X-Scraper-Key");
-            if (key == null || !key.equals(scraperApiKey)) {
+            if (key == null || !java.security.MessageDigest.isEqual(
+                    key.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                    scraperApiKey.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
                 response.setStatus(HttpStatus.FORBIDDEN.value());
                 return;
             }

@@ -125,7 +125,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ex.printStackTrace();
         Map<String, Object> body = new HashMap<>();
         body.put("error", "INTERNAL_ERROR");
-        body.put("message", "An unexpected error occurred: " + ex.getMessage());
+        body.put("message", "An unexpected error occurred. Please try again later.");
         body.put("timestamp", OffsetDateTime.now().toString());
         return new ResponseEntity<>(body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

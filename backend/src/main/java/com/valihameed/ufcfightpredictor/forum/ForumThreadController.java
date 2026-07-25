@@ -41,8 +41,11 @@ public class ForumThreadController {
     }
 
     @PostMapping
-    public ResponseEntity<ForumThread> create(@RequestBody ForumThreadRequest request, Authentication authentication) {
+    public ResponseEntity<?> create(@RequestBody ForumThreadRequest request, Authentication authentication) {
         user currentUser = (user) authentication.getPrincipal();
+        if (!currentUser.isEnabled()) {
+            return ResponseEntity.status(403).body("You must verify your email address before creating a thread.");
+        }
         ForumThread thread = ForumThread.builder()
             .eventId(request.getEventId())
             .fightId(request.getFightId())

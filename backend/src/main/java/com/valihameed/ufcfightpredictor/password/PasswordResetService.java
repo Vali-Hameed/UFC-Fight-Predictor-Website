@@ -29,7 +29,12 @@ public class PasswordResetService {
     private String frontendUrl;
 
     public String createPasswordReset(String email) {
-        user u = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        java.util.Optional<user> opt = userRepository.findByEmail(email);
+        if (opt.isEmpty()) {
+            // Return dummy UUID to prevent user enumeration attacks
+            return UUID.randomUUID().toString();
+        }
+        user u = opt.get();
 
         List<PasswordResetToken> oldTokens = tokenRepository.findByUserIdAndUsedFalse(u.getId());
         for (PasswordResetToken oldToken : oldTokens) {

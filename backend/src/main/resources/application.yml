@@ -1,8 +1,8 @@
 server:
   port: ${PORT:8080}
   error:
-    include-message: always
-    include-binding-errors: always
+    include-message: ${ERROR_INCLUDE_MESSAGE:never}
+    include-binding-errors: ${ERROR_INCLUDE_BINDING_ERRORS:never}
 spring:
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5332/ufc}
@@ -15,8 +15,8 @@ spring:
 
     properties:
       hibernate:
-        format_sql: true
-    show-sql: true
+        format_sql: false
+    show-sql: false
   mail:
     host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:1025}
