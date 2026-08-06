@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { Providers } from "@/app/providers";
 import Link from "next/link";
 import { CookieBanner } from "@/components/cookie-banner";
+import { GoogleAnalytics } from '@next/third-parties/google';
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-sans" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-alt" });
 
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <CookieBanner />
         </Providers>
       </body>
+      <GoogleAnalytics gaId="G-NPLD3VXFBX" />
     </html>
   );
 }
