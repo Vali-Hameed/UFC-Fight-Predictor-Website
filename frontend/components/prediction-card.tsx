@@ -20,12 +20,33 @@ const methodOptions = ["Any Method", "KO/TKO", "Submission", "Decision"];
 const SUBMIT_COOLDOWN_MS = 2000;
 
 export function PredictionCard({ fight, mlPrediction, communityVote, isEventStarted = false, isArchived = false }: PredictionCardProps) {
-  const { token } = useAuth();
+  const { token, user, refreshUser } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [displayClock, setDisplayClock] = useState(fight.currentClock);
+  const [isDirty, setIsDirty] = useState(false);
 
+  const userPrediction = user?.predictionHistory?.find(p => p.fightId === fight.id);
 
+  const handleFormChange = (event: FormEvent<HTMLFormElement>) => {
+    if (!userPrediction) {
+      setIsDirty(true);
+      return;
+    }
+    
+    const formData = new FormData(event.currentTarget);
+    const winner = String(formData.get("predictedWinner") ?? "");
+    const method = String(formData.get("predictedMethod") ?? "");
+    const round = Number(formData.get("predictedRound") ?? 0);
+    const optOut = formData.get("optOutResultNotification") === "on";
+
+    const winnerChanged = winner !== (userPrediction.predictedWinner ?? (fight.fighter1Name ?? ""));
+    const methodChanged = method !== (userPrediction.predictedMethod ?? methodOptions[0]);
+    const roundChanged = round !== (userPrediction.predictedRound ?? 0);
+    const optOutChanged = optOut !== false;
+
+    setIsDirty(winnerChanged || methodChanged || roundChanged || optOutChanged);
+  };
 
   // Sync state when props change (scraper updates)
   useEffect(() => {
@@ -106,6 +127,8 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
       }, token);
       lastSubmitRef.current = Date.now();
       toast.success("Prediction submitted successfully.");
+      setIsDirty(false);
+      await refreshUser();
       router.refresh();
     } catch (error) {
       console.error("Prediction submission failed:", error);
@@ -174,21 +197,21 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
       </div>
 
       {!isArchived && (
-        <form className="mt-5 grid gap-3 md:grid-cols-3" onSubmit={handleSubmit}>
-          <select name="predictedWinner" disabled={locked} defaultValue={fight.fighter1Name ?? ""} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+        <form key={JSON.stringify(userPrediction)} className="mt-5 grid gap-3 md:grid-cols-3" onSubmit={handleSubmit} onChange={handleFormChange}>
+          <select name="predictedWinner" disabled={locked} defaultValue={userPrediction?.predictedWinner ?? (fight.fighter1Name ?? "")} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
             <option value={fight.fighter1Name ?? ""}>{fight.fighter1Name}</option>
             <option value={fight.fighter2Name ?? ""}>{fight.fighter2Name}</option>
             <option value="Draw">Draw</option>
             <option value="Canceled/No Contest">Canceled / No Contest</option>
           </select>
-          <select name="predictedMethod" disabled={locked} defaultValue={methodOptions[0]} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+          <select name="predictedMethod" disabled={locked} defaultValue={userPrediction?.predictedMethod ?? methodOptions[0]} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
             {methodOptions.map((method) => (
               <option key={method} value={method}>
                 {method}
               </option>
             ))}
           </select>
-          <select name="predictedRound" disabled={locked} defaultValue={0} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
+          <select name="predictedRound" disabled={locked} defaultValue={userPrediction?.predictedRound ?? 0} className="rounded-2xl border border-white/10 bg-bg/70 px-4 py-3 text-white disabled:opacity-60">
             <option value={0}>Any Round</option>
             {Array.from({ length: maxRounds }, (_, i) => (
               <option key={i + 1} value={i + 1}>
@@ -207,8 +230,8 @@ export function PredictionCard({ fight, mlPrediction, communityVote, isEventStar
               <span className="text-sm text-white/70">Opt-out of result notification for this fight</span>
             </label>
           </div>
-          <button disabled={locked || loading} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3 mt-2">
-            {locked ? "Locked" : loading ? "Submitting..." : "Submit prediction"}
+          <button disabled={locked || loading || (!!userPrediction && !isDirty)} className="rounded-2xl bg-accent px-4 py-3 font-semibold text-white disabled:opacity-50 md:col-span-3 mt-2">
+            {locked ? "Locked" : loading ? "Submitting..." : (userPrediction ? "Update prediction" : "Submit prediction")}
           </button>
         </form>
       )}

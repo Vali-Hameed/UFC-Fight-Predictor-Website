@@ -1,16 +1,17 @@
 "use client";
 
-import { apiFetch, AuthResponse } from "@/lib/api";
+import { apiFetch, AuthResponse, PredictionHistoryItemDto } from "@/lib/api";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type AuthContextValue = {
   token: string | null;
   loading: boolean;
-  user: { id: number; username: string; role?: string } | null;
+  user: { id: number; username: string; role?: string; predictionHistory?: PredictionHistoryItemDto[] } | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   setToken: (token: string | null) => void;
 };
 
@@ -18,7 +19,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<{ id: number; username: string; role?: string } | null>(null);
+  const [user, setUser] = useState<{ id: number; username: string; role?: string; predictionHistory?: PredictionHistoryItemDto[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshSession = async () => {
@@ -44,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true;
     setLoading(true);
     
-    apiFetch<{ id: number; username: string; role?: string }>("/api/v1/users/me", {}, token)
+    apiFetch<{ id: number; username: string; role?: string; predictionHistory?: PredictionHistoryItemDto[] }>("/api/v1/users/me", {}, token)
       .then((data) => {
         if (active) {
           setUser(data);
@@ -62,6 +63,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
     };
   }, [token]);
+
+  const refreshUser = async () => {
+    if (!token) return;
+    try {
+      const data = await apiFetch<{ id: number; username: string; role?: string; predictionHistory?: PredictionHistoryItemDto[] }>("/api/v1/users/me", {}, token);
+      setUser(data);
+    } catch {
+      // ignore
+    }
+  };
 
   const login = async (username: string, password: string) => {
     const response = await apiFetch<AuthResponse>("/api/v1/auth/login", {
@@ -88,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     refreshSession,
+    refreshUser,
     setToken
   };
 
