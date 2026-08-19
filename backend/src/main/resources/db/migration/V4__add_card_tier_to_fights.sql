@@ -1,0 +1,1 @@
+ALTER TABLE fights ADD COLUMN card_tier VARCHAR(50);

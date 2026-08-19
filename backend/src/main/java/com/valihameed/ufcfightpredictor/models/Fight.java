@@ -56,4 +56,7 @@ public class Fight {
 
     @Column(name = "live_status")
     private String liveStatus;
+
+    @Column(name = "card_tier")
+    private String cardTier;
 }

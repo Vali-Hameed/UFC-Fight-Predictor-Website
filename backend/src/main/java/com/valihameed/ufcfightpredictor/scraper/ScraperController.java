@@ -157,6 +157,9 @@ public class ScraperController {
                 ft.setResultRound(f.getResultRound());
                 ft.setResultTime(f.getResultTime());
                 ft.setStatus(f.getStatus());
+                if (f.getCardTier() != null) {
+                    ft.setCardTier(f.getCardTier());
+                }
                 Fight savedFight = fightRepository.save(ft);
                 savedFights.add(savedFight);
                 processedFightIds.add(savedFight.getId());
