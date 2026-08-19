@@ -17,6 +17,49 @@ type LiveFightsListProps = {
   isArchived: boolean;
 };
 
+function CollapsibleSection({ title, fightList, isEventStarted, isArchived }: { title: string, fightList: FightCardData[], isEventStarted: boolean, isArchived: boolean }) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  if (fightList.length === 0) return null;
+
+  const isMainCard = title === "Main Card";
+
+  return (
+    <div className="mb-8 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-sm">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex items-center justify-between gap-2 text-2xl font-black tracking-tight mb-4 w-full text-left text-white transition-colors hover:text-red-600"
+      >
+        <span>{title}</span>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="24" height="24" 
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" 
+          className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} text-white/50`}
+        >
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+      
+      {isOpen && (
+        <div className="space-y-4">
+          {fightList.map(({ fight, mlPrediction, communityVote }) => (
+            <PredictionCard 
+              key={fight.id} 
+              fight={fight} 
+              mlPrediction={mlPrediction} 
+              communityVote={communityVote} 
+              isEventStarted={isEventStarted} 
+              isArchived={isArchived} 
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LiveFightsList({ eventId, initialFights, isEventStarted, isArchived }: LiveFightsListProps) {
   const [fights, setFights] = useState<FightCardData[]>(initialFights);
 
@@ -47,18 +90,19 @@ export function LiveFightsList({ eventId, initialFights, isEventStarted, isArchi
     return () => clearInterval(interval);
   }, [eventId, isEventStarted, isArchived, fights]);
 
+  const mainCardFights = fights.filter(f => f.fight.status !== "CANCELED" && f.fight.cardTier === "Main Card");
+  const prelimFights = fights.filter(f => f.fight.status !== "CANCELED" && f.fight.cardTier === "Prelims");
+  const earlyPrelimFights = fights.filter(f => f.fight.status !== "CANCELED" && f.fight.cardTier === "Early Prelims");
+  const uncategorizedFights = fights.filter(f => f.fight.status !== "CANCELED" && !f.fight.cardTier);
+  const canceledFights = fights.filter(f => f.fight.status === "CANCELED");
+
   return (
-    <div className="space-y-4">
-      {fights.map(({ fight, mlPrediction, communityVote }) => (
-        <PredictionCard 
-          key={fight.id} 
-          fight={fight} 
-          mlPrediction={mlPrediction} 
-          communityVote={communityVote} 
-          isEventStarted={isEventStarted} 
-          isArchived={isArchived} 
-        />
-      ))}
+    <div className="space-y-6">
+      <CollapsibleSection title="Main Card" fightList={mainCardFights} isEventStarted={isEventStarted} isArchived={isArchived} />
+      <CollapsibleSection title="Prelims" fightList={prelimFights} isEventStarted={isEventStarted} isArchived={isArchived} />
+      <CollapsibleSection title="Early Prelims" fightList={earlyPrelimFights} isEventStarted={isEventStarted} isArchived={isArchived} />
+      <CollapsibleSection title="Other Fights" fightList={uncategorizedFights} isEventStarted={isEventStarted} isArchived={isArchived} />
+      <CollapsibleSection title="Canceled Fights" fightList={canceledFights} isEventStarted={isEventStarted} isArchived={isArchived} />
     </div>
   );
 }

@@ -260,6 +260,7 @@ export type FightDto = {
   currentRound: number | null;
   currentClock: string | null;
   liveStatus: string | null;
+  cardTier?: string | null;
 };
 
 export type LeaderboardDto = {
