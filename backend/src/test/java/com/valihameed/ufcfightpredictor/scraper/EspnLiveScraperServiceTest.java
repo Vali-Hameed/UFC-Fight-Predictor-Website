@@ -9,10 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -32,19 +32,17 @@ class EspnLiveScraperServiceTest {
     private FightRepository fightRepository;
 
     @Mock
-    private RestTemplate restTemplate;
+    private RestTemplate espnRestTemplate;
 
     @Mock
     private com.valihameed.ufcfightpredictor.results.ResultProcessingService resultProcessingService;
-
-    @Mock
-    private ObjectMapper objectMapper;
 
     private EspnLiveScraperService espnLiveScraperService;
 
     @BeforeEach
     void setUp() {
-        espnLiveScraperService = new EspnLiveScraperService(eventRepository, fightRepository, restTemplate, new ObjectMapper(), resultProcessingService);
+        espnLiveScraperService = new EspnLiveScraperService(
+                eventRepository, fightRepository, espnRestTemplate, new ObjectMapper(), resultProcessingService);
     }
 
     @Test
@@ -53,7 +51,7 @@ class EspnLiveScraperServiceTest {
 
         espnLiveScraperService.pollLiveEvents();
 
-        verify(restTemplate, never()).getForObject(anyString(), eq(String.class));
+        verify(espnRestTemplate, never()).getForObject(anyString(), eq(String.class));
     }
 
     @Test
@@ -66,7 +64,7 @@ class EspnLiveScraperServiceTest {
 
         espnLiveScraperService.pollLiveEvents();
 
-        verify(restTemplate, never()).getForObject(anyString(), eq(String.class));
+        verify(espnRestTemplate, never()).getForObject(anyString(), eq(String.class));
     }
 
     @Test
@@ -74,13 +72,14 @@ class EspnLiveScraperServiceTest {
         Event liveEvent = new Event();
         liveEvent.setId(1L);
         liveEvent.setName("UFC 300");
-        liveEvent.setEventDate(OffsetDateTime.now().minusHours(1)); // Past
+        liveEvent.setEventDate(OffsetDateTime.now().minusHours(1)); // Past but within 10h window
 
         Fight fight = new Fight();
         fight.setId(10L);
         fight.setFighter1Name("Steve Garcia");
         fight.setFighter2Name("Diego Lopes");
         fight.setEventId(1L);
+        fight.setStatus("UPCOMING");
 
         when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(liveEvent));
         when(fightRepository.findByEventIdOrderByFightOrderAsc(1L)).thenReturn(List.of(fight));
@@ -112,7 +111,7 @@ class EspnLiveScraperServiceTest {
         }
         """;
 
-        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn(mockEspnJson);
+        when(espnRestTemplate.getForObject(anyString(), eq(String.class))).thenReturn(mockEspnJson);
 
         espnLiveScraperService.pollLiveEvents();
 
@@ -140,6 +139,7 @@ class EspnLiveScraperServiceTest {
         fight.setFighter1Name("Alex Pereira");
         fight.setFighter2Name("Jamahal Hill");
         fight.setEventId(1L);
+        fight.setStatus("UPCOMING");
 
         when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(liveEvent));
         when(fightRepository.findByEventIdOrderByFightOrderAsc(1L)).thenReturn(List.of(fight));
@@ -172,7 +172,7 @@ class EspnLiveScraperServiceTest {
         }
         """;
 
-        when(restTemplate.getForObject(anyString(), eq(String.class))).thenReturn(mockEspnJson);
+        when(espnRestTemplate.getForObject(anyString(), eq(String.class))).thenReturn(mockEspnJson);
 
         espnLiveScraperService.pollLiveEvents();
 
@@ -192,5 +192,114 @@ class EspnLiveScraperServiceTest {
         assertEquals(1, savedFight.getResultRound());
         assertEquals("0:00", savedFight.getResultTime());
         assertEquals("KO/TKO", savedFight.getResultMethod());
+    }
+
+    @Test
+    void pollLiveEvents_NullResponse_TriggersBackoff() {
+        Event liveEvent = new Event();
+        liveEvent.setId(1L);
+        liveEvent.setName("UFC 300");
+        liveEvent.setEventDate(OffsetDateTime.now().minusHours(1));
+
+        Fight fight = new Fight();
+        fight.setId(10L);
+        fight.setFighter1Name("Fighter A");
+        fight.setFighter2Name("Fighter B");
+        fight.setEventId(1L);
+        fight.setStatus("UPCOMING");
+
+        when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(liveEvent));
+        when(fightRepository.findByEventIdOrderByFightOrderAsc(1L)).thenReturn(List.of(fight));
+        when(espnRestTemplate.getForObject(anyString(), eq(String.class))).thenReturn(null);
+
+        espnLiveScraperService.pollLiveEvents();
+
+        // No fights should be saved since the response was null
+        verify(fightRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void pollLiveEvents_HtmlErrorResponse_TriggersBackoff() {
+        Event liveEvent = new Event();
+        liveEvent.setId(1L);
+        liveEvent.setName("UFC 300");
+        liveEvent.setEventDate(OffsetDateTime.now().minusHours(1));
+
+        Fight fight = new Fight();
+        fight.setId(10L);
+        fight.setFighter1Name("Fighter A");
+        fight.setFighter2Name("Fighter B");
+        fight.setEventId(1L);
+        fight.setStatus("UPCOMING");
+
+        when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(liveEvent));
+        when(fightRepository.findByEventIdOrderByFightOrderAsc(1L)).thenReturn(List.of(fight));
+        // Return an HTML error page (like Akamai's 403 response)
+        when(espnRestTemplate.getForObject(anyString(), eq(String.class)))
+                .thenReturn("<HTML><TITLE>Access Denied</TITLE></HTML>");
+
+        espnLiveScraperService.pollLiveEvents();
+
+        // No fights should be saved since the response was HTML, not JSON
+        verify(fightRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void pollLiveEvents_RestClientException_TriggersBackoff() {
+        Event liveEvent = new Event();
+        liveEvent.setId(1L);
+        liveEvent.setName("UFC 300");
+        liveEvent.setEventDate(OffsetDateTime.now().minusHours(1));
+
+        Fight fight = new Fight();
+        fight.setId(10L);
+        fight.setFighter1Name("Fighter A");
+        fight.setFighter2Name("Fighter B");
+        fight.setEventId(1L);
+        fight.setStatus("UPCOMING");
+
+        when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(liveEvent));
+        when(fightRepository.findByEventIdOrderByFightOrderAsc(1L)).thenReturn(List.of(fight));
+        when(espnRestTemplate.getForObject(anyString(), eq(String.class)))
+                .thenThrow(new RestClientException("403 Forbidden"));
+
+        espnLiveScraperService.pollLiveEvents();
+
+        verify(fightRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void pollLiveEvents_EventOutsideWindow_DoesNotPollEspn() {
+        // Event started 11 hours ago — outside the 10-hour window
+        Event oldEvent = new Event();
+        oldEvent.setId(1L);
+        oldEvent.setName("UFC 299");
+        oldEvent.setEventDate(OffsetDateTime.now().minusHours(11));
+
+        when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(oldEvent));
+
+        espnLiveScraperService.pollLiveEvents();
+
+        verify(espnRestTemplate, never()).getForObject(anyString(), eq(String.class));
+    }
+
+    @Test
+    void pollLiveEvents_AllFightsCompleted_DoesNotPollEspn() {
+        Event liveEvent = new Event();
+        liveEvent.setId(1L);
+        liveEvent.setName("UFC 300");
+        liveEvent.setEventDate(OffsetDateTime.now().minusHours(3));
+
+        Fight completedFight = new Fight();
+        completedFight.setId(10L);
+        completedFight.setStatus("COMPLETED");
+        completedFight.setEventId(1L);
+
+        when(eventRepository.findByStatus("UPCOMING")).thenReturn(List.of(liveEvent));
+        when(fightRepository.findByEventIdOrderByFightOrderAsc(1L)).thenReturn(List.of(completedFight));
+
+        espnLiveScraperService.pollLiveEvents();
+
+        verify(espnRestTemplate, never()).getForObject(anyString(), eq(String.class));
     }
 }
