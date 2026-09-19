@@ -26,9 +26,7 @@ public class AppConfig {
     public RestTemplate espnRestTemplate(RestTemplateBuilder builder) {
         ClientHttpRequestInterceptor headerInterceptor = (request, body, execution) -> {
             HttpHeaders headers = request.getHeaders();
-            headers.set("User-Agent",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-                    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+            headers.set("User-Agent", "curl/8.4.0");
             headers.set("Accept", "application/json");
             headers.set("Accept-Language", "en-US,en;q=0.9");
             return execution.execute(request, body);
