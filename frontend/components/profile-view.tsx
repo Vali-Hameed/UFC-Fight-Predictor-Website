@@ -29,7 +29,7 @@ const BADGE_DISPLAY: Record<
     color: "#FFD700",
     bgColor: "rgba(255, 215, 0, 0.08)",
     borderColor: "rgba(255, 215, 0, 0.3)",
-    description: "Finished 1st in season standings",
+    description: "Season Champion",
     category: "championship",
   },
   SEASON_SILVER: {
@@ -37,7 +37,7 @@ const BADGE_DISPLAY: Record<
     color: "#C0C0C0",
     bgColor: "rgba(192, 192, 192, 0.08)",
     borderColor: "rgba(192, 192, 192, 0.3)",
-    description: "Finished 2nd in season standings",
+    description: "Season 2nd Place",
     category: "championship",
   },
   SEASON_BRONZE: {
@@ -45,7 +45,7 @@ const BADGE_DISPLAY: Record<
     color: "#CD7F32",
     bgColor: "rgba(205, 127, 50, 0.08)",
     borderColor: "rgba(205, 127, 50, 0.3)",
-    description: "Finished 3rd in season standings",
+    description: "Season 3rd Place",
     category: "championship",
   },
   EVENT_WINNER: {
@@ -53,7 +53,7 @@ const BADGE_DISPLAY: Record<
     color: "#E53E3E",
     bgColor: "rgba(229, 62, 62, 0.08)",
     borderColor: "rgba(229, 62, 62, 0.3)",
-    description: "Highest scoring player in a UFC event",
+    description: "Event Winner",
     category: "event",
   },
   PERFECT_EVENT: {
@@ -61,7 +61,7 @@ const BADGE_DISPLAY: Record<
     color: "#00BFFF",
     bgColor: "rgba(0, 191, 255, 0.08)",
     borderColor: "rgba(0, 191, 255, 0.3)",
-    description: "100% correct prediction card on an event",
+    description: "Perfect Event Score",
     category: "event",
   },
   STREAK_10: {
@@ -69,7 +69,7 @@ const BADGE_DISPLAY: Record<
     color: "#FF6B35",
     bgColor: "rgba(255, 107, 53, 0.08)",
     borderColor: "rgba(255, 107, 53, 0.3)",
-    description: "10 consecutive correct fight picks",
+    description: "10+ Win Streak",
     category: "streak",
   },
   STREAK_25: {
@@ -77,18 +77,18 @@ const BADGE_DISPLAY: Record<
     color: "#FF4500",
     bgColor: "rgba(255, 69, 0, 0.08)",
     borderColor: "rgba(255, 69, 0, 0.3)",
-    description: "25 consecutive correct fight picks",
+    description: "25+ Win Streak",
     category: "streak",
   },
 };
 
-type GroupedBadge = {
-  badgeType: string;
+type DisplayBadge = {
+  key: string;
   badgeLabel: string;
+  badgeType: string;
   count: number;
   config: (typeof BADGE_DISPLAY)[string];
   latestAwardedAt?: string | null;
-  badges: BadgeDto[];
 };
 
 export function ProfileView({ initialProfile, username }: ProfileViewProps) {
@@ -118,14 +118,24 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
     }
   }, [user, username, token, initialProfile, isOwner]);
 
-  // Group badges by badgeType with multiplier counts
-  const groupedBadges = useMemo(() => {
+  // Badges sorted by most recent first, kept separate per event
+  const displayedBadges = useMemo(() => {
     const badges = profile?.badges ?? [];
-    return badges.reduce<GroupedBadge[]>((acc, badge) => {
-      const existing = acc.find((g) => g.badgeType === badge.badgeType);
+
+    // Sort badges with most recent first
+    const sorted = [...badges].sort((a, b) => {
+      const timeA = a.awardedAt ? new Date(a.awardedAt).getTime() : 0;
+      const timeB = b.awardedAt ? new Date(b.awardedAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    // Group only exact duplicate labels, so each distinct event (e.g. "UFC 300 Winner", "UFC Freedom 250 Winner")
+    // is kept as its own separate trophy card!
+    return sorted.reduce<DisplayBadge[]>((acc, badge) => {
+      const label = badge.badgeLabel || BADGE_DISPLAY[badge.badgeType]?.description || badge.badgeType;
+      const existing = acc.find((b) => b.badgeLabel === label);
       if (existing) {
         existing.count += 1;
-        existing.badges.push(badge);
         if (badge.awardedAt && (!existing.latestAwardedAt || new Date(badge.awardedAt) > new Date(existing.latestAwardedAt))) {
           existing.latestAwardedAt = badge.awardedAt;
         }
@@ -139,26 +149,26 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
           category: "event" as const,
         };
         acc.push({
+          key: `${badge.id ?? label}-${label}`,
+          badgeLabel: label,
           badgeType: badge.badgeType,
-          badgeLabel: badge.badgeLabel || config.description,
           count: 1,
           config,
           latestAwardedAt: badge.awardedAt,
-          badges: [badge],
         });
       }
       return acc;
     }, []);
   }, [profile?.badges]);
 
-  const filteredGroupedBadges = useMemo(() => {
-    return groupedBadges.filter((g) => {
+  const filteredBadges = useMemo(() => {
+    return displayedBadges.filter((g) => {
       if (badgeCategoryFilter === "all") return true;
       return g.config.category === badgeCategoryFilter;
     });
-  }, [groupedBadges, badgeCategoryFilter]);
+  }, [displayedBadges, badgeCategoryFilter]);
 
-  // Group predictions by event
+  // Group predictions by event, sorted with most recent first
   const eventEntries = useMemo(() => {
     const history = profile?.predictionHistory ?? [];
     const grouped = history.reduce((acc, pred) => {
@@ -168,10 +178,18 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
       return acc;
     }, {} as Record<number, NonNullable<ProfileDto["predictionHistory"]>>);
 
-    return Object.entries(grouped).map(([eventId, preds]) => {
+    const entries = Object.entries(grouped).map(([eventId, preds]) => {
       const eventName = preds[0]?.eventName || `Event #${eventId}`;
 
-      const completedPreds = preds.filter((p) => {
+      // Sort predictions within the event: newest submitted pick first
+      const sortedPreds = [...preds].sort((a, b) => {
+        const timeA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+        const timeB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+        if (timeB !== timeA) return timeB - timeA;
+        return (b.fightId ?? 0) - (a.fightId ?? 0);
+      });
+
+      const completedPreds = sortedPreds.filter((p) => {
         if (!p.resultWinner) return false;
         const isFightCancelledOrNC = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.resultWinner);
         const userPredictedCancelledOrNC = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.predictedWinner || "");
@@ -183,14 +201,29 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
       const correct = completedPreds.filter((p) => p.pointsAwarded && p.pointsAwarded > 0).length;
       const accuracyStr = totalCompleted > 0 ? `${Math.round((correct / totalCompleted) * 100)}%` : "N/A";
 
+      // Latest timestamp among predictions for this event
+      const latestTimestamp = sortedPreds.reduce<number>((latest, p) => {
+        const time = p.submittedAt ? new Date(p.submittedAt).getTime() : 0;
+        return time > latest ? time : latest;
+      }, 0);
+
       return {
         eventId,
         eventName,
-        preds,
+        preds: sortedPreds,
         totalCompleted,
         correct,
         accuracyStr,
+        latestTimestamp,
       };
+    });
+
+    // Sort events with most recent first (latest prediction submittedAt, then eventId descending)
+    return entries.sort((a, b) => {
+      if (b.latestTimestamp !== a.latestTimestamp) {
+        return b.latestTimestamp - a.latestTimestamp;
+      }
+      return Number(b.eventId) - Number(a.eventId);
     });
   }, [profile?.predictionHistory]);
 
@@ -555,7 +588,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
               <h4 className="text-lg font-medium text-white flex items-center gap-2">
                 <span>🏅</span> Trophy Showcase
                 <span className="text-sm font-normal text-white/50">
-                  ({filteredGroupedBadges.length} {filteredGroupedBadges.length === 1 ? "badge" : "badges"})
+                  ({filteredBadges.length} {filteredBadges.length === 1 ? "badge" : "badges"})
                 </span>
               </h4>
 
@@ -570,20 +603,20 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                   onChange={(e) => setBadgeCategoryFilter(e.target.value)}
                   className="rounded-xl border border-white/10 bg-bg/95 px-3 py-1.5 text-xs text-white outline-none focus:border-accent"
                 >
-                  <option value="all">All Trophies ({groupedBadges.length})</option>
-                  <option value="championship">Championships</option>
-                  <option value="event">Event Honors</option>
-                  <option value="streak">Win Streaks</option>
+                  <option value="all">All Trophies ({displayedBadges.length})</option>
+                  <option value="event">Event Wins ({displayedBadges.filter(b => b.config.category === "event").length})</option>
+                  <option value="championship">Championships ({displayedBadges.filter(b => b.config.category === "championship").length})</option>
+                  <option value="streak">Win Streaks ({displayedBadges.filter(b => b.config.category === "streak").length})</option>
                 </select>
               </div>
             </div>
 
-            {filteredGroupedBadges.length === 0 ? (
+            {filteredBadges.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
                 <span className="text-4xl">🏆</span>
                 <h4 className="mt-3 text-base font-semibold text-white">No Trophies in this Category</h4>
                 <p className="mt-1 text-sm text-white/50 max-w-md mx-auto">
-                  {groupedBadges.length === 0
+                  {displayedBadges.length === 0
                     ? "Trophies and badges are unlocked by winning fight predictions, achieving win streaks, and finishing at the top of season leaderboards."
                     : "No unlocked trophies match the selected filter."}
                 </p>
@@ -599,11 +632,11 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredGroupedBadges.map((group) => {
-                  const { config } = group;
+                {filteredBadges.map((badge) => {
+                  const { config } = badge;
                   return (
                     <div
-                      key={group.badgeType}
+                      key={badge.key}
                       className="group relative rounded-2xl border p-4 transition-all hover:scale-[1.02]"
                       style={{
                         borderColor: config.borderColor,
@@ -620,9 +653,9 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold truncate" style={{ color: config.color }}>
-                              {group.badgeLabel}
+                              {badge.badgeLabel}
                             </p>
-                            {group.count > 1 && (
+                            {badge.count > 1 && (
                               <span
                                 className="rounded-full px-2 py-0.5 text-xs font-bold"
                                 style={{
@@ -631,16 +664,18 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                   border: `1px solid ${config.color}50`,
                                 }}
                               >
-                                ×{group.count}
+                                ×{badge.count}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-white/50 mt-0.5">{config.description}</p>
-                          {group.latestAwardedAt && (
+                          {config.description !== badge.badgeLabel && (
+                            <p className="text-xs text-white/50 mt-0.5">{config.description}</p>
+                          )}
+                          {badge.latestAwardedAt && (
                             <p className="text-[10px] text-white/35 mt-1.5">
-                              {group.count > 1
-                                ? `Earned ${group.count} times • Latest ${new Date(group.latestAwardedAt).toLocaleDateString()}`
-                                : `Earned ${new Date(group.latestAwardedAt).toLocaleDateString()}`}
+                              {badge.count > 1
+                                ? `Earned ${badge.count} times • Latest ${new Date(badge.latestAwardedAt).toLocaleDateString()}`
+                                : `Earned ${new Date(badge.latestAwardedAt).toLocaleDateString()}`}
                             </p>
                           )}
                         </div>

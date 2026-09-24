@@ -207,7 +207,7 @@ describe("ProfileView", () => {
     expect(screen.getByText(/Trophy Showcase/i)).toBeInTheDocument();
   });
 
-  it("groups duplicate badges and displays multiplier counters", async () => {
+  it("groups duplicate badges with identical labels and displays multiplier counters", async () => {
     await act(async () => {
       render(<ProfileView initialProfile={publicProfile} username="john" />);
     });
@@ -218,12 +218,46 @@ describe("ProfileView", () => {
       fireEvent.click(trophyTabBtn);
     });
 
-    // 2x EVENT_WINNER should display multiplier "×2"
+    // 2x badges with identical label "Event Winner" should display multiplier "×2"
     expect(screen.getByText("×2")).toBeInTheDocument();
     expect(screen.getByText("Season Champion")).toBeInTheDocument();
   });
 
-  it("filters trophies by category dropdown", async () => {
+  it("displays separate trophy cards for distinct event wins", async () => {
+    const profileWithDifferentEvents: ProfileDto = {
+      ...publicProfile,
+      badges: [
+        {
+          id: 201,
+          badgeType: "EVENT_WINNER",
+          badgeLabel: "UFC Freedom 250 Winner",
+          awardedAt: "2026-04-10T00:00:00Z",
+        },
+        {
+          id: 202,
+          badgeType: "EVENT_WINNER",
+          badgeLabel: "UFC 300 Winner",
+          awardedAt: "2026-03-15T00:00:00Z",
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<ProfileView initialProfile={profileWithDifferentEvents} username="john" />);
+    });
+
+    const trophyTabBtn = screen.getByRole("button", { name: /Trophy Case/i });
+    await act(async () => {
+      fireEvent.click(trophyTabBtn);
+    });
+
+    // Each event winner should be distinct without multiplying together
+    expect(screen.getByText("UFC Freedom 250 Winner")).toBeInTheDocument();
+    expect(screen.getByText("UFC 300 Winner")).toBeInTheDocument();
+    expect(screen.queryByText("×2")).not.toBeInTheDocument();
+  });
+
+  it("filters trophies by category dropdown including win streaks", async () => {
     await act(async () => {
       render(<ProfileView initialProfile={publicProfile} username="john" />);
     });
@@ -235,6 +269,9 @@ describe("ProfileView", () => {
     });
 
     const categorySelect = screen.getByLabelText(/Category:/i);
+
+    // Verify Win Streaks is available in filter
+    expect(screen.getByRole("option", { name: /Win Streaks/i })).toBeInTheDocument();
 
     // Filter to Championships only
     await act(async () => {
@@ -284,20 +321,20 @@ describe("ProfileView", () => {
     expect(screen.queryByText("Fighter C vs Fighter D")).not.toBeInTheDocument();
   });
 
-  it("paginates prediction events when there are more than 5 events", async () => {
-    // Generate 7 events
+  it("paginates prediction events with most recent first when there are more than 5 events", async () => {
+    // Generate 7 events where Event 7 is the newest
     const manyEvents = Array.from({ length: 7 }, (_, i) => ({
       fightId: i + 1,
-      fighter1Name: `Fighter ${i}A`,
-      fighter2Name: `Fighter ${i}B`,
+      fighter1Name: `Fighter ${i + 1}A`,
+      fighter2Name: `Fighter ${i + 1}B`,
       eventId: i + 1,
       eventName: `UFC Event ${i + 1}`,
-      predictedWinner: `Fighter ${i}A`,
+      predictedWinner: `Fighter ${i + 1}A`,
       predictedMethod: "Decision",
       predictedRound: 0,
-      submittedAt: "2026-01-01T00:00:00Z",
+      submittedAt: `2026-0${i + 1}-01T00:00:00Z`,
       locked: true,
-      resultWinner: `Fighter ${i}A`,
+      resultWinner: `Fighter ${i + 1}A`,
       pointsAwarded: 10,
       isWinnerCorrect: true,
     }));
@@ -311,10 +348,11 @@ describe("ProfileView", () => {
       render(<ProfileView initialProfile={profileWithManyEvents} username="john" />);
     });
 
-    // Page 1 should show Event 1 through 5
-    expect(screen.getByText("UFC Event 1")).toBeInTheDocument();
-    expect(screen.getByText("UFC Event 5")).toBeInTheDocument();
-    expect(screen.queryByText("UFC Event 6")).not.toBeInTheDocument();
+    // Page 1 should show the 5 most recent events (Event 7 down to Event 3)
+    expect(screen.getByText("UFC Event 7")).toBeInTheDocument();
+    expect(screen.getByText("UFC Event 3")).toBeInTheDocument();
+    expect(screen.queryByText("UFC Event 2")).not.toBeInTheDocument();
+    expect(screen.queryByText("UFC Event 1")).not.toBeInTheDocument();
 
     // Next button should be enabled, Previous should be disabled
     const prevBtn = screen.getByRole("button", { name: /← Previous/i });
@@ -327,9 +365,10 @@ describe("ProfileView", () => {
       fireEvent.click(nextBtn);
     });
 
-    expect(screen.queryByText("UFC Event 1")).not.toBeInTheDocument();
-    expect(screen.getByText("UFC Event 6")).toBeInTheDocument();
-    expect(screen.getByText("UFC Event 7")).toBeInTheDocument();
+    // Page 2 should show older events (Event 2 and Event 1)
+    expect(screen.queryByText("UFC Event 7")).not.toBeInTheDocument();
+    expect(screen.getByText("UFC Event 2")).toBeInTheDocument();
+    expect(screen.getByText("UFC Event 1")).toBeInTheDocument();
     expect(prevBtn).toBeEnabled();
     expect(nextBtn).toBeDisabled();
   });
