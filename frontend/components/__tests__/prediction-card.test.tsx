@@ -31,6 +31,9 @@ const baseFight: FightDto = {
   resultMethod: null,
   resultRound: null,
   resultTime: null,
+  currentRound: null,
+  currentClock: null,
+  liveStatus: null,
 };
 
 const mlPrediction: MlPredictionDto = {

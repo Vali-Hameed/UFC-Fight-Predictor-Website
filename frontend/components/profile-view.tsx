@@ -547,6 +547,11 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                     <p className="text-sm font-medium text-white">
                                       {pred.fighter1Name} vs {pred.fighter2Name}
                                     </p>
+                                    {pred.isMainEvent && (
+                                      <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-gold border border-gold/30 uppercase tracking-wider">
+                                        Main Event
+                                      </span>
+                                    )}
                                     {pred.isWinnerCorrect ? (
                                       <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30">
                                         +{pred.pointsAwarded ?? 0} pts
