@@ -309,8 +309,8 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
   return (
     <div className="space-y-6">
       {/* Profile Hero Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-4 sm:p-5 backdrop-blur-sm">
+        <div className="flex items-center gap-3 min-w-0">
           <CosmeticUsername
             username={profile.username ?? username}
             cosmeticGlowColor={profile.cosmeticGlowColor}
@@ -324,7 +324,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
         </div>
 
         {/* Quick Trophy Pill */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
           {totalBadges > 0 ? (
             <button
               type="button"
@@ -382,11 +382,11 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 border-b border-white/10 pb-4 overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab("predictions")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+              className={`flex items-center gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition shrink-0 ${
                 activeTab === "predictions"
                   ? "bg-accent text-white shadow-lg shadow-accent/20"
                   : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -403,7 +403,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
             <button
               type="button"
               onClick={() => setActiveTab("trophies")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+              className={`flex items-center gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition shrink-0 ${
                 activeTab === "trophies"
                   ? "bg-accent text-white shadow-lg shadow-accent/20"
                   : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -421,7 +421,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
               <button
                 type="button"
                 onClick={() => setActiveTab("settings")}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                className={`flex items-center gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition shrink-0 ${
                   activeTab === "settings"
                     ? "bg-accent text-white shadow-lg shadow-accent/20"
                     : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -441,8 +441,8 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
             ) : (
               <div className="space-y-4">
                 {/* Search & Filter Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm">
-                  <div className="flex flex-1 items-center gap-2 min-w-[220px]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm">
+                  <div className="flex flex-1 items-center gap-2 min-w-0">
                     <span className="text-white/40 text-sm">🔍</span>
                     <input
                       type="text"
@@ -469,7 +469,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                     <label htmlFor="outcome-filter" className="text-xs text-white/50 whitespace-nowrap">
                       Outcome:
                     </label>
@@ -480,7 +480,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                         setPredictionOutcomeFilter(e.target.value as any);
                         setCurrentPage(1);
                       }}
-                      className="rounded-xl border border-white/10 bg-bg/95 px-3 py-1.5 text-xs text-white outline-none focus:border-accent"
+                      className="flex-1 sm:flex-initial rounded-xl border border-white/10 bg-bg/95 px-3 py-1.5 text-xs text-white outline-none focus:border-accent"
                     >
                       <option value="all">All Outcomes</option>
                       <option value="correct">Correct Picks Only</option>
@@ -513,27 +513,27 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                         key={event.eventId}
                         className="group rounded-2xl border border-white/10 bg-white/5 transition hover:border-white/20 [&_summary::-webkit-details-marker]:hidden"
                       >
-                        <summary className="flex cursor-pointer items-center justify-between p-4 outline-none hover:bg-white/[0.02]">
-                          <div>
-                            <p className="text-base font-semibold text-white">{event.eventName}</p>
-                            <p className="text-sm text-white/50">
+                        <summary className="flex cursor-pointer items-center justify-between p-3.5 sm:p-4 outline-none hover:bg-white/[0.02]">
+                          <div className="min-w-0 pr-2">
+                            <p className="text-base font-semibold text-white break-words">{event.eventName}</p>
+                            <p className="text-xs sm:text-sm text-white/50">
                               {event.preds.length} prediction{event.preds.length !== 1 ? "s" : ""} • {event.accuracyStr} accuracy
                               {predictionOutcomeFilter !== "all" && event.displayedPreds.length !== event.preds.length && (
                                 <span className="ml-1 text-gold">({event.displayedPreds.length} matching)</span>
                               )}
                             </p>
                           </div>
-                          <div className="text-white/50 transition-transform duration-200 group-open:rotate-180">
+                          <div className="text-white/50 transition-transform duration-200 group-open:rotate-180 shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="m6 9 6 6 6-6" />
                             </svg>
                           </div>
                         </summary>
-                        <div className="grid gap-3 p-4 pt-0">
+                        <div className="grid gap-3 p-3.5 sm:p-4 pt-0">
                           {event.displayedPreds.map((pred) => (
                             <div
                               key={pred.fightId}
-                              className={`rounded-xl border p-4 transition ${
+                              className={`rounded-xl border p-3.5 sm:p-4 transition ${
                                 pred.isWinnerCorrect
                                   ? "border-emerald-500/25 bg-emerald-500/[0.03]"
                                   : pred.resultWinner && !["Canceled", "No Contest", "Canceled/No Contest"].includes(pred.resultWinner)
@@ -541,23 +541,23 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                   : "border-white/5 bg-white/5"
                               }`}
                             >
-                              <div className="flex flex-wrap items-center justify-between gap-4">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium text-white">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                    <p className="text-sm font-medium text-white break-words">
                                       {pred.fighter1Name} vs {pred.fighter2Name}
                                     </p>
                                     {pred.isMainEvent && (
-                                      <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-gold border border-gold/30 uppercase tracking-wider">
+                                      <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-gold border border-gold/30 uppercase tracking-wider shrink-0">
                                         Main Event
                                       </span>
                                     )}
                                     {pred.isWinnerCorrect ? (
-                                      <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30">
+                                      <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30 shrink-0">
                                         +{pred.pointsAwarded ?? 0} pts
                                       </span>
                                     ) : pred.resultWinner && !["Canceled", "No Contest", "Canceled/No Contest"].includes(pred.resultWinner) ? (
-                                      <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-400 border border-red-500/30">
+                                      <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-400 border border-red-500/30 shrink-0">
                                         0 pts
                                       </span>
                                     ) : null}
@@ -570,11 +570,11 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                       : "Pending result"}
                                   </p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-left sm:text-right border-t border-white/5 pt-2 sm:border-0 sm:pt-0 shrink-0">
                                   <p className="text-sm font-semibold text-gold">
                                     {pred.predictedWinner} {pred.predictedMethod !== "Any Method" ? `by ${pred.predictedMethod}` : ""}
                                   </p>
-                                  <p className="mt-1 text-xs text-white/50">
+                                  <p className="mt-0.5 text-xs text-white/50">
                                     {pred.predictedRound ? `Round ${pred.predictedRound}` : "Any Round"} • {pred.submittedAt ? new Date(pred.submittedAt).toLocaleDateString() : ""}
                                   </p>
                                 </div>
@@ -589,25 +589,37 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                  <div className="flex items-center justify-between gap-2 sm:gap-4 border-t border-white/10 pt-4">
                     <button
                       type="button"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={safeCurrentPage === 1}
-                      className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="← Previous"
+                      className="inline-flex w-24 sm:w-28 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-white/20 bg-white/5 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      ← Previous
+                      <span>←</span>
+                      <span className="sm:hidden">Prev</span>
+                      <span className="hidden sm:inline">Previous</span>
                     </button>
-                    <span className="text-xs text-white/60">
-                      Page <strong className="text-white">{safeCurrentPage}</strong> of {totalPages} ({filteredEvents.length} events)
-                    </span>
+
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-xs font-medium text-white/80 whitespace-nowrap">
+                        Page <strong className="text-white font-bold">{safeCurrentPage}</strong> of {totalPages}
+                      </span>
+                      <span className="text-[10px] text-white/40 whitespace-nowrap">
+                        {filteredEvents.length} {filteredEvents.length === 1 ? "event" : "events"}
+                      </span>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={safeCurrentPage >= totalPages}
-                      className="rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Next →"
+                      className="inline-flex w-24 sm:w-28 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-white/20 bg-white/5 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      Next →
+                      <span>Next</span>
+                      <span>→</span>
                     </button>
                   </div>
                 )}
@@ -617,16 +629,17 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
 
           {/* Tab 2: Trophy Case */}
           <div className={activeTab === "trophies" ? "space-y-4" : "hidden"} data-tab="trophies">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h4 className="text-lg font-medium text-white flex items-center gap-2">
-                <span>🏅</span> Trophy Showcase
-                <span className="text-sm font-normal text-white/50">
-                  ({filteredBadges.length} {filteredBadges.length === 1 ? "badge" : "badges"})
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🏅</span>
+                <h4 className="text-sm sm:text-base font-semibold text-white">Trophy Showcase</h4>
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-white/60">
+                  {filteredBadges.length} {filteredBadges.length === 1 ? "badge" : "badges"}
                 </span>
-              </h4>
+              </div>
 
               {/* Category Dropdown Filter */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
                 <label htmlFor="badge-category-filter" className="text-xs text-white/50 whitespace-nowrap">
                   Category:
                 </label>
@@ -634,7 +647,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                   id="badge-category-filter"
                   value={badgeCategoryFilter}
                   onChange={(e) => setBadgeCategoryFilter(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-bg/95 px-3 py-1.5 text-xs text-white outline-none focus:border-accent"
+                  className="flex-1 sm:flex-initial rounded-xl border border-white/10 bg-bg/95 px-3 py-1.5 text-xs text-white outline-none focus:border-accent"
                 >
                   <option value="all">All Trophies ({displayedBadges.length})</option>
                   <option value="event">Event Wins ({displayedBadges.filter(b => b.config.category === "event").length})</option>
@@ -645,7 +658,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
             </div>
 
             {filteredBadges.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 text-center">
                 <span className="text-4xl">🏆</span>
                 <h4 className="mt-3 text-base font-semibold text-white">No Trophies in this Category</h4>
                 <p className="mt-1 text-sm text-white/50 max-w-md mx-auto">
@@ -670,27 +683,27 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                   return (
                     <div
                       key={badge.key}
-                      className="group relative rounded-2xl border p-4 transition-all hover:scale-[1.02]"
+                      className="group relative w-full max-w-full overflow-hidden rounded-2xl border p-3.5 sm:p-4 transition-all sm:hover:scale-[1.01]"
                       style={{
                         borderColor: config.borderColor,
                         backgroundColor: config.bgColor,
                       }}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
                         <span
-                          className="text-2xl"
+                          className="text-2xl shrink-0"
                           style={{ filter: `drop-shadow(0 0 8px ${config.color}60)` }}
                         >
                           {config.emoji}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold truncate" style={{ color: config.color }}>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <p className="text-sm font-semibold truncate min-w-0 flex-1" style={{ color: config.color }}>
                               {badge.badgeLabel}
                             </p>
                             {badge.count > 1 && (
                               <span
-                                className="rounded-full px-2 py-0.5 text-xs font-bold"
+                                className="rounded-full px-2 py-0.5 text-xs font-bold shrink-0"
                                 style={{
                                   backgroundColor: `${config.color}25`,
                                   color: config.color,
@@ -702,12 +715,12 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                             )}
                           </div>
                           {config.description !== badge.badgeLabel && (
-                            <p className="text-xs text-white/50 mt-0.5">{config.description}</p>
+                            <p className="text-xs text-white/50 mt-0.5 line-clamp-1">{config.description}</p>
                           )}
                           {badge.latestAwardedAt && (
-                            <p className="text-[10px] text-white/35 mt-1.5">
+                            <p className="text-[10px] text-white/35 mt-1.5 truncate">
                               {badge.count > 1
-                                ? `Earned ${badge.count} times • Latest ${new Date(badge.latestAwardedAt).toLocaleDateString()}`
+                                ? `Earned ${badge.count}× • Latest ${new Date(badge.latestAwardedAt).toLocaleDateString()}`
                                 : `Earned ${new Date(badge.latestAwardedAt).toLocaleDateString()}`}
                             </p>
                           )}
