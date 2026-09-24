@@ -242,9 +242,13 @@ public class userController {
 	            dto.setResultWinner(fight.getResultWinner());
 	            dto.setResultMethod(fight.getResultMethod());
 	            dto.setResultRound(fight.getResultRound());
+	            dto.setIsMainEvent(fight.getIsMainEvent());
+	            dto.setFightOrder(fight.getFightOrder());
 	            if (fight.getEventId() != null) {
 	                eventRepository.findById(fight.getEventId()).ifPresent(event -> {
 	                    dto.setEventName(event.getName());
+	                    dto.setEventDate(event.getEventDate());
+	                    dto.setEventStatus(event.getStatus());
 	                });
 	            }
 	        });
@@ -319,6 +323,10 @@ public class userController {
 	    private Boolean locked;
 	    private Integer pointsAwarded;
 	    private Boolean isWinnerCorrect;
+	    private OffsetDateTime eventDate;
+	    private String eventStatus;
+	    private Boolean isMainEvent;
+	    private Integer fightOrder;
 	}
 
 	@Data

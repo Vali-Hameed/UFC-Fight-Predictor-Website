@@ -168,7 +168,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
     });
   }, [displayedBadges, badgeCategoryFilter]);
 
-  // Group predictions by event, sorted with most recent first
+  // Group predictions by event, sorted with upcoming (furthest away) first, then past (most recent to oldest)
   const eventEntries = useMemo(() => {
     const history = profile?.predictionHistory ?? [];
     const grouped = history.reduce((acc, pred) => {
@@ -178,15 +178,25 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
       return acc;
     }, {} as Record<number, NonNullable<ProfileDto["predictionHistory"]>>);
 
+    const now = Date.now();
+
     const entries = Object.entries(grouped).map(([eventId, preds]) => {
       const eventName = preds[0]?.eventName || `Event #${eventId}`;
+      const eventDate = preds.find((p) => p.eventDate)?.eventDate || null;
+      const eventStatus = preds.find((p) => p.eventStatus)?.eventStatus || null;
 
-      // Sort predictions within the event: newest submitted pick first
+      // Sort fights on card: Main Event at top, then fightOrder ascending
       const sortedPreds = [...preds].sort((a, b) => {
-        const timeA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
-        const timeB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
-        if (timeB !== timeA) return timeB - timeA;
-        return (b.fightId ?? 0) - (a.fightId ?? 0);
+        if (a.isMainEvent && !b.isMainEvent) return -1;
+        if (!a.isMainEvent && b.isMainEvent) return 1;
+
+        if (a.fightOrder != null && b.fightOrder != null) {
+          return a.fightOrder - b.fightOrder;
+        }
+        if (a.fightOrder != null) return -1;
+        if (b.fightOrder != null) return 1;
+
+        return (a.fightId ?? 0) - (b.fightId ?? 0);
       });
 
       const completedPreds = sortedPreds.filter((p) => {
@@ -201,27 +211,45 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
       const correct = completedPreds.filter((p) => p.pointsAwarded && p.pointsAwarded > 0).length;
       const accuracyStr = totalCompleted > 0 ? `${Math.round((correct / totalCompleted) * 100)}%` : "N/A";
 
-      // Latest timestamp among predictions for this event
-      const latestTimestamp = sortedPreds.reduce<number>((latest, p) => {
-        const time = p.submittedAt ? new Date(p.submittedAt).getTime() : 0;
-        return time > latest ? time : latest;
-      }, 0);
+      // Determine whether this event is upcoming or past
+      let isUpcoming = false;
+      if (eventStatus === "UPCOMING" || eventStatus === "LIVE") {
+        isUpcoming = true;
+      } else if (eventStatus === "COMPLETED" || eventStatus === "ARCHIVED") {
+        isUpcoming = false;
+      } else if (eventDate) {
+        isUpcoming = new Date(eventDate).getTime() >= now - 24 * 60 * 60 * 1000;
+      } else {
+        // Fallback: If no fight in this event has a resultWinner yet, treat as upcoming
+        isUpcoming = !preds.some((p) => !!p.resultWinner);
+      }
+
+      const eventTimestamp = eventDate ? new Date(eventDate).getTime() : 0;
 
       return {
         eventId,
         eventName,
+        eventDate,
+        eventStatus,
+        isUpcoming,
+        eventTimestamp,
         preds: sortedPreds,
         totalCompleted,
         correct,
         accuracyStr,
-        latestTimestamp,
       };
     });
 
-    // Sort events with most recent first (latest prediction submittedAt, then eventId descending)
+    // Sort order:
+    // 1. Upcoming events first, ordered from furthest away to soonest (descending by date / eventId)
+    // 2. Past events second, ordered from most recent past to oldest (descending by date / eventId)
     return entries.sort((a, b) => {
-      if (b.latestTimestamp !== a.latestTimestamp) {
-        return b.latestTimestamp - a.latestTimestamp;
+      if (a.isUpcoming && !b.isUpcoming) return -1;
+      if (!a.isUpcoming && b.isUpcoming) return 1;
+
+      // Both upcoming OR both past:
+      if (a.eventTimestamp !== b.eventTimestamp && a.eventTimestamp > 0 && b.eventTimestamp > 0) {
+        return b.eventTimestamp - a.eventTimestamp;
       }
       return Number(b.eventId) - Number(a.eventId);
     });

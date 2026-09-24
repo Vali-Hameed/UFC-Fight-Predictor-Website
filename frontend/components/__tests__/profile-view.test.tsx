@@ -372,4 +372,94 @@ describe("ProfileView", () => {
     expect(prevBtn).toBeEnabled();
     expect(nextBtn).toBeDisabled();
   });
+
+  it("orders upcoming events furthest away first, then past events most recent first", async () => {
+    const profileWithMixedEvents: ProfileDto = {
+      ...publicProfile,
+      predictionHistory: [
+        {
+          fightId: 1,
+          fighter1Name: "Past A",
+          fighter2Name: "Past B",
+          eventId: 101,
+          eventName: "UFC Past Event",
+          eventStatus: "COMPLETED",
+          eventDate: "2025-01-01T00:00:00Z",
+          resultWinner: "Past A",
+          pointsAwarded: 10,
+          locked: true,
+        },
+        {
+          fightId: 2,
+          fighter1Name: "Soon A",
+          fighter2Name: "Soon B",
+          eventId: 102,
+          eventName: "UFC Soon Event",
+          eventStatus: "UPCOMING",
+          eventDate: "2027-05-01T00:00:00Z",
+          resultWinner: null,
+          locked: false,
+        },
+        {
+          fightId: 3,
+          fighter1Name: "Far A",
+          fighter2Name: "Far B",
+          eventId: 103,
+          eventName: "UFC Furthest Away Event",
+          eventStatus: "UPCOMING",
+          eventDate: "2027-09-01T00:00:00Z",
+          resultWinner: null,
+          locked: false,
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<ProfileView initialProfile={profileWithMixedEvents} username="john" />);
+    });
+
+    const eventSummaries = screen.getAllByText(/UFC (Furthest Away|Soon|Past) Event/);
+    expect(eventSummaries).toHaveLength(3);
+    expect(eventSummaries[0]).toHaveTextContent("UFC Furthest Away Event");
+    expect(eventSummaries[1]).toHaveTextContent("UFC Soon Event");
+    expect(eventSummaries[2]).toHaveTextContent("UFC Past Event");
+  });
+
+  it("places main event at the top of the fight card within an event", async () => {
+    const profileWithMainEvent: ProfileDto = {
+      ...publicProfile,
+      predictionHistory: [
+        {
+          fightId: 10,
+          fighter1Name: "Prelim 1",
+          fighter2Name: "Prelim 2",
+          eventId: 300,
+          eventName: "UFC 300",
+          isMainEvent: false,
+          fightOrder: 5,
+          locked: true,
+        },
+        {
+          fightId: 20,
+          fighter1Name: "Champ 1",
+          fighter2Name: "Champ 2",
+          eventId: 300,
+          eventName: "UFC 300",
+          isMainEvent: true,
+          fightOrder: 1,
+          locked: true,
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<ProfileView initialProfile={profileWithMainEvent} username="john" />);
+    });
+
+    const fightRows = screen.getAllByText(/vs (Prelim 2|Champ 2)/);
+    expect(fightRows).toHaveLength(2);
+    // Main event must appear first
+    expect(fightRows[0]).toHaveTextContent("Champ 1 vs Champ 2");
+    expect(fightRows[1]).toHaveTextContent("Prelim 1 vs Prelim 2");
+  });
 });
