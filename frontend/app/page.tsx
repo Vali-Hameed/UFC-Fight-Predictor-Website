@@ -109,27 +109,44 @@ export default async function HomePage() {
           description="Climb the global ranks by making accurate predictions and building your winning streak."
         >
           <div className="space-y-3">
-            {leaderboard.map((row, index) => (
-              <div key={row.userId} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
-                <div>
-                  <div className="font-semibold text-white flex items-center gap-2">
-                    <span>#{index + 1}</span>
-                    <CosmeticUsername 
-                      username={row.username ?? `User #${row.userId}`}
-                      cosmeticGlowColor={row.cosmeticGlowColor}
-                      cosmeticTitle={row.cosmeticTitle}
-                      size="sm"
-                      showTitle={index < 3}
-                    />
-                  </div>
-                  <div className="text-white/50">{row.correctPredictions ?? 0} correct • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
-                </div>
-                <div className="text-right text-white/75">
-                  <div className="font-semibold text-white">{row.totalPoints ?? 0} pts</div>
-                  <div className="text-white/50">{row.currentStreak ?? 0} streak</div>
-                </div>
+            {leaderboard.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/60">
+                No ranked predictors yet.
               </div>
-            ))}
+            ) : (
+              leaderboard.slice(0, 10).map((row, index) => (
+                <div key={row.userId} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+                  <div>
+                    <div className="font-semibold text-white flex items-center gap-2">
+                      <span>#{index + 1}</span>
+                      <CosmeticUsername 
+                        username={row.username ?? `User #${row.userId}`}
+                        cosmeticGlowColor={row.cosmeticGlowColor}
+                        cosmeticTitle={row.cosmeticTitle}
+                        size="sm"
+                        showTitle={index < 3}
+                      />
+                    </div>
+                    <div className="text-white/50">{row.correctPredictions ?? 0} correct • {Math.round(((row.correctPredictions ?? 0) / Math.max(row.totalPredictions ?? 1, 1)) * 100)}% win rate</div>
+                  </div>
+                  <div className="text-right text-white/75">
+                    <div className="font-semibold text-white">{row.totalPoints ?? 0} pts</div>
+                    <div className="text-white/50">{row.currentStreak ?? 0} streak</div>
+                  </div>
+                </div>
+              ))
+            )}
+            {leaderboard.length > 10 && (
+              <div className="pt-2 text-center">
+                <Link
+                  href="/leaderboard"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-gold transition hover:text-gold/80"
+                >
+                  <span>View full leaderboard ({leaderboard.length} predictors)</span>
+                  <span>→</span>
+                </Link>
+              </div>
+            )}
           </div>
         </SectionCard>
       </div>
