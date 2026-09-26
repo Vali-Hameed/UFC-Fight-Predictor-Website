@@ -27,6 +27,7 @@ public class ResultProcessingService {
     private final EventLeaderboardRepository eventLeaderboardRepository;
     private final SeasonLeaderboardRepository seasonLeaderboardRepository;
     private final RewardService rewardService;
+    private final com.valihameed.ufcfightpredictor.github.GitHubActionsTriggerService gitHubActionsTriggerService;
 
     @Transactional
     public void processFightResult(Long fightId) {
@@ -214,6 +215,12 @@ public class ResultProcessingService {
                         e.setStatus("COMPLETED");
                         eventRepository.save(e);
                         log.info("Marked event {} as COMPLETED", e.getId());
+
+                        try {
+                            gitHubActionsTriggerService.triggerMlRetraining(e.getId(), e.getName());
+                        } catch (Exception ex) {
+                            log.warn("Failed to trigger ML retraining workflow for event {}: {}", e.getId(), ex.getMessage());
+                        }
                     });
                 } catch (Exception e) {
                     log.warn("Failed to auto-distribute event rewards for event {}: {}", fight.getEventId(), e.getMessage());

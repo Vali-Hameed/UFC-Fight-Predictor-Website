@@ -33,6 +33,7 @@ public class ResultProcessingServiceTest {
     @Mock private EventLeaderboardRepository eventLeaderboardRepository;
     @Mock private SeasonLeaderboardRepository seasonLeaderboardRepository;
     @Mock private com.valihameed.ufcfightpredictor.rewards.RewardService rewardService;
+    @Mock private com.valihameed.ufcfightpredictor.github.GitHubActionsTriggerService gitHubActionsTriggerService;
 
     private ResultProcessingService underTest;
 
@@ -48,7 +49,8 @@ public class ResultProcessingServiceTest {
                 eventRepository,
                 eventLeaderboardRepository,
                 seasonLeaderboardRepository,
-                rewardService
+                rewardService,
+                gitHubActionsTriggerService
         );
     }
 

@@ -30,6 +30,8 @@ services:
       MAIL_PORT: ${MAIL_PORT:-1025}
       RESEND_API_KEY: ${RESEND_API_KEY:-re_default1234567890}
       RESEND_FROM_ADDRESS: ${RESEND_FROM_ADDRESS:-onboarding@resend.dev}
+      GITHUB_ACTIONS_ENABLED: ${GITHUB_ACTIONS_ENABLED:-true}
+      GITHUB_ACTIONS_TOKEN: ${GITHUB_ACTIONS_TOKEN:-}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     volumes:

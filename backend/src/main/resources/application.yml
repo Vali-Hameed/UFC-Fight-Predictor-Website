@@ -62,6 +62,14 @@ scraper:
 frontend:
   url: ${FRONTEND_URL:http://localhost:3000}
 
+github:
+  actions:
+    enabled: ${GITHUB_ACTIONS_ENABLED:true}
+    token: ${GITHUB_ACTIONS_TOKEN:}
+    owner: ${GITHUB_REPOS_OWNER:Vali-Hameed}
+    repo: ${GITHUB_ML_REPO:UFC-Fight-Predictor}
+    workflow-id: ${GITHUB_ML_WORKFLOW_ID:retrain-and-deploy.yml}
+
 rate-limiting:
   global:
     capacity: 100
