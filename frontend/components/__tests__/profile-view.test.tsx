@@ -484,4 +484,65 @@ describe("ProfileView", () => {
     expect(fightRows[0]).toHaveTextContent("Champ 1 vs Champ 2");
     expect(fightRows[1]).toHaveTextContent("Prelim 1 vs Prelim 2");
   });
+
+  it("displays Result: Canceled with Canceled badge and excludes it from Pending filter", async () => {
+    const profileWithCancelledFight: ProfileDto = {
+      ...publicProfile,
+      predictionHistory: [
+        {
+          fightId: 101,
+          fighter1Name: "Conor McGregor",
+          fighter2Name: "Michael Chandler",
+          eventId: 303,
+          eventName: "UFC 303",
+          predictedWinner: "Conor McGregor",
+          predictedMethod: "KO/TKO",
+          predictedRound: 2,
+          resultWinner: "Canceled",
+          fightStatus: "CANCELED",
+          submittedAt: "2026-06-01T00:00:00Z",
+          locked: true,
+          pointsAwarded: 0,
+          isWinnerCorrect: false,
+        },
+        {
+          fightId: 102,
+          fighter1Name: "Alex Pereira",
+          fighter2Name: "Jiri Prochazka",
+          eventId: 303,
+          eventName: "UFC 303",
+          predictedWinner: "Alex Pereira",
+          predictedMethod: "KO/TKO",
+          predictedRound: 2,
+          resultWinner: null,
+          fightStatus: "UPCOMING",
+          submittedAt: "2026-06-01T00:00:00Z",
+          locked: true,
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<ProfileView initialProfile={profileWithCancelledFight} username="john" />);
+    });
+
+    // Verify Result: Canceled is rendered
+    expect(screen.getByText("Result: Canceled")).toBeInTheDocument();
+    // Verify Canceled badge is rendered
+    expect(screen.getByText("Canceled")).toBeInTheDocument();
+    // Verify Pending result is rendered for the upcoming fight
+    expect(screen.getByText("Pending result")).toBeInTheDocument();
+
+    // Now filter by pending
+    const outcomeFilter = screen.getByLabelText(/Outcome:/i);
+    await act(async () => {
+      fireEvent.change(outcomeFilter, { target: { value: "pending" } });
+    });
+
+    // The upcoming fight should be visible
+    expect(screen.getByText("Alex Pereira vs Jiri Prochazka")).toBeInTheDocument();
+    // The cancelled fight should be excluded from pending
+    expect(screen.queryByText("Conor McGregor vs Michael Chandler")).not.toBeInTheDocument();
+  });
 });
+

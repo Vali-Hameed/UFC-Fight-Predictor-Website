@@ -360,6 +360,7 @@ export type PredictionHistoryItemDto = {
   eventName: string | null;
   eventDate?: string | null;
   eventStatus?: string | null;
+  fightStatus?: string | null;
   isMainEvent?: boolean | null;
   fightOrder?: number | null;
   predictedWinner: string | null;

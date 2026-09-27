@@ -91,6 +91,20 @@ type DisplayBadge = {
   latestAwardedAt?: string | null;
 };
 
+function isFightCancelled(p: { fightStatus?: string | null; resultWinner?: string | null }): boolean {
+  return (
+    p.fightStatus === "CANCELED" ||
+    ["Canceled", "Canceled/No Contest"].includes(p.resultWinner || "")
+  );
+}
+
+function isFightCancelledOrNC(p: { fightStatus?: string | null; resultWinner?: string | null }): boolean {
+  return (
+    isFightCancelled(p) ||
+    p.resultWinner === "No Contest"
+  );
+}
+
 export function ProfileView({ initialProfile, username }: ProfileViewProps) {
   const { user, token } = useAuth();
   const [profile, setProfile] = useState<ProfileDto | null>(initialProfile);
@@ -200,10 +214,10 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
       });
 
       const completedPreds = sortedPreds.filter((p) => {
-        if (!p.resultWinner) return false;
-        const isFightCancelledOrNC = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.resultWinner);
+        if (!p.resultWinner && p.fightStatus !== "CANCELED") return false;
+        const isCancelledOrNC = isFightCancelledOrNC(p);
         const userPredictedCancelledOrNC = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.predictedWinner || "");
-        if (isFightCancelledOrNC && !userPredictedCancelledOrNC) return false;
+        if (isCancelledOrNC && !userPredictedCancelledOrNC) return false;
         return true;
       });
 
@@ -220,8 +234,8 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
       } else if (eventDate) {
         isUpcoming = new Date(eventDate).getTime() >= now - 24 * 60 * 60 * 1000;
       } else {
-        // Fallback: If no fight in this event has a resultWinner yet, treat as upcoming
-        isUpcoming = !preds.some((p) => !!p.resultWinner);
+        // Fallback: If no fight in this event has a resultWinner or is canceled yet, treat as upcoming
+        isUpcoming = !preds.some((p) => !!p.resultWinner || p.fightStatus === "CANCELED");
       }
 
       const eventTimestamp = eventDate ? new Date(eventDate).getTime() : 0;
@@ -266,13 +280,15 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
 
         const matchingPreds = event.preds.filter((p) => {
           if (predictionOutcomeFilter === "all") return true;
-          if (predictionOutcomeFilter === "pending") return !p.resultWinner;
+          if (predictionOutcomeFilter === "pending") {
+            return !p.resultWinner && p.fightStatus !== "CANCELED";
+          }
           if (predictionOutcomeFilter === "correct") {
             return (p.pointsAwarded && p.pointsAwarded > 0) || p.isWinnerCorrect === true;
           }
           if (predictionOutcomeFilter === "incorrect") {
-            const isCancelled = ["Canceled", "No Contest", "Canceled/No Contest"].includes(p.resultWinner || "");
-            return !!p.resultWinner && !isCancelled && !p.isWinnerCorrect && (!p.pointsAwarded || p.pointsAwarded === 0);
+            const isCancelled = isFightCancelledOrNC(p);
+            return (!!p.resultWinner || p.fightStatus === "CANCELED") && !isCancelled && !p.isWinnerCorrect && (!p.pointsAwarded || p.pointsAwarded === 0);
           }
           return true;
         });
@@ -536,6 +552,8 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                               className={`rounded-xl border p-3.5 sm:p-4 transition ${
                                 pred.isWinnerCorrect
                                   ? "border-emerald-500/25 bg-emerald-500/[0.03]"
+                                  : isFightCancelled(pred)
+                                  ? "border-white/10 bg-white/[0.02]"
                                   : pred.resultWinner && !["Canceled", "No Contest", "Canceled/No Contest"].includes(pred.resultWinner)
                                   ? "border-red-500/20 bg-red-500/[0.03]"
                                   : "border-white/5 bg-white/5"
@@ -551,6 +569,10 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                       <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/30 shrink-0">
                                         +{pred.pointsAwarded ?? 0} pts
                                       </span>
+                                    ) : isFightCancelled(pred) ? (
+                                      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/60 border border-white/20 shrink-0">
+                                        Canceled
+                                      </span>
                                     ) : pred.resultWinner && !["Canceled", "No Contest", "Canceled/No Contest"].includes(pred.resultWinner) ? (
                                       <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-400 border border-red-500/30 shrink-0">
                                         0 pts
@@ -558,8 +580,10 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                     ) : null}
                                   </div>
                                   <p className="mt-1 text-xs text-white/50">
-                                    {pred.resultWinner
-                                      ? ["Canceled", "Draw", "No Contest", "Canceled/No Contest"].includes(pred.resultWinner)
+                                    {isFightCancelled(pred)
+                                      ? "Result: Canceled"
+                                      : pred.resultWinner
+                                      ? ["Draw", "No Contest"].includes(pred.resultWinner)
                                         ? `Result: ${pred.resultWinner}`
                                         : `Result: ${pred.resultWinner} by ${pred.resultMethod || "Decision"}${pred.resultRound ? ` (Round ${pred.resultRound})` : ""}`
                                       : "Pending result"}
