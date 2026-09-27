@@ -29,7 +29,7 @@ public class LeaderboardController {
 
     @GetMapping
     public ResponseEntity<List<LeaderboardResponseDto>> global(@RequestParam(defaultValue = "0") int page) {
-        var pageReq = PageRequest.of(page, 25);
+        var pageReq = PageRequest.of(page, 100);
         Page<Leaderboard> p = leaderboardRepository.findPublicLeaderboard(pageReq);
         
         List<LeaderboardResponseDto> dtos = p.getContent().stream().map(lb -> {
@@ -59,7 +59,7 @@ public class LeaderboardController {
     public ResponseEntity<List<LeaderboardResponseDto>> byEvent(
             @PathVariable Long eventId) {
         
-        var topEntries = eventLeaderboardRepository.findPublicByEventId(eventId, PageRequest.of(0, 50));
+        var topEntries = eventLeaderboardRepository.findPublicByEventId(eventId, PageRequest.of(0, 100));
         List<LeaderboardResponseDto> dtos = topEntries.getContent().stream().map(elb -> {
             LeaderboardResponseDto dto = new LeaderboardResponseDto();
             dto.setUserId(elb.getUserId());
@@ -80,7 +80,7 @@ public class LeaderboardController {
     public ResponseEntity<List<LeaderboardResponseDto>> bySeason(
             @PathVariable Long seasonId,
             @RequestParam(defaultValue = "0") int page) {
-        var pageReq = PageRequest.of(page, 25);
+        var pageReq = PageRequest.of(page, 100);
         Page<SeasonLeaderboard> p = seasonLeaderboardRepository.findPublicBySeasonId(seasonId, pageReq);
 
         List<LeaderboardResponseDto> dtos = p.getContent().stream().map(slb -> {

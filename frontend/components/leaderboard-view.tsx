@@ -21,6 +21,8 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
   const [mode, setMode] = useState<FilterMode>("all-time");
   const [leaderboard, setLeaderboard] = useState<LeaderboardDto[]>(initialLeaderboard);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const USERS_PER_PAGE = 10;
   const [selectedSeason, setSelectedSeason] = useState<SeasonFilterDto | null>(
     initialFilters?.seasons?.find((s) => s.active) ?? null
   );
@@ -28,6 +30,13 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
     initialFilters?.recentEvents?.[0] ?? null
   );
   const filters = initialFilters;
+
+  const totalPages = Math.max(1, Math.ceil(leaderboard.length / USERS_PER_PAGE));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const paginatedUsers = leaderboard.slice(
+    (safeCurrentPage - 1) * USERS_PER_PAGE,
+    safeCurrentPage * USERS_PER_PAGE
+  );
 
   const fetchLeaderboard = async (newMode: FilterMode, seasonId?: number, eventId?: number) => {
     setLoading(true);
@@ -55,6 +64,7 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
 
   const handleModeChange = (newMode: FilterMode) => {
     setMode(newMode);
+    setCurrentPage(1);
     if (newMode === "all-time") {
       setLeaderboard(initialLeaderboard);
     } else if (newMode === "season" && selectedSeason) {
@@ -67,12 +77,14 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
   const handleSeasonChange = (seasonId: number) => {
     const season = filters?.seasons.find((s) => s.id === seasonId) ?? null;
     setSelectedSeason(season);
+    setCurrentPage(1);
     if (season) fetchLeaderboard("season", season.id);
   };
 
   const handleEventChange = (eventId: number) => {
     const event = filters?.recentEvents.find((e) => e.id === eventId) ?? null;
     setSelectedEvent(event);
+    setCurrentPage(1);
     if (event) fetchLeaderboard("event", undefined, event.id);
   };
 
@@ -156,8 +168,9 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
         </div>
       ) : (
         <div className="space-y-3">
-          {leaderboard.map((row, index) => {
-            const isTop3 = index < 3;
+          {paginatedUsers.map((row, index) => {
+            const rankNumber = (safeCurrentPage - 1) * USERS_PER_PAGE + index + 1;
+            const isTop3 = safeCurrentPage === 1 && index < 3;
             const rankColors = ["text-gold", "text-silver", "text-bronze"];
             const rankBorders = [
               "border-gold/30 bg-gold/5",
@@ -179,7 +192,7 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
                     isTop3 ? rankColors[index] : "text-white/50"
                   }`}
                 >
-                  #{index + 1}
+                  #{rankNumber}
                 </div>
                 <div>
                   <CosmeticUsername
@@ -216,6 +229,43 @@ export function LeaderboardView({ initialLeaderboard, initialFilters }: Leaderbo
               {mode === "all-time"
                 ? "Leaderboard has not been populated yet."
                 : "No ranking data for this selection yet."}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between gap-2 sm:gap-4 border-t border-white/10 pt-4">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={safeCurrentPage === 1}
+                aria-label="← Previous"
+                className="inline-flex w-24 sm:w-28 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-white/20 bg-white/5 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span>←</span>
+                <span className="sm:hidden">Prev</span>
+                <span className="hidden sm:inline">Previous</span>
+              </button>
+
+              <div className="flex flex-col items-center justify-center text-center px-1">
+                <span className="text-xs font-medium text-white/80 whitespace-nowrap">
+                  Page <strong className="text-white font-bold">{safeCurrentPage}</strong> of {totalPages}
+                </span>
+                <span className="text-[10px] text-white/40 whitespace-nowrap">
+                  {leaderboard.length} {leaderboard.length === 1 ? "predictor" : "predictors"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safeCurrentPage >= totalPages}
+                aria-label="Next →"
+                className="inline-flex w-24 sm:w-28 items-center justify-center gap-1 sm:gap-1.5 rounded-xl border border-white/20 bg-white/5 py-2 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <span>Next</span>
+                <span>→</span>
+              </button>
             </div>
           )}
         </div>
