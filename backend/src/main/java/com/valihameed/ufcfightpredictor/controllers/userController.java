@@ -239,7 +239,11 @@ public class userController {
 	            dto.setFighter1Name(fight.getFighter1Name());
 	            dto.setFighter2Name(fight.getFighter2Name());
 	            dto.setEventId(fight.getEventId());
+	            dto.setFightStatus(fight.getStatus());
 	            dto.setResultWinner(fight.getResultWinner());
+	            if ("CANCELED".equalsIgnoreCase(fight.getStatus()) && (dto.getResultWinner() == null || dto.getResultWinner().isBlank())) {
+	                dto.setResultWinner("Canceled");
+	            }
 	            dto.setResultMethod(fight.getResultMethod());
 	            dto.setResultRound(fight.getResultRound());
 	            dto.setIsMainEvent(fight.getIsMainEvent());
@@ -325,6 +329,7 @@ public class userController {
 	    private Boolean isWinnerCorrect;
 	    private OffsetDateTime eventDate;
 	    private String eventStatus;
+	    private String fightStatus;
 	    private Boolean isMainEvent;
 	    private Integer fightOrder;
 	}

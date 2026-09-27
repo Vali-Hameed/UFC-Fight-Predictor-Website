@@ -205,6 +205,8 @@ public class ScraperController {
             for (Fight dbFight : existingFightsForEvent) {
                 if (!processedFightIds.contains(dbFight.getId()) && !"CANCELED".equals(dbFight.getStatus()) && !"COMPLETED".equals(dbFight.getStatus())) {
                     dbFight.setStatus("CANCELED");
+                    dbFight.setResultWinner("Canceled");
+                    dbFight.setResultMethod("Canceled");
                     fightRepository.save(dbFight);
                 }
             }
