@@ -47,6 +47,39 @@ class ScraperUtilsTest {
     }
 
     @Test
+    void isMatch_patronymicAndGenerationalSuffixes() {
+        // Kyrgyz patronymic "Uulu"
+        assertTrue(ScraperUtils.isMatch("Ilimbek Akylbek", "Ilimbek Akylbek Uulu"));
+        assertTrue(ScraperUtils.isMatch("Ilimbek Akylbek Uulu", "Ilimbek Akylbek"));
+        assertTrue(ScraperUtils.isMatch("Myktybek Orolbai", "Myktybek Orolbai Uulu"));
+
+        // Generational suffixes "Jr." / "Sr." / "III"
+        assertTrue(ScraperUtils.isMatch("Raul Rosas", "Raul Rosas Jr."));
+        assertTrue(ScraperUtils.isMatch("Raul Rosas Jr.", "Raul Rosas"));
+        assertTrue(ScraperUtils.isMatch("Lerone Murphy", "Lerone Murphy Jr"));
+    }
+
+    @Test
+    void isMatch_transliterationsAndDiacritics() {
+        // Osmanli phonetic transliteration
+        assertTrue(ScraperUtils.isMatch("Mahammadali Osmanli", "Mehemmedeli Osmanli"));
+
+        // Diacritics
+        assertTrue(ScraperUtils.isMatch("José Aldo", "Jose Aldo"));
+        assertTrue(ScraperUtils.isMatch("Jéssica Andrade", "Jessica Andrade"));
+    }
+
+    @Test
+    void isMatch_spacelessAndInvertedNames() {
+        // Spaceless Chinese/Asian names
+        assertTrue(ScraperUtils.isMatch("Sumudaerji", "Su Mudaerji"));
+        assertTrue(ScraperUtils.isMatch("DaUn Jung", "Da Un Jung"));
+
+        // Inverted surname first
+        assertTrue(ScraperUtils.isMatch("Zhang Weili", "Weili Zhang"));
+    }
+
+    @Test
     void isMatch_nullAndEdgeCases() {
         assertFalse(ScraperUtils.isMatch(null, "Jon Jones"));
         assertFalse(ScraperUtils.isMatch("Jon Jones", null));
@@ -118,5 +151,20 @@ class ScraperUtilsTest {
         Fight matched = ScraperUtils.fuzzyMatchFight(dbFights, "A. Silva", "Israel Adesanya");
         assertNotNull(matched);
         assertEquals("Anderson Silva", matched.getFighter1Name());
+    }
+
+    @Test
+    void fuzzyMatchFight_handlesSuffixesAndTransliteration() {
+        Fight fight = new Fight();
+        fight.setFighter1Name("Mahammadali Osmanli");
+        fight.setFighter2Name("Ilimbek Akylbek");
+
+        List<Fight> dbFights = Arrays.asList(fight);
+
+        // ESPN scraper names with "Uulu" and "Mehemmedeli"
+        Fight matched = ScraperUtils.fuzzyMatchFight(dbFights, "Ilimbek Akylbek Uulu", "Mehemmedeli Osmanli");
+        assertNotNull(matched);
+        assertEquals("Mahammadali Osmanli", matched.getFighter1Name());
+        assertEquals("Ilimbek Akylbek", matched.getFighter2Name());
     }
 }
