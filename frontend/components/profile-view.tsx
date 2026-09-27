@@ -585,7 +585,7 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                                       : pred.resultWinner
                                       ? ["Draw", "No Contest"].includes(pred.resultWinner)
                                         ? `Result: ${pred.resultWinner}`
-                                        : `Result: ${pred.resultWinner} by ${pred.resultMethod || "Decision"}${pred.resultRound ? ` (Round ${pred.resultRound})` : ""}`
+                                        : `Result: ${pred.resultWinner}${pred.resultMethod ? ` by ${pred.resultMethod}` : ""}${pred.resultRound ? ` (Round ${pred.resultRound})` : ""}`
                                       : "Pending result"}
                                   </p>
                                 </div>

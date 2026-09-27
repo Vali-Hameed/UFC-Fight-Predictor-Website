@@ -215,34 +215,48 @@ public class EspnLiveScraperService {
                             if (f1Winner) winningEspnName = f1Name;
                             else if (f2Winner) winningEspnName = f2Name;
 
-                            // Try to get method (avoid 'Final' string)
-                            String detail = typeNode.path("detail").asText("");
-                            if (detail.equalsIgnoreCase("Final") || detail.contains("STATUS_")) {
-                                detail = ""; // Blank out 'Final' so frontend falls back cleanly or avoids it
+                            String espnEventId = espnEvent.path("id").asText("");
+                            String compId = comp.path("id").asText("");
+
+                            // 1. Try to fetch exact method from ESPN's core competition status API
+                            String detail = fetchCoreCompetitionMethod(espnEventId, compId);
+
+                            // 2. Fallback to scoreboard typeNode.detail if not found
+                            if (detail == null || detail.isBlank()) {
+                                String typeDetail = typeNode.path("detail").asText("");
+                                if (!typeDetail.equalsIgnoreCase("Final") && !typeDetail.contains("STATUS_")) {
+                                    detail = typeDetail;
+                                }
                             }
 
-                            // Try to find the exact method in ESPN's live 'details' array
-                            JsonNode detailsArray = comp.path("details");
-                            if (detailsArray.isArray()) {
-                                for (JsonNode dObj : detailsArray) {
-                                    String text = dObj.path("type").path("text").asText("").toLowerCase();
-                                    if (text.contains("kotko")) {
-                                        detail = "KO/TKO";
-                                        break;
-                                    } else if (text.contains("sub") && text.contains("winner")) {
-                                        detail = "Submission";
-                                        break;
-                                    } else if (text.contains("dec") && text.contains("winner")) {
-                                        detail = "Decision";
-                                        break;
-                                    } else if (text.contains("draw")) {
-                                        detail = "Draw";
-                                        break;
-                                    } else if (text.contains("no contest")) {
-                                        detail = "No Contest";
-                                        break;
+                            // 3. Fallback to live scoreboard 'details' array with flexible matching
+                            if (detail == null || detail.isBlank()) {
+                                JsonNode detailsArray = comp.path("details");
+                                if (detailsArray.isArray()) {
+                                    for (JsonNode dObj : detailsArray) {
+                                        String text = dObj.path("type").path("text").asText("").toLowerCase();
+                                        if (text.contains("ko") || text.contains("tko") || text.contains("stoppage")) {
+                                            detail = "KO/TKO";
+                                            break;
+                                        } else if (text.contains("sub")) {
+                                            detail = "Submission";
+                                            break;
+                                        } else if (text.contains("dec")) {
+                                            detail = "Decision";
+                                            break;
+                                        } else if (text.contains("draw")) {
+                                            detail = "Draw";
+                                            break;
+                                        } else if (text.contains("no contest") || text.contains("no-contest")) {
+                                            detail = "No Contest";
+                                            break;
+                                        }
                                     }
                                 }
+                            }
+
+                            if (detail == null) {
+                                detail = "";
                             }
 
                             if (winningEspnName != null || "Draw".equalsIgnoreCase(detail) || "No Contest".equalsIgnoreCase(detail)) {
@@ -310,5 +324,36 @@ public class EspnLiveScraperService {
             log.warn("ESPN circuit breaker OPEN — pausing polling for 30 minutes after {} consecutive failures",
                     consecutiveFailures);
         }
+    }
+
+    protected String fetchCoreCompetitionMethod(String espnEventId, String compId) {
+        if (espnEventId == null || espnEventId.isBlank() || compId == null || compId.isBlank()) {
+            return null;
+        }
+        try {
+            String statusUrl = String.format("https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/%s/competitions/%s/status?lang=en&region=us", espnEventId, compId);
+            String statusResp = espnRestTemplate.getForObject(statusUrl, String.class);
+            if (statusResp != null && !statusResp.isBlank()) {
+                JsonNode stRoot = objectMapper.readTree(statusResp);
+                JsonNode resNode = stRoot.path("result");
+                if (!resNode.isMissingNode() && !resNode.isNull()) {
+                    String displayName = resNode.path("displayName").asText("");
+                    if (!displayName.isBlank() && !displayName.equalsIgnoreCase("Final")) {
+                        return displayName;
+                    }
+                    String shortName = resNode.path("shortDisplayName").asText("");
+                    if (!shortName.isBlank() && !shortName.equalsIgnoreCase("Final")) {
+                        return shortName;
+                    }
+                    String name = resNode.path("name").asText("");
+                    if (!name.isBlank() && !name.equalsIgnoreCase("Final")) {
+                        return name;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to fetch ESPN core competition status for event {} comp {}: {}", espnEventId, compId, ex.getMessage());
+        }
+        return null;
     }
 }

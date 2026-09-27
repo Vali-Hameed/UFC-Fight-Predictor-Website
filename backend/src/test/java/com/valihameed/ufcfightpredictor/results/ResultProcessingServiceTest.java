@@ -207,4 +207,109 @@ public class ResultProcessingServiceTest {
         // Then
         verify(notificationService, never()).createNotification(any());
     }
+
+    @Test
+    void processFightResult_DecisionVariants_MatchDecisionPrediction() {
+        // Given
+        Long fightId = 1L;
+        Fight fight = new Fight();
+        fight.setId(fightId);
+        fight.setResultWinner("Sean Strickland");
+        fight.setResultMethod("Decision - Unanimous");
+
+        UserPrediction prediction = new UserPrediction();
+        prediction.setId(10L);
+        prediction.setUserId(100L);
+        prediction.setPredictedWinner("Sean Strickland");
+        prediction.setPredictedMethod("Decision");
+        prediction.setPredictedRound(0);
+
+        Leaderboard leaderboard = Leaderboard.builder()
+                .userId(100L)
+                .totalPoints(0)
+                .build();
+
+        given(fightRepository.findById(fightId)).willReturn(Optional.of(fight));
+        given(userPredictionRepository.findByFightId(fightId)).willReturn(List.of(prediction));
+        given(predictionResultRepository.findByUserPredictionId(10L)).willReturn(Collections.emptyList());
+        given(leaderboardRepository.findByUserId(100L)).willReturn(Optional.of(leaderboard));
+
+        // When
+        underTest.processFightResult(fightId);
+
+        // Then
+        ArgumentCaptor<PredictionResult> resultCaptor = ArgumentCaptor.forClass(PredictionResult.class);
+        verify(predictionResultRepository).save(resultCaptor.capture());
+        PredictionResult savedResult = resultCaptor.getValue();
+
+        assertThat(savedResult.getIsWinnerCorrect()).isTrue();
+        assertThat(savedResult.getIsMethodCorrect()).isTrue();
+        assertThat(savedResult.getPointsAwarded()).isEqualTo(14); // 10 base + 4 method
+    }
+
+    @Test
+    void processFightResult_UnknownResultMethod_AwardsBaseWinnerPointsWithoutPenalty() {
+        // Given
+        Long fightId = 1L;
+        Fight fight = new Fight();
+        fight.setId(fightId);
+        fight.setResultWinner("Conor McGregor");
+        fight.setResultMethod(null); // Unknown / missing method
+
+        UserPrediction prediction = new UserPrediction();
+        prediction.setId(10L);
+        prediction.setUserId(100L);
+        prediction.setPredictedWinner("Conor McGregor");
+        prediction.setPredictedMethod("KO/TKO"); // User chose specific method
+        prediction.setPredictedRound(0);
+
+        Leaderboard leaderboard = Leaderboard.builder()
+                .userId(100L)
+                .totalPoints(0)
+                .build();
+
+        given(fightRepository.findById(fightId)).willReturn(Optional.of(fight));
+        given(userPredictionRepository.findByFightId(fightId)).willReturn(List.of(prediction));
+        given(predictionResultRepository.findByUserPredictionId(10L)).willReturn(Collections.emptyList());
+        given(leaderboardRepository.findByUserId(100L)).willReturn(Optional.of(leaderboard));
+
+        // When
+        underTest.processFightResult(fightId);
+
+        // Then
+        ArgumentCaptor<PredictionResult> resultCaptor = ArgumentCaptor.forClass(PredictionResult.class);
+        verify(predictionResultRepository).save(resultCaptor.capture());
+        PredictionResult savedResult = resultCaptor.getValue();
+
+        assertThat(savedResult.getIsWinnerCorrect()).isTrue();
+        assertThat(savedResult.getIsMethodCorrect()).isFalse();
+        assertThat(savedResult.getPointsAwarded()).isEqualTo(10); // Base 10 points awarded without 0-penalty
+    }
+
+    @Test
+    void isMethodMatch_ValidatesAllVariants() {
+        // Decision
+        assertThat(ResultProcessingService.isMethodMatch("Decision", "Decision - Unanimous")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("Decision", "Decision - Split")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("Decision", "Unanimous Decision")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("Decision", "U-DEC")).isTrue();
+
+        // KO/TKO
+        assertThat(ResultProcessingService.isMethodMatch("KO/TKO", "KO/TKO")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("KO/TKO", "TKO")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("KO/TKO", "KO")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("KO/TKO", "Technical Knockout")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("KO/TKO", "Punches")).isTrue();
+
+        // Submission
+        assertThat(ResultProcessingService.isMethodMatch("Submission", "Submission")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("Submission", "Sub")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("Submission", "Rear Naked Choke")).isTrue();
+        assertThat(ResultProcessingService.isMethodMatch("Submission", "Armbar")).isTrue();
+
+        // Mismatches
+        assertThat(ResultProcessingService.isMethodMatch("KO/TKO", "Decision - Unanimous")).isFalse();
+        assertThat(ResultProcessingService.isMethodMatch("Decision", "Submission")).isFalse();
+    }
 }
+

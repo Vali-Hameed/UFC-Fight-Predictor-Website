@@ -63,9 +63,10 @@ public class ResultProcessingService {
                 winnerCorrect = true;
             }
             
+            boolean methodKnown = fight.getResultMethod() != null && !fight.getResultMethod().trim().isEmpty();
             boolean methodCorrect = false;
-            if (predictedMethodProvided) {
-                methodCorrect = fight.getResultMethod() != null && fight.getResultMethod().equalsIgnoreCase(up.getPredictedMethod());
+            if (predictedMethodProvided && methodKnown) {
+                methodCorrect = isMethodMatch(up.getPredictedMethod(), fight.getResultMethod());
             }
 
             boolean roundCorrect = false;
@@ -83,14 +84,14 @@ public class ResultProcessingService {
                 if (isUserPredictionDrawOrNC) {
                     points = 20;
                 } else {
-                    boolean methodFailed = predictedMethodProvided && !methodCorrect;
+                    boolean methodFailed = predictedMethodProvided && methodKnown && !methodCorrect;
                     boolean roundFailed = predictedRoundProvided && !roundCorrect;
 
                     if (!methodFailed && !roundFailed) {
                         points += 10; // Base winner
-                        if (predictedMethodProvided) points += 4; // Method
-                        if (predictedRoundProvided) points += 7; // Round
-                        if (predictedMethodProvided && predictedRoundProvided) points += 10; // Bonus
+                        if (predictedMethodProvided && methodCorrect) points += 4; // Method
+                        if (predictedRoundProvided && roundCorrect) points += 7; // Round
+                        if (predictedMethodProvided && methodCorrect && predictedRoundProvided && roundCorrect) points += 10; // Bonus
                     }
                 }
             }
@@ -255,4 +256,16 @@ public class ResultProcessingService {
             fightRepository.save(fight);
         }
     }
+
+    public static boolean isMethodMatch(String predictedMethod, String resultMethod) {
+        if (predictedMethod == null || resultMethod == null) return false;
+        String p = predictedMethod.trim().toLowerCase();
+        String r = resultMethod.trim().toLowerCase();
+        if (p.equals(r)) return true;
+        if ("decision".equals(p) && r.contains("dec")) return true;
+        if ("ko/tko".equals(p) && (r.contains("ko") || r.contains("tko") || r.contains("stoppage") || r.contains("punches") || r.contains("strike"))) return true;
+        if ("submission".equals(p) && (r.contains("sub") || r.contains("choke") || r.contains("bar") || r.contains("lock"))) return true;
+        return false;
+    }
 }
+
