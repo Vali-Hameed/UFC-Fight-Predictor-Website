@@ -381,6 +381,29 @@ export type LeaderboardStatsDto = {
   winRate: number;
 };
 
+export type SeasonStatsDto = {
+  seasonId: number;
+  seasonName: string;
+  rank: number | null;
+  totalPoints: number;
+  winRate: number;
+  totalPredictions: number;
+  correctPredictions: number;
+};
+
+export type SeasonHistoryDto = {
+  seasonId: number;
+  seasonName: string;
+  active: boolean;
+  rank: number | null;
+  totalPoints: number;
+  winRate: number;
+  totalPredictions: number;
+  correctPredictions: number;
+  bestStreak: number;
+  badgeLabel?: string | null;
+};
+
 export type GlobalAccuracyDto = {
   aiAccuracy: number;
   communityAccuracy: number;
@@ -403,6 +426,9 @@ export type ProfileDto = {
   publicProfile: boolean;
   optOutEmailNotifications?: boolean;
   leaderboardStats?: LeaderboardStatsDto | null;
+  currentSeasonStats?: SeasonStatsDto | null;
+  seasonHistory?: SeasonHistoryDto[] | null;
+  bestSeasonRank?: number | null;
   predictionHistory?: PredictionHistoryItemDto[] | null;
   cosmeticGlowColor?: string | null;
   cosmeticTitle?: string | null;

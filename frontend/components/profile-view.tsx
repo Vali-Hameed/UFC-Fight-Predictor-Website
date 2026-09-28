@@ -108,7 +108,10 @@ function isFightCancelledOrNC(p: { fightStatus?: string | null; resultWinner?: s
 export function ProfileView({ initialProfile, username }: ProfileViewProps) {
   const { user, token } = useAuth();
   const [profile, setProfile] = useState<ProfileDto | null>(initialProfile);
-  const [activeTab, setActiveTab] = useState<"predictions" | "trophies" | "settings">("predictions");
+  const [activeTab, setActiveTab] = useState<"predictions" | "seasons" | "trophies" | "settings">("predictions");
+  const [statsScope, setStatsScope] = useState<"current" | "allTime">(
+    initialProfile?.currentSeasonStats ? "current" : "allTime"
+  );
 
   // Trophy filters
   const [badgeCategoryFilter, setBadgeCategoryFilter] = useState<string>("all");
@@ -125,12 +128,15 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
     // If the viewer is the owner and we have a token, fetch the authenticated profile to get private data
     if (isOwner && token && !initialProfile?.leaderboardStats) {
       apiFetch<ProfileDto>(`/api/v1/users/${username}`, {}, token)
-        .then((data) => setProfile(data))
+        .then((data) => {
+          setProfile(data);
+          setStatsScope(data.currentSeasonStats ? "current" : "allTime");
+        })
         .catch(() => {});
     } else {
       setProfile(initialProfile);
     }
-  }, [user, username, token, initialProfile, isOwner]);
+  }, [user?.username, username, token, initialProfile, isOwner]);
 
   // Badges sorted by most recent first, kept separate per event
   const displayedBadges = useMemo(() => {
@@ -370,29 +376,88 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
         </div>
       ) : (
         <div className="space-y-6">
+          {/* Stats Scope Switcher */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1 backdrop-blur-sm">
+                <button
+                  type="button"
+                  onClick={() => setStatsScope("current")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                    statsScope === "current"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  ⚡ {profile.currentSeasonStats?.seasonName || "Current Season"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatsScope("allTime")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                    statsScope === "allTime"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  🌐 All-Time
+                </button>
+              </div>
+
+              {profile.bestSeasonRank && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold">
+                  👑 Career Best: #{profile.bestSeasonRank}
+                </span>
+              )}
+            </div>
+
+            <p className="text-xs text-white/40">
+              {statsScope === "current"
+                ? `Active season stats (${profile.currentSeasonStats?.seasonName || "Season"})`
+                : "Career statistics across all seasons"}
+            </p>
+          </div>
+
           <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20">
-              <p className="text-xs font-medium uppercase tracking-wider text-white/50">Rank</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-white/50">Rank</p>
+                {statsScope === "current" && profile.currentSeasonStats?.seasonName && (
+                  <span className="text-[10px] text-accent font-medium">Season</span>
+                )}
+              </div>
               <p className="mt-1 text-2xl md:text-3xl font-semibold text-white">
-                {profile.leaderboardStats.rank ? `#${profile.leaderboardStats.rank}` : "Unranked"}
+                {statsScope === "current"
+                  ? profile.currentSeasonStats?.rank
+                    ? `#${profile.currentSeasonStats.rank}`
+                    : "Unranked"
+                  : profile.leaderboardStats.rank
+                  ? `#${profile.leaderboardStats.rank}`
+                  : "Unranked"}
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-gold/30">
               <p className="text-xs font-medium uppercase tracking-wider text-white/50">Total Points</p>
               <p className="mt-1 text-2xl md:text-3xl font-semibold text-gold">
-                {profile.leaderboardStats.totalPoints}
+                {statsScope === "current"
+                  ? (profile.currentSeasonStats?.totalPoints ?? 0)
+                  : profile.leaderboardStats.totalPoints}
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20">
               <p className="text-xs font-medium uppercase tracking-wider text-white/50">Win Rate</p>
               <p className="mt-1 text-2xl md:text-3xl font-semibold text-white">
-                {Math.round(profile.leaderboardStats.winRate * 100)}%
+                {statsScope === "current"
+                  ? `${Math.round((profile.currentSeasonStats?.winRate ?? 0) * 100)}%`
+                  : `${Math.round(profile.leaderboardStats.winRate * 100)}%`}
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20">
               <p className="text-xs font-medium uppercase tracking-wider text-white/50">Total Picks</p>
               <p className="mt-1 text-2xl md:text-3xl font-semibold text-white">
-                {totalPredictions}
+                {statsScope === "current"
+                  ? (profile.currentSeasonStats?.totalPredictions ?? 0)
+                  : totalPredictions}
               </p>
             </div>
           </div>
@@ -413,6 +478,23 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
                 activeTab === "predictions" ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
               }`}>
                 {eventEntries.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("seasons")}
+              className={`flex items-center gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition shrink-0 ${
+                activeTab === "seasons"
+                  ? "bg-accent text-white shadow-lg shadow-accent/20"
+                  : "text-white/60 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <span>🏆 Seasons</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                activeTab === "seasons" ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
+              }`}>
+                {profile.seasonHistory?.length ?? 0}
               </span>
             </button>
 
@@ -646,7 +728,126 @@ export function ProfileView({ initialProfile, username }: ProfileViewProps) {
             )}
           </div>
 
-          {/* Tab 2: Trophy Case */}
+          {/* Tab 2: Season History & Rankings */}
+          <div className={activeTab === "seasons" ? "space-y-4" : "hidden"} data-tab="seasons">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🏆</span>
+                <h4 className="text-sm sm:text-base font-semibold text-white">Season History & Records</h4>
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-white/60">
+                  {(profile.seasonHistory ?? []).length} {(profile.seasonHistory ?? []).length === 1 ? "season" : "seasons"}
+                </span>
+              </div>
+              {profile.bestSeasonRank && (
+                <div className="text-xs text-gold font-medium flex items-center gap-1.5">
+                  <span>⭐ Career Best:</span>
+                  <span className="rounded-md border border-gold/30 bg-gold/10 px-2 py-0.5 font-bold">
+                    #{profile.bestSeasonRank}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {(!profile.seasonHistory || profile.seasonHistory.length === 0) ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 text-center">
+                <span className="text-4xl">🏆</span>
+                <h4 className="mt-3 text-base font-semibold text-white">No Season Records Yet</h4>
+                <p className="mt-1 text-sm text-white/50 max-w-md mx-auto">
+                  Make fight predictions during active seasons to climb the seasonal leaderboard and preserve your permanent season ranks!
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {profile.seasonHistory.map((season) => {
+                  const isPodium = season.rank && season.rank <= 3;
+                  const rankColor =
+                    season.rank === 1
+                      ? "text-[#FFD700] border-[#FFD700]/40 bg-[#FFD700]/10"
+                      : season.rank === 2
+                      ? "text-[#C0C0C0] border-[#C0C0C0]/40 bg-[#C0C0C0]/10"
+                      : season.rank === 3
+                      ? "text-[#CD7F32] border-[#CD7F32]/40 bg-[#CD7F32]/10"
+                      : "text-white border-white/10 bg-white/5";
+
+                  const medalEmoji =
+                    season.rank === 1 ? "🥇" : season.rank === 2 ? "🥈" : season.rank === 3 ? "🥉" : null;
+
+                  return (
+                    <div
+                      key={season.seasonId}
+                      className={`relative overflow-hidden rounded-2xl border p-4 sm:p-5 transition hover:scale-[1.01] ${
+                        season.active
+                          ? "border-accent/40 bg-accent/[0.04]"
+                          : isPodium
+                          ? "border-gold/30 bg-gold/[0.03]"
+                          : "border-white/10 bg-white/[0.03]"
+                      }`}
+                    >
+                      {/* Header: Season Name + Status */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h5 className="font-bold text-white text-base">{season.seasonName}</h5>
+                            {season.active && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-green-500/40 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          {season.badgeLabel && (
+                            <p className="text-xs text-gold mt-1 font-medium flex items-center gap-1">
+                              <span>👑</span> {season.badgeLabel}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Rank Pill */}
+                        <div className={`rounded-xl border px-3 py-1.5 text-center shrink-0 ${rankColor}`}>
+                          <div className="text-[10px] uppercase font-bold tracking-wider opacity-70">
+                            {season.active ? "Current" : "Final"} Rank
+                          </div>
+                          <div className="text-lg font-black leading-tight flex items-center justify-center gap-1">
+                            {medalEmoji && <span>{medalEmoji}</span>}
+                            <span>{season.rank ? `#${season.rank}` : "Unranked"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats Grid */}
+                      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-3 text-center">
+                        <div className="rounded-lg bg-white/[0.02] p-2">
+                          <div className="text-[10px] uppercase font-semibold text-white/40">Points</div>
+                          <div className="text-base font-bold text-gold">{season.totalPoints}</div>
+                        </div>
+                        <div className="rounded-lg bg-white/[0.02] p-2">
+                          <div className="text-[10px] uppercase font-semibold text-white/40">Win Rate</div>
+                          <div className="text-base font-bold text-white">
+                            {Math.round(season.winRate * 100)}%
+                          </div>
+                        </div>
+                        <div className="rounded-lg bg-white/[0.02] p-2">
+                          <div className="text-[10px] uppercase font-semibold text-white/40">Best Streak</div>
+                          <div className="text-base font-bold text-orange-400">
+                            {season.bestStreak ? `${season.bestStreak} 🔥` : "0"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 flex items-center justify-between text-[11px] text-white/40">
+                        <span>{season.active ? "Ongoing season" : "Archived season"}</span>
+                        <span>
+                          {season.correctPredictions} / {season.totalPredictions} picks correct
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Tab 3: Trophy Case */}
           <div className={activeTab === "trophies" ? "space-y-4" : "hidden"} data-tab="trophies">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2">

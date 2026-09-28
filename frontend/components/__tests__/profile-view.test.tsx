@@ -544,5 +544,83 @@ describe("ProfileView", () => {
     // The cancelled fight should be excluded from pending
     expect(screen.queryByText("Conor McGregor vs Michael Chandler")).not.toBeInTheDocument();
   });
+
+  it("toggles between current season stats and all-time stats", async () => {
+    const profileWithSeason: ProfileDto = {
+      ...publicProfile,
+      currentSeasonStats: {
+        seasonId: 2,
+        seasonName: "Season 2",
+        rank: 1,
+        totalPoints: 120,
+        winRate: 0.85,
+        totalPredictions: 10,
+        correctPredictions: 8,
+      },
+      bestSeasonRank: 1,
+    };
+
+    await act(async () => {
+      render(<ProfileView initialProfile={profileWithSeason} username="john" />);
+    });
+
+    // In current season scope:
+    expect(screen.getAllByText("#1").length).toBeGreaterThan(0);
+    expect(screen.getByText("120")).toBeInTheDocument();
+    expect(screen.getByText("85%")).toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
+
+    // Toggle to All-Time
+    const allTimeButton = screen.getByRole("button", { name: /All-Time/i });
+    await act(async () => {
+      fireEvent.click(allTimeButton);
+    });
+
+    // Now in all-time scope:
+    expect(screen.getByText("#3")).toBeInTheDocument();
+    expect(screen.getByText("450")).toBeInTheDocument();
+    expect(screen.getByText("72%")).toBeInTheDocument();
+  });
+
+  it("switches to Seasons tab and displays season history cards", async () => {
+    const profileWithHistory: ProfileDto = {
+      ...publicProfile,
+      seasonHistory: [
+        {
+          seasonId: 1,
+          seasonName: "Season 1 (Winter 2025)",
+          active: false,
+          rank: 2,
+          totalPoints: 340,
+          winRate: 0.68,
+          totalPredictions: 25,
+          correctPredictions: 17,
+          bestStreak: 6,
+          badgeLabel: "Season Silver Medalist",
+        },
+      ],
+      bestSeasonRank: 2,
+    };
+
+    await act(async () => {
+      render(<ProfileView initialProfile={profileWithHistory} username="john" />);
+    });
+
+    // Switch to Seasons tab
+    const seasonsTabButton = screen.getByRole("button", { name: /Seasons/i });
+    await act(async () => {
+      fireEvent.click(seasonsTabButton);
+    });
+
+    // Verify season history card details
+    expect(screen.getByText("Season 1 (Winter 2025)")).toBeInTheDocument();
+    expect(screen.getAllByText("#2").length).toBeGreaterThan(0);
+    expect(screen.getByText("Final Rank")).toBeInTheDocument();
+    expect(screen.getByText("340")).toBeInTheDocument();
+    expect(screen.getByText("68%")).toBeInTheDocument();
+    expect(screen.getByText("6 🔥")).toBeInTheDocument();
+    expect(screen.getByText(/Season Silver Medalist/)).toBeInTheDocument();
+    expect(screen.getByText(/17 \/ 25 picks correct/)).toBeInTheDocument();
+  });
 });
 
