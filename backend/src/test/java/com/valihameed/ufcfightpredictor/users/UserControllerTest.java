@@ -1,4 +1,4 @@
-package com.valihameed.ufcfightpredictor.controllers;
+package com.valihameed.ufcfightpredictor.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.valihameed.ufcfightpredictor.repository.*;
@@ -44,6 +44,8 @@ public class UserControllerTest {
     @MockBean private com.valihameed.ufcfightpredictor.users.userService userService;
     @MockBean private com.valihameed.ufcfightpredictor.security.JwtService jwtService;
     @MockBean private com.valihameed.ufcfightpredictor.security.JwtAuthenticationFilter jwtAuthenticationFilter;
+    @MockBean private SeasonRepository seasonRepository;
+    @MockBean private SeasonLeaderboardRepository seasonLeaderboardRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -68,6 +70,8 @@ public class UserControllerTest {
         // Given
         given(leaderboardRepository.findByUserId(1L)).willReturn(Optional.empty());
         given(userPredictionRepository.findByUserId(1L)).willReturn(Collections.emptyList());
+        given(seasonRepository.findByActiveTrue()).willReturn(Optional.empty());
+        given(seasonLeaderboardRepository.findByUserId(1L)).willReturn(Collections.emptyList());
 
         // When / Then
         mockMvc.perform(get("/api/v1/users/me").principal(authentication))
@@ -82,6 +86,8 @@ public class UserControllerTest {
         given(userRepository.findByUsername("johndoe")).willReturn(Optional.of(testUser));
         given(leaderboardRepository.findByUserId(1L)).willReturn(Optional.empty());
         given(userPredictionRepository.findByUserId(1L)).willReturn(Collections.emptyList());
+        given(seasonRepository.findByActiveTrue()).willReturn(Optional.empty());
+        given(seasonLeaderboardRepository.findByUserId(1L)).willReturn(Collections.emptyList());
 
         // When / Then
         mockMvc.perform(get("/api/v1/users/johndoe").principal(authentication))
@@ -98,6 +104,8 @@ public class UserControllerTest {
         given(inputSanitizer.sanitize("Johnny")).willReturn("Johnny");
         given(leaderboardRepository.findByUserId(1L)).willReturn(Optional.empty());
         given(userPredictionRepository.findByUserId(1L)).willReturn(Collections.emptyList());
+        given(seasonRepository.findByActiveTrue()).willReturn(Optional.empty());
+        given(seasonLeaderboardRepository.findByUserId(1L)).willReturn(Collections.emptyList());
 
         // When / Then
         mockMvc.perform(put("/api/v1/users/me")
@@ -139,6 +147,8 @@ public class UserControllerTest {
         given(userBadgeRepository.findByUserId(1L)).willReturn(java.util.Collections.singletonList(badge));
         given(leaderboardRepository.findByUserId(1L)).willReturn(Optional.empty());
         given(userPredictionRepository.findByUserId(1L)).willReturn(Collections.emptyList());
+        given(seasonRepository.findByActiveTrue()).willReturn(Optional.empty());
+        given(seasonLeaderboardRepository.findByUserId(1L)).willReturn(Collections.emptyList());
 
         // When / Then
         mockMvc.perform(put("/api/v1/users/me")

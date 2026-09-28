@@ -1,16 +1,19 @@
-package com.valihameed.ufcfightpredictor.controllers;
+package com.valihameed.ufcfightpredictor.users;
 
-import com.valihameed.ufcfightpredictor.models.Event;
-import com.valihameed.ufcfightpredictor.models.Fight;
 import com.valihameed.ufcfightpredictor.models.Leaderboard;
+import com.valihameed.ufcfightpredictor.models.Season;
+import com.valihameed.ufcfightpredictor.models.SeasonLeaderboard;
+import com.valihameed.ufcfightpredictor.models.UserBadge;
 import com.valihameed.ufcfightpredictor.models.UserPrediction;
 import com.valihameed.ufcfightpredictor.repository.EventRepository;
 import com.valihameed.ufcfightpredictor.repository.FightRepository;
 import com.valihameed.ufcfightpredictor.repository.LeaderboardRepository;
+import com.valihameed.ufcfightpredictor.repository.PredictionResultRepository;
+import com.valihameed.ufcfightpredictor.repository.SeasonLeaderboardRepository;
+import com.valihameed.ufcfightpredictor.repository.SeasonRepository;
+import com.valihameed.ufcfightpredictor.repository.UserBadgeRepository;
 import com.valihameed.ufcfightpredictor.repository.UserPredictionRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
-import com.valihameed.ufcfightpredictor.users.user;
-import com.valihameed.ufcfightpredictor.users.userService;
 import com.valihameed.ufcfightpredictor.security.JwtService;
 import com.valihameed.ufcfightpredictor.util.InputSanitizer;
 import lombok.AllArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,10 +38,12 @@ public class userController {
 	private final UserPredictionRepository userPredictionRepository;
 	private final FightRepository fightRepository;
 	private final EventRepository eventRepository;
-	private final com.valihameed.ufcfightpredictor.repository.PredictionResultRepository predictionResultRepository;
+	private final PredictionResultRepository predictionResultRepository;
 	private final userService userService;
 	private final JwtService jwtService;
-	private final com.valihameed.ufcfightpredictor.repository.UserBadgeRepository userBadgeRepository;
+	private final UserBadgeRepository userBadgeRepository;
+	private final SeasonRepository seasonRepository;
+	private final SeasonLeaderboardRepository seasonLeaderboardRepository;
 
 	@GetMapping("/me")
 	public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
@@ -91,7 +97,7 @@ public class userController {
 		}
 		if (request.cosmeticTitle != null) {
 		    if (!request.cosmeticTitle.isEmpty()) {
-		        List<com.valihameed.ufcfightpredictor.models.UserBadge> badges = userBadgeRepository.findByUserId(currentUser.getId());
+		        List<UserBadge> badges = userBadgeRepository.findByUserId(currentUser.getId());
 		        boolean valid = false;
 		        if (request.cosmeticTitle.contains("Event Winner")) {
 		            long eventWins = badges.stream().filter(b -> "EVENT_WINNER".equals(b.getBadgeType())).count();
@@ -121,8 +127,8 @@ public class userController {
 		}
 		user currentUser = (user) authentication.getPrincipal();
 		
-		List<com.valihameed.ufcfightpredictor.models.UserBadge> badges = userBadgeRepository.findByUserId(currentUser.getId());
-		List<AvailableTitleDto> titles = new java.util.ArrayList<>();
+		List<UserBadge> badges = userBadgeRepository.findByUserId(currentUser.getId());
+		List<AvailableTitleDto> titles = new ArrayList<>();
 		
 		long eventWins = badges.stream().filter(b -> "EVENT_WINNER".equals(b.getBadgeType())).count();
 		if (eventWins > 0) {
@@ -215,6 +221,87 @@ public class userController {
 	    }
 
 	    response.setLeaderboardStats(stats);
+
+	    // Badges
+	    List<UserBadge> badges = userBadgeRepository.findByUserId(target.getId());
+	    response.setBadges(badges.stream().map(b -> {
+	        BadgeDto bd = new BadgeDto();
+	        bd.setId(b.getId());
+	        bd.setBadgeType(b.getBadgeType());
+	        bd.setBadgeLabel(b.getBadgeLabel());
+	        bd.setAwardedAt(b.getAwardedAt());
+	        return bd;
+	    }).collect(Collectors.toList()));
+
+	    // Current Season Stats
+	    Optional<Season> activeSeasonOpt = seasonRepository.findByActiveTrue();
+	    if (activeSeasonOpt.isPresent()) {
+	        Season activeSeason = activeSeasonOpt.get();
+	        SeasonStatsDto seasonDto = new SeasonStatsDto();
+	        seasonDto.setSeasonId(activeSeason.getId());
+	        seasonDto.setSeasonName(activeSeason.getName());
+
+	        Optional<SeasonLeaderboard> slbOpt = seasonLeaderboardRepository.findBySeasonIdAndUserId(activeSeason.getId(), target.getId());
+	        if (slbOpt.isPresent()) {
+	            SeasonLeaderboard slb = slbOpt.get();
+	            seasonDto.setTotalPoints(slb.getTotalPoints() != null ? slb.getTotalPoints() : 0);
+	            int total = slb.getTotalPredictions() != null ? slb.getTotalPredictions() : 0;
+	            int correct = slb.getCorrectPredictions() != null ? slb.getCorrectPredictions() : 0;
+	            seasonDto.setTotalPredictions(total);
+	            seasonDto.setCorrectPredictions(correct);
+	            seasonDto.setWinRate(total > 0 ? (double) correct / total : 0.0);
+
+	            if (target.isPublicProfile() && seasonDto.getTotalPoints() > 0) {
+	                long usersAhead = seasonLeaderboardRepository.countUsersWithMorePointsInSeason(activeSeason.getId(), seasonDto.getTotalPoints());
+	                seasonDto.setRank((int) usersAhead + 1);
+	            }
+	        } else {
+	            seasonDto.setTotalPoints(0);
+	            seasonDto.setWinRate(0.0);
+	            seasonDto.setTotalPredictions(0);
+	            seasonDto.setCorrectPredictions(0);
+	        }
+	        response.setCurrentSeasonStats(seasonDto);
+	    }
+
+	    // Season History
+	    List<SeasonLeaderboard> userSeasonEntries = seasonLeaderboardRepository.findByUserId(target.getId());
+	    Integer highestSeasonRank = null;
+	    List<SeasonHistoryDto> historyList = new ArrayList<>();
+	    for (SeasonLeaderboard slb : userSeasonEntries) {
+	        SeasonHistoryDto hDto = new SeasonHistoryDto();
+	        hDto.setSeasonId(slb.getSeasonId());
+	        seasonRepository.findById(slb.getSeasonId()).ifPresent(s -> {
+	            hDto.setSeasonName(s.getName());
+	            hDto.setActive(s.isActive());
+	        });
+	        hDto.setTotalPoints(slb.getTotalPoints() != null ? slb.getTotalPoints() : 0);
+	        int total = slb.getTotalPredictions() != null ? slb.getTotalPredictions() : 0;
+	        int correct = slb.getCorrectPredictions() != null ? slb.getCorrectPredictions() : 0;
+	        hDto.setTotalPredictions(total);
+	        hDto.setCorrectPredictions(correct);
+	        hDto.setWinRate(total > 0 ? (double) correct / total : 0.0);
+	        hDto.setBestStreak(slb.getBestStreak() != null ? slb.getBestStreak() : 0);
+
+	        if (target.isPublicProfile() && hDto.getTotalPoints() > 0) {
+	            long usersAhead = seasonLeaderboardRepository.countUsersWithMorePointsInSeason(slb.getSeasonId(), hDto.getTotalPoints());
+	            int rank = (int) usersAhead + 1;
+	            hDto.setRank(rank);
+	            if (highestSeasonRank == null || rank < highestSeasonRank) {
+	                highestSeasonRank = rank;
+	            }
+	        }
+
+	        badges.stream()
+	            .filter(b -> slb.getSeasonId().equals(b.getSeasonId()))
+	            .findFirst()
+	            .ifPresent(b -> hDto.setBadgeLabel(b.getBadgeLabel()));
+
+	        historyList.add(hDto);
+	    }
+	    historyList.sort((a, b) -> Long.compare(b.getSeasonId() != null ? b.getSeasonId() : 0L, a.getSeasonId() != null ? a.getSeasonId() : 0L));
+	    response.setSeasonHistory(historyList);
+	    response.setBestSeasonRank(highestSeasonRank);
 	    
 	    List<UserPrediction> predictions = userPredictionRepository.findByUserId(target.getId());
 	    List<PredictionHistoryDto> history = predictions.stream().map(p -> {
@@ -261,17 +348,6 @@ public class userController {
 	    
 	    response.setPredictionHistory(history);
 
-	    // Populate badges
-	    List<com.valihameed.ufcfightpredictor.models.UserBadge> badges = userBadgeRepository.findByUserId(target.getId());
-	    response.setBadges(badges.stream().map(b -> {
-	        BadgeDto bd = new BadgeDto();
-	        bd.setId(b.getId());
-	        bd.setBadgeType(b.getBadgeType());
-	        bd.setBadgeLabel(b.getBadgeLabel());
-	        bd.setAwardedAt(b.getAwardedAt());
-	        return bd;
-	    }).collect(Collectors.toList()));
-	    
 	    return response;
 	}
 
@@ -308,6 +384,31 @@ public class userController {
 	    private Integer rank;
 	    private Integer totalPoints;
 	    private Double winRate;
+	}
+
+	@Data
+	public static class SeasonStatsDto {
+	    private Long seasonId;
+	    private String seasonName;
+	    private Integer rank;
+	    private Integer totalPoints;
+	    private Double winRate;
+	    private Integer totalPredictions;
+	    private Integer correctPredictions;
+	}
+
+	@Data
+	public static class SeasonHistoryDto {
+	    private Long seasonId;
+	    private String seasonName;
+	    private boolean active;
+	    private Integer rank;
+	    private Integer totalPoints;
+	    private Double winRate;
+	    private Integer totalPredictions;
+	    private Integer correctPredictions;
+	    private Integer bestStreak;
+	    private String badgeLabel;
 	}
 
 	@Data
@@ -355,6 +456,9 @@ public class userController {
 		private boolean optOutEmailNotifications;
 		private OffsetDateTime updatedAt;
 		private LeaderboardStatsDto leaderboardStats;
+		private SeasonStatsDto currentSeasonStats;
+		private List<SeasonHistoryDto> seasonHistory;
+		private Integer bestSeasonRank;
 		private List<PredictionHistoryDto> predictionHistory;
 		private String cosmeticGlowColor;
 		private String cosmeticTitle;
@@ -382,6 +486,9 @@ public class userController {
 			response.lastName = null;
 			response.profileImageUrl = null;
 			response.leaderboardStats = null;
+			response.currentSeasonStats = null;
+			response.seasonHistory = null;
+			response.bestSeasonRank = null;
 			response.predictionHistory = null;
 			return response;
 		}
