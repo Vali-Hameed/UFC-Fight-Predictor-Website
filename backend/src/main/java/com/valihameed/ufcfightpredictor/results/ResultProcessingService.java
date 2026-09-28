@@ -21,7 +21,6 @@ public class ResultProcessingService {
     private final UserPredictionRepository userPredictionRepository;
     private final PredictionResultRepository predictionResultRepository;
     private final LeaderboardRepository leaderboardRepository;
-    private final NotificationRepository notificationRepository;
     private final com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
     private final EventRepository eventRepository;
     private final EventLeaderboardRepository eventLeaderboardRepository;

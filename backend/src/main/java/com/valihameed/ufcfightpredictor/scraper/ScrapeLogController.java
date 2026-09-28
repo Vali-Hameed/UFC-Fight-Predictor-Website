@@ -1,7 +1,6 @@
 package com.valihameed.ufcfightpredictor.scraper;
 
 import com.valihameed.ufcfightpredictor.models.ScrapeLog;
-import com.valihameed.ufcfightpredictor.ml.PrewarmConfigService;
 import com.valihameed.ufcfightpredictor.repository.ScrapeLogRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;

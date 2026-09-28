@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.OffsetDateTime;
@@ -42,7 +41,6 @@ public class AuthControllerTest {
     @MockBean private AuthenticationManager authenticationManager;
     @MockBean private JwtService jwtService;
     @MockBean private RefreshTokenService refreshTokenService;
-    @MockBean private UserDetailsService userDetailsService;
     @MockBean private userRepository userRepository;
 
     @Autowired
@@ -57,6 +55,7 @@ public class AuthControllerTest {
         testUser.setId(1L);
         testUser.setUsername("johndoe");
         testUser.setTokenVersion(1);
+        testUser.setEnabled(true);
 
         authentication = new UsernamePasswordAuthenticationToken(testUser, null, Collections.emptyList());
     }

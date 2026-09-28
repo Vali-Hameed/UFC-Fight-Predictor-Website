@@ -54,6 +54,7 @@ public class ForumThreadControllerTest {
         user testUser = new user();
         testUser.setId(1L);
         testUser.setUsername("johndoe");
+        testUser.setEnabled(true);
 
         authentication = new UsernamePasswordAuthenticationToken(testUser, null, Collections.emptyList());
     }

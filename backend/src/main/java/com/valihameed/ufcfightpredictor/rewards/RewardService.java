@@ -25,7 +25,6 @@ public class RewardService {
     private final EventRepository eventRepository;
     private final userRepository userRepository;
     private final com.valihameed.ufcfightpredictor.notifications.NotificationService notificationService;
-    private final NotificationRepository notificationRepository;
     private final jakarta.persistence.EntityManager entityManager;
 
     /**

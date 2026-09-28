@@ -1,17 +1,12 @@
 package com.valihameed.ufcfightpredictor.predictions;
 
-import com.valihameed.ufcfightpredictor.models.CommunityVote;
-import com.valihameed.ufcfightpredictor.models.Fight;
 import com.valihameed.ufcfightpredictor.models.UserPrediction;
 import com.valihameed.ufcfightpredictor.repository.CommunityVoteRepository;
 import com.valihameed.ufcfightpredictor.repository.FightRepository;
 import com.valihameed.ufcfightpredictor.repository.UserPredictionRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j

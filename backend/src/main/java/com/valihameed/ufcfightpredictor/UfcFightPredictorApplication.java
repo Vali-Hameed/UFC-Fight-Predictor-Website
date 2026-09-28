@@ -1,7 +1,5 @@
 package com.valihameed.ufcfightpredictor;
 
-import com.valihameed.ufcfightpredictor.repository.userRepository;
-import com.valihameed.ufcfightpredictor.users.userService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;

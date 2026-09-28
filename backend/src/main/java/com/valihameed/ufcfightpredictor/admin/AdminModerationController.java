@@ -1,7 +1,6 @@
 package com.valihameed.ufcfightpredictor.admin;
 
 import com.valihameed.ufcfightpredictor.models.Notification;
-import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
 import com.valihameed.ufcfightpredictor.notifications.NotificationService;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
 import com.valihameed.ufcfightpredictor.users.user;
@@ -21,7 +20,6 @@ import java.util.Optional;
 @AllArgsConstructor
 public class AdminModerationController {
     private final userRepository userRepository;
-    private final NotificationRepository notificationRepository;
     private final NotificationService notificationService;
 
     @PostMapping("/{id}/warn")

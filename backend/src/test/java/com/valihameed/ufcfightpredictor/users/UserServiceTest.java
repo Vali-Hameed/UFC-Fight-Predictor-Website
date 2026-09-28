@@ -65,8 +65,8 @@ public class UserServiceTest {
         role userRole = new role();
         userRole.setName("ROLE_USER");
 
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
-        given(userRepository.findByEmail(anyString())).willReturn(Optional.empty());
+        given(userRepository.findByUsernameIgnoreCase(anyString())).willReturn(Optional.empty());
+        given(userRepository.findByEmailIgnoreCase(anyString())).willReturn(Optional.empty());
         given(passwordEncoder.encode(anyString())).willReturn("encoded_password");
 
         // When
@@ -85,7 +85,7 @@ public class UserServiceTest {
     @Test
     void willThrowWhenUsernameIsTaken() {
         // Given
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(testUser));
+        given(userRepository.findByUsernameIgnoreCase(anyString())).willReturn(Optional.of(testUser));
         role userRole = new role();
 
         // When / Then
@@ -97,7 +97,8 @@ public class UserServiceTest {
     @Test
     void canLoadUserByUsernameUsingEmail() {
         // Given
-        given(userRepository.findByEmail(anyString())).willReturn(Optional.of(testUser));
+        given(userRepository.findByUsernameIgnoreCase("john@example.com")).willReturn(Optional.empty());
+        given(userRepository.findByEmailIgnoreCase("john@example.com")).willReturn(Optional.of(testUser));
 
         // When
         UserDetails userDetails = underTest.loadUserByUsername("john@example.com");
@@ -109,7 +110,7 @@ public class UserServiceTest {
     @Test
     void canLoadUserByUsernameUsingUsername() {
         // Given
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(testUser));
+        given(userRepository.findByUsernameIgnoreCase("johndoe")).willReturn(Optional.of(testUser));
 
         // When
         UserDetails userDetails = underTest.loadUserByUsername("johndoe");
@@ -121,7 +122,8 @@ public class UserServiceTest {
     @Test
     void willThrowWhenUserNotFoundByUsernameOrEmail() {
         // Given
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
+        given(userRepository.findByUsernameIgnoreCase("unknownuser")).willReturn(Optional.empty());
+        given(userRepository.findByEmailIgnoreCase("unknownuser")).willReturn(Optional.empty());
 
         // When / Then
         assertThatThrownBy(() -> underTest.loadUserByUsername("unknownuser"))
@@ -132,8 +134,8 @@ public class UserServiceTest {
     @Test
     void canSignUpUser() {
         // Given
-        given(userRepository.findByEmail(anyString())).willReturn(Optional.empty());
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
+        given(userRepository.findByEmailIgnoreCase(anyString())).willReturn(Optional.empty());
+        given(userRepository.findByUsernameIgnoreCase(anyString())).willReturn(Optional.empty());
         given(bCryptPasswordEncoder.encode(anyString())).willReturn("encoded_password");
 
         // When

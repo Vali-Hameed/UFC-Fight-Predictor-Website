@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class LeaderboardController {
     private final LeaderboardRepository leaderboardRepository;
     private final userRepository userRepository;
-    private final PredictionResultRepository predictionResultRepository;
     private final SeasonLeaderboardRepository seasonLeaderboardRepository;
     private final EventLeaderboardRepository eventLeaderboardRepository;
     private final SeasonRepository seasonRepository;

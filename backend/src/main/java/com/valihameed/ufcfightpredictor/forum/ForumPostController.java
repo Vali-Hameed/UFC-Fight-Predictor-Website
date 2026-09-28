@@ -5,7 +5,6 @@ import com.valihameed.ufcfightpredictor.repository.ForumPostRepository;
 import com.valihameed.ufcfightpredictor.users.user;
 import com.valihameed.ufcfightpredictor.models.Notification;
 import com.valihameed.ufcfightpredictor.models.ThreadSubscription;
-import com.valihameed.ufcfightpredictor.repository.NotificationRepository;
 import com.valihameed.ufcfightpredictor.notifications.NotificationService;
 import com.valihameed.ufcfightpredictor.repository.ThreadSubscriptionRepository;
 import com.valihameed.ufcfightpredictor.repository.userRepository;
@@ -35,7 +34,6 @@ public class ForumPostController {
     private final ForumPostRepository forumPostRepository;
     private final userRepository userRepository;
     private final ThreadSubscriptionRepository threadSubscriptionRepository;
-    private final NotificationRepository notificationRepository;
     private final NotificationService notificationService;
     private final InputSanitizer inputSanitizer;
     private final ForumThreadRepository forumThreadRepository;
